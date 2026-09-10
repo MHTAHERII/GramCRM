@@ -1,0 +1,78 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="sh" />
+          <option value="aiohappyeyeballs" />
+          <option value="asttokens" />
+          <option value="beautifulsoup4" />
+          <option value="brotli" />
+          <option value="certifi" />
+          <option value="cffi" />
+          <option value="charset-normalizer" />
+          <option value="cloudpickle" />
+          <option value="colorama" />
+          <option value="comm" />
+          <option value="cryptography" />
+          <option value="debugpy" />
+          <option value="decorator" />
+          <option value="executing" />
+          <option value="h2" />
+          <option value="hpack" />
+          <option value="hyperframe" />
+          <option value="iniconfig" />
+          <option value="ipykernel" />
+          <option value="ipython" />
+          <option value="jedi" />
+          <option value="jupyter_client" />
+          <option value="jupyter_core" />
+          <option value="matplotlib-inline" />
+          <option value="nest-asyncio" />
+          <option value="packaging" />
+          <option value="parso" />
+          <option value="phonenumbers" />
+          <option value="platformdirs" />
+          <option value="pluggy" />
+          <option value="prompt_toolkit" />
+          <option value="psutil" />
+          <option value="pure_eval" />
+          <option value="pyaes" />
+          <option value="pyasn1" />
+          <option value="pycountry" />
+          <option value="pycparser" />
+          <option value="Pygments" />
+          <option value="pyrobale" />
+          <option value="pyTelegramBotAPI" />
+          <option value="pytest" />
+          <option value="python-dateutil" />
+          <option value="pywin32" />
+          <option value="pyzmq" />
+          <option value="requests" />
+          <option value="rsa" />
+          <option value="six" />
+          <option value="soupsieve" />
+          <option value="spyder-kernels" />
+          <option value="stack-data" />
+          <option value="telegram-bale-bot" />
+          <option value="Telethon" />
+          <option value="tornado" />
+          <option value="toutatis" />
+          <option value="traitlets" />
+          <option value="urllib3" />
+          <option value="wcwidth" />
+          <option value="wheel" />
+          <option value="zstandard" />
+          <option value="balethon" />
+          <option value="numpy" />
+          <option value="pandas" />
+          <option value="scipy" />
+          <option value="matplotlib" />
+          <option value="seaborn" />
+          <option value="scikit-learn" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

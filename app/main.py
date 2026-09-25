@@ -53,6 +53,12 @@ def run_schema_migrations() -> None:
         conn.execute(text(
             "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_public_reply_text TEXT;"
         ))
+        conn.execute(text(
+            "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_title VARCHAR(100);"
+        ))
+        conn.execute(text(
+            "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_url VARCHAR(500);"
+        ))
 
 
 @asynccontextmanager

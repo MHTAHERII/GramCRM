@@ -40,11 +40,19 @@ class ZernioService:
             logger.error(f"Error calling Zernio list_comment_automations: {e}")
             return []
 
-    def create_comment_automation(self, name: str, keywords: list[str], dm_message: str) -> dict | None:
+    def create_comment_automation(
+        self,
+        name: str,
+        keywords: list[str],
+        dm_message: str,
+        button_title: str | None = None,
+        button_url: str | None = None,
+        follow_gate_message: str | None = None
+    ) -> dict | None:
         """
         ساخت اتوماسیون جدید کامنت به دایرکت:
-        به محض اینکه کاربری در کامنت هر پستی یکی از کلیدواژه‌ها را بنویسد،
-        Zernio به صورت خودکار پیام دایرکت را برای او ارسال می‌کند.
+        - اگر follow_gate_message ست باشد: اینستاگرام پیام قفل فالو با دو دکمه تعاملی می‌فرستد.
+        - اگر button_title و button_url ست باشد: پیام نهایی همراه با دکمه لینک‌دار شکیل ارسال می‌شود.
         """
         if not self.is_configured():
             logger.warning("Zernio is not configured.")
@@ -56,8 +64,24 @@ class ZernioService:
             "name": name,
             "keywords": [kw.strip() for kw in keywords if kw.strip()],
             "dmMessage": dm_message.strip(),
-            "alsoMatchInDms": True  # پاسخ خودکار هم در کامنت و هم در دایرکت
+            "alsoMatchInDms": True
         }
+
+        # افزودن دکمه لینک‌دار شبیه دکمه یوتیوب
+        if button_title and button_url:
+            payload["buttons"] = [
+                {
+                    "type": "url",
+                    "title": button_title.strip(),
+                    "url": button_url.strip()
+                }
+            ]
+
+        # افزودن قفل فالو با دو دکمه «فالو کردم» و «مشاهده پیج»
+        if follow_gate_message:
+            payload["followGate"] = {
+                "message": follow_gate_message.strip()
+            }
 
         try:
             url = f"{ZERNIO_BASE_URL}/comment-automations"
@@ -85,35 +109,46 @@ class ZernioService:
 
     def sync_all_keywords(self, db: Session) -> dict:
         """
-        همگام‌سازی کامل کلیدواژه‌های دیتابیس لوکال با اتوماسیون‌های کامنت Zernio:
-        تمام کلیدواژه‌های فعال به عنوان کامنت-به-دایرکت در Zernio ثبت/به‌روز می‌شوند.
+        همگام‌سازی کامل کلیدواژه‌های دیتابیس با اتوماسیون‌های کامنت Zernio
+        شامل دکمه‌های لینک‌دار و قفل فالو دو دکمه‌ای
         """
         if not self.is_configured():
             return {"success": False, "message": "Zernio تنظیم نشده است"}
 
-        # ۱. دریافت اتوماسیون‌های فعلی در Zernio
+        from app.models.bot_setting import BotSetting
+
+        # ۱. استعلام تنظیمات دروازه فالو
+        bot_settings = db.query(BotSetting).first()
+        fg_msg = None
+        if bot_settings and bot_settings.follow_gate_enabled:
+            fg_msg = bot_settings.follow_gate_message or "این محتوا مخصوص دنبال‌کننده‌هاست 💙 پیج رو فالو کن و «فالو کردم» رو بزن."
+
+        # ۲. دریافت اتوماسیون‌های فعلی در Zernio
         existing_automations = self.list_comment_automations()
         existing_by_name = {auto.get("name"): auto for auto in existing_automations}
 
-        # ۲. خواندن کلیدواژه‌های فعال از دیتابیس
+        # ۳. خواندن کلیدواژه‌های فعال از دیتابیس
         active_keywords = db.query(Keyword).filter(Keyword.active == True).all()
 
         synced_count = 0
         for kw in active_keywords:
             auto_name = f"KW_{kw.id}_{kw.keyword}"
-            # اگر قبلاً بوده، حذف و با مقدار جدید ایجاد کن (یا نگه دار)
+            # اگر قبلاً بوده، حذف کن تا با کانفیگ جدید ایجاد شود
             if auto_name in existing_by_name:
                 self.delete_comment_automation(existing_by_name[auto_name]["id"])
 
             created = self.create_comment_automation(
                 name=auto_name,
                 keywords=[kw.keyword],
-                dm_message=kw.response
+                dm_message=kw.response,
+                button_title=kw.button_title,
+                button_url=kw.button_url,
+                follow_gate_message=fg_msg
             )
             if created:
                 synced_count += 1
 
-        logger.info(f"Successfully synced {synced_count} keywords to Zernio comment automations.")
+        logger.info(f"Successfully synced {synced_count} keywords with buttons & follow gate to Zernio.")
         return {
             "success": True,
             "synced_count": synced_count,

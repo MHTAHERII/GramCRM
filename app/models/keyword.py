@@ -26,6 +26,16 @@ class Keyword(Base):
         default=True
     )
 
+    # دکمه لینک‌دار تعاملی (اختیاری)
+    button_title = Column(
+        String(100),
+        nullable=True
+    )
+    button_url = Column(
+        String(500),
+        nullable=True
+    )
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow

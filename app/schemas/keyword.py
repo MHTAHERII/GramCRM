@@ -5,6 +5,8 @@ from datetime import datetime
 class KeywordBase(BaseModel):
     keyword: str
     response: str
+    button_title: str | None = None
+    button_url: str | None = None
 
     @field_validator("keyword", "response")
     @classmethod
@@ -22,6 +24,8 @@ class KeywordCreate(KeywordBase):
 class KeywordUpdate(BaseModel):
     keyword: str | None = None
     response: str | None = None
+    button_title: str | None = None
+    button_url: str | None = None
     active: bool | None = None
 
 

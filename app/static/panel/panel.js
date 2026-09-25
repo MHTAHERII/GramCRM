@@ -137,7 +137,16 @@ async function loadKeywords() {
   tbody.innerHTML = keywordsCache.map((k) => `
     <tr>
       <td class="kw-text">${esc(k.keyword)}</td>
-      <td class="kw-response">${esc(k.response)}</td>
+      <td class="kw-response">
+        <div>${esc(k.response)}</div>
+        ${k.button_title && k.button_url ? `
+          <div style="margin-top:6px;">
+            <a href="${esc(k.button_url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:0.75rem;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;text-decoration:none;">
+              🔘 ${esc(k.button_title)}
+            </a>
+          </div>
+        ` : ""}
+      </td>
       <td>
         <label class="switch" title="روشن/خاموش">
           <input type="checkbox" ${k.active ? "checked" : ""} onchange="toggleKeyword(${k.id})">
@@ -180,6 +189,8 @@ function startEditKeyword(id) {
   document.getElementById("keyword-form-title").textContent = "ویرایش کلمه کلیدی";
   document.getElementById("keyword-input").value = k.keyword;
   document.getElementById("keyword-response-input").value = k.response;
+  document.getElementById("keyword-button-title").value = k.button_title || "";
+  document.getElementById("keyword-button-url").value = k.button_url || "";
   document.getElementById("keyword-submit").textContent = "ذخیره تغییرات";
   document.getElementById("keyword-cancel").classList.remove("hidden");
   document.getElementById("keyword-input").focus();
@@ -188,6 +199,8 @@ function startEditKeyword(id) {
 function resetKeywordForm() {
   editingKeywordId = null;
   document.getElementById("keyword-form").reset();
+  document.getElementById("keyword-button-title").value = "";
+  document.getElementById("keyword-button-url").value = "";
   document.getElementById("keyword-form-title").textContent = "افزودن کلمه کلیدی";
   document.getElementById("keyword-submit").textContent = "افزودن";
   document.getElementById("keyword-cancel").classList.add("hidden");
@@ -197,9 +210,13 @@ document.getElementById("keyword-cancel").addEventListener("click", resetKeyword
 
 document.getElementById("keyword-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const btnTitle = document.getElementById("keyword-button-title").value.trim();
+  const btnUrl = document.getElementById("keyword-button-url").value.trim();
   const body = JSON.stringify({
-    keyword: document.getElementById("keyword-input").value,
-    response: document.getElementById("keyword-response-input").value,
+    keyword: document.getElementById("keyword-input").value.trim(),
+    response: document.getElementById("keyword-response-input").value.trim(),
+    button_title: btnTitle ? btnTitle : null,
+    button_url: btnUrl ? btnUrl : null,
   });
   try {
     if (editingKeywordId) {

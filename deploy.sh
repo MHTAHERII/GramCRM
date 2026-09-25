@@ -52,7 +52,7 @@ EOF
 echo "=== 7. Setting up 24/7 Systemd Service ==="
 cat << 'EOF' > /etc/systemd/system/perfumebot.service
 [Unit]
-Description=Instagram Perfume CRM & Bot
+Description=GramCRM - Instagram Sales Automation & CRM
 After=network.target postgresql.service
 
 [Service]
@@ -108,7 +108,7 @@ SERVER_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
 
 echo ""
 echo "=========================================================="
-echo "  🎉 PERFUME BOT & CRM INSTALLED & RUNNING 24/7! 🚀"
+echo "  🎉 GramCRM INSTALLED & RUNNING 24/7! 🚀"
 echo "  🌐 Admin Panel: http://${SERVER_IP}/panel"
 echo "  🔗 Webhook URL: http://${SERVER_IP}/webhook/zernio"
 echo "=========================================================="

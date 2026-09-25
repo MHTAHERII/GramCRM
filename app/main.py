@@ -91,9 +91,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Perfume CRM API",
-    description="سیستم مدیریت دایرکت اینستاگرام برای فروش مواد اولیه عطرسازی",
-    version="1.1.0",
+    title="GramCRM API",
+    description="پلتفرم جامع مدیریت ارتباط با مشتری (CRM) و اتوماسیون هوشمند دایرکت و فروش اینستاگرام",
+    version="2.0.0",
     lifespan=lifespan
 )
 

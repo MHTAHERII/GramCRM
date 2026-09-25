@@ -393,25 +393,47 @@
 
           <!-- کارت اتصال به API اینستاگرام -->
           <div class="card">
-            <h2>اتصال به اینستاگرام (API Zernio)</h2>
-            <p class="hint">برای اتصال ربات به اینستاگرام، کلید API و شناسه‌های اکانت Zernio خود را در این بخش وارد کنید.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+              <h2>اتصال به اینستاگرام (API Zernio)</h2>
+              <span id="zernio-account-badge" class="badge" style="display: none; padding: 4px 12px; font-weight: 600; font-size: 0.8rem; border-radius: 99px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"></span>
+            </div>
+            <p class="hint">تنها کافی است توکن API دریافتی از پنل زرنیو را وارد کنید؛ شناسه اکانت و پروفایل شما به صورت خودکار شناسایی و متصل می‌شوند.</p>
+            
             <div class="field" style="margin-top: 1rem;">
               <label for="setting-zernio-api-key">کلید API توکن (API Key)</label>
-              <input id="setting-zernio-api-key" type="password" placeholder="sk_...">
-            </div>
-            <div class="grid-2">
-              <div class="field">
-                <label for="setting-zernio-profile-id">شناسه پروفایل (Profile ID)</label>
-                <input id="setting-zernio-profile-id" type="text" placeholder="مثلاً: 6ab54273...">
-              </div>
-              <div class="field">
-                <label for="setting-zernio-account-id">شناسه اکانت (Account ID)</label>
-                <input id="setting-zernio-account-id" type="text" placeholder="مثلاً: 6ab54a58...">
+              <div style="display: flex; gap: 8px;">
+                <input id="setting-zernio-api-key" type="password" placeholder="sk_..." style="flex: 1;">
+                <button id="btn-toggle-token-vis" type="button" class="btn ghost small" title="نمایش/مخفی کردن توکن" style="padding: 0 12px;">👁️</button>
               </div>
             </div>
-            <div class="form-actions" style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
-              <button id="save-api-settings" class="btn primary">ذخیره تنظیمات API</button>
-              <button id="test-connection-btn" class="btn ghost" type="button">بررسی وضعیت اتصال ⚡</button>
+
+            <div id="zernio-connected-info" style="display: none; margin-top: 10px; padding: 10px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; font-size: 0.85rem;">
+              <span style="color: var(--text-secondary);">پیج متصل: </span>
+              <strong id="zernio-connected-username" style="color: #6366f1; direction: ltr; display: inline-block;"></strong>
+            </div>
+
+            <!-- بخش پیشرفته (اکانت و پروفایل به صورت خودکار پر می‌شوند) -->
+            <details style="margin-top: 1rem; border: 1px dashed var(--border); border-radius: 8px; padding: 10px 14px; background: rgba(0,0,0,0.02);">
+              <summary style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer; user-select: none; font-weight: 500;">
+                ⚙️ تنظیمات پیشرفته (شناسه‌ها به‌طور خودکار دریافت می‌شوند)
+              </summary>
+              <p class="hint" style="margin-top: 6px; font-size: 0.78rem;">سیستم شناسه‌های زیر را خودکار از زرنیو دریافت می‌کند. فقط در صورت نیاز به تغییر دستی اکانت این بخش را ویرایش کنید.</p>
+              <div class="grid-2" style="margin-top: 8px;">
+                <div class="field">
+                  <label for="setting-zernio-profile-id">شناسه پروفایل (Profile ID)</label>
+                  <input id="setting-zernio-profile-id" type="text" placeholder="دریافت خودکار...">
+                </div>
+                <div class="field">
+                  <label for="setting-zernio-account-id">شناسه اکانت (Account ID)</label>
+                  <input id="setting-zernio-account-id" type="text" placeholder="دریافت خودکار...">
+                </div>
+              </div>
+            </details>
+
+            <div class="form-actions" style="margin-top: 1.25rem; display: flex; gap: 10px; flex-wrap: wrap;">
+              <button id="save-api-settings" class="btn primary">ذخیره و اتصال خودکار ⚡</button>
+              <button id="test-connection-btn" class="btn ghost" type="button">بررسی وضعیت اتصال 🔍</button>
+              <button id="btn-auto-discover" class="btn ghost" type="button" style="color: #6366f1;">استعلام خودکار شناسه‌ها 🔄</button>
             </div>
             <div id="connection-status-alert" class="hint" style="margin-top: 10px; font-weight: 500;"></div>
           </div>

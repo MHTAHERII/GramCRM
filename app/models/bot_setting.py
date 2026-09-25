@@ -34,6 +34,7 @@ class BotSetting(Base):
     zernio_api_key = Column(String(255), nullable=True)
     zernio_profile_id = Column(String(100), nullable=True)
     zernio_account_id = Column(String(100), nullable=True)
+    instagram_username = Column(String(100), nullable=True)
 
     updated_at = Column(
         DateTime,

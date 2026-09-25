@@ -28,15 +28,25 @@ def apply_credentials_to_services(setting: BotSetting):
     try:
         from app.service.zernio_service import zernio_service
         from app.service.instagram_service import instagram_client
+        from app.config import settings
 
-        if setting.zernio_api_key:
-            zernio_service.api_key = setting.zernio_api_key
-            instagram_client.api_key = setting.zernio_api_key
-        if setting.zernio_profile_id:
-            zernio_service.profile_id = setting.zernio_profile_id
-        if setting.zernio_account_id:
-            zernio_service.account_id = setting.zernio_account_id
-            instagram_client.account_id = setting.zernio_account_id
+        api_key = setting.zernio_api_key or settings.ZERNIO_API_KEY
+        profile_id = setting.zernio_profile_id or settings.ZERNIO_PROFILE_ID
+        account_id = setting.zernio_account_id or settings.ZERNIO_ACCOUNT_ID
+
+        if api_key:
+            zernio_service.api_key = api_key
+            instagram_client.api_key = api_key
+        if profile_id:
+            zernio_service.profile_id = profile_id
+        if account_id:
+            zernio_service.account_id = account_id
+            instagram_client.account_id = account_id
+
+        # در صورت داشتن توکن اما نبود شناسه‌ها، اتصال خودکار را امتحان کن
+        if api_key and (not profile_id or not account_id):
+            zernio_service.ensure_configured()
+            instagram_client.ensure_authenticated()
     except Exception as e:
         import logging
         logging.getLogger("bot_settings").error(f"Error applying credentials to services: {e}")
@@ -80,6 +90,38 @@ def get_bot_settings(db: Session) -> BotSetting:
     if getattr(setting, "admin_username", None) is None:
         setting.admin_username = "admin"
         changed = True
+
+    # بازیابی خودکار از فایل .env در صورت خالی بودن مقادیر در دیتابیس
+    from app.config import settings as env_settings
+    if not setting.zernio_api_key and env_settings.ZERNIO_API_KEY:
+        setting.zernio_api_key = env_settings.ZERNIO_API_KEY
+        changed = True
+    if not setting.zernio_profile_id and env_settings.ZERNIO_PROFILE_ID:
+        setting.zernio_profile_id = env_settings.ZERNIO_PROFILE_ID
+        changed = True
+    if not setting.zernio_account_id and env_settings.ZERNIO_ACCOUNT_ID:
+        setting.zernio_account_id = env_settings.ZERNIO_ACCOUNT_ID
+        changed = True
+
+    # اگر توکن موجود است ولی شناسه‌ها یا نام کاربری اینستاگرام ثبت نشده، استعلام و کشف خودکار کن
+    if setting.zernio_api_key and (not setting.zernio_account_id or not setting.zernio_profile_id or not setting.instagram_username):
+        try:
+            from app.service.zernio_service import zernio_service
+            disc = zernio_service.discover_account_and_profile(setting.zernio_api_key)
+            if disc:
+                if not setting.zernio_account_id and disc.get("account_id"):
+                    setting.zernio_account_id = disc["account_id"]
+                    changed = True
+                if not setting.zernio_profile_id and disc.get("profile_id"):
+                    setting.zernio_profile_id = disc["profile_id"]
+                    changed = True
+                if not setting.instagram_username and disc.get("username"):
+                    setting.instagram_username = disc["username"]
+                    changed = True
+        except Exception as ex:
+            import logging
+            logging.getLogger("bot_settings").warning(f"Could not auto-discover Zernio details on get_bot_settings: {ex}")
+
     if changed:
         db.commit()
         db.refresh(setting)

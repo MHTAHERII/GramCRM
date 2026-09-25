@@ -22,8 +22,120 @@ class ZernioService:
             "Content-Type": "application/json"
         }
 
+    def discover_account_and_profile(self, api_key: str | None = None) -> dict | None:
+        """
+        استعلام خودکار شناسه اکانت و پروفایل متصل به کلید API زرنیو
+        """
+        token = (api_key or self.api_key or "").strip()
+        if not token:
+            logger.warning("Cannot discover account: Zernio API key is missing.")
+            return None
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        try:
+            url = f"{ZERNIO_BASE_URL}/accounts"
+            res = requests.get(url, headers=headers, timeout=12)
+            if res.status_code != 200:
+                logger.error(f"Zernio accounts discovery failed ({res.status_code}): {res.text}")
+                return None
+
+            data = res.json()
+            accounts = data.get("accounts", [])
+            if not accounts:
+                logger.warning("No accounts found in Zernio for this API key.")
+                return None
+
+            # اولویت ۱: اکانت فعال اینستاگرام
+            ig_account = None
+            for acc in accounts:
+                if acc.get("platform") == "instagram" and acc.get("enabled", True) and acc.get("isActive", True):
+                    ig_account = acc
+                    break
+
+            # اولویت ۲: هر اکانت اینستاگرام
+            if not ig_account:
+                for acc in accounts:
+                    if acc.get("platform") == "instagram":
+                        ig_account = acc
+                        break
+
+            # اولویت ۳: اولین اکانت موجود
+            if not ig_account:
+                ig_account = accounts[0]
+
+            account_id = ig_account.get("_id") or ig_account.get("id")
+
+            # استخراج profile_id از آبجکت اکانت
+            profile_id = None
+            pid_obj = ig_account.get("profileId")
+            if isinstance(pid_obj, dict):
+                profile_id = pid_obj.get("_id") or pid_obj.get("id")
+            elif isinstance(pid_obj, str):
+                profile_id = pid_obj
+
+            # فالبک: در صورت نبود، استعلام مستقیم از /profiles
+            if not profile_id:
+                try:
+                    p_res = requests.get(f"{ZERNIO_BASE_URL}/profiles", headers=headers, timeout=10)
+                    if p_res.status_code == 200:
+                        profiles = p_res.json().get("profiles", [])
+                        if profiles:
+                            profile_id = profiles[0].get("_id") or profiles[0].get("id")
+                except Exception as pe:
+                    logger.warning(f"Failed to fetch fallback profiles from Zernio: {pe}")
+
+            username = ig_account.get("username")
+            display_name = ig_account.get("displayName")
+            platform = ig_account.get("platform", "instagram")
+
+            return {
+                "account_id": str(account_id) if account_id else None,
+                "profile_id": str(profile_id) if profile_id else None,
+                "username": username,
+                "display_name": display_name,
+                "platform": platform,
+                "total_accounts": len(accounts),
+                "all_accounts": [
+                    {
+                        "account_id": a.get("_id") or a.get("id"),
+                        "username": a.get("username"),
+                        "displayName": a.get("displayName"),
+                        "platform": a.get("platform")
+                    }
+                    for a in accounts
+                ]
+            }
+        except Exception as e:
+            logger.error(f"Error during Zernio account discovery: {e}", exc_info=True)
+            return None
+
+    def ensure_configured(self) -> bool:
+        """
+        اطمینان از وجود شناسه‌ها؛ در صورت داشتن توکن اما نبود شناسه‌ها، آن‌ها را خودکار دریافت می‌کند.
+        """
+        if bool(self.api_key and self.profile_id and self.account_id):
+            return True
+        if self.api_key and (not self.profile_id or not self.account_id):
+            discovered = self.discover_account_and_profile(self.api_key)
+            if discovered:
+                if not self.account_id and discovered.get("account_id"):
+                    self.account_id = discovered["account_id"]
+                if not self.profile_id and discovered.get("profile_id"):
+                    self.profile_id = discovered["profile_id"]
+                logger.info(f"Auto-configured Zernio credentials: account_id={self.account_id}, profile_id={self.profile_id}")
+                return bool(self.api_key and self.profile_id and self.account_id)
+        return False
+
     def is_configured(self) -> bool:
-        return bool(self.api_key and self.profile_id and self.account_id)
+        if bool(self.api_key and self.profile_id and self.account_id):
+            return True
+        if self.api_key and (not self.profile_id or not self.account_id):
+            return self.ensure_configured()
+        return False
 
     def list_comment_automations(self) -> list[dict]:
         """دریافت تمام اتوماسیون‌های کامنت به دایرکت ثبت‌شده در Zernio"""

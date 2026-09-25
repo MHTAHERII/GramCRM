@@ -31,14 +31,23 @@ class UnifiedInstagramService:
 
     def login(self) -> bool:
         """بررسی آماده بودن کلید و اکانت"""
-        if bool(self.api_key and self.account_id):
+        if self.ensure_authenticated():
             logger.info("Instagram (Zernio API) is ready.")
             return True
         logger.warning("Zernio API key or Account ID is missing.")
         return False
 
     def ensure_authenticated(self) -> bool:
-        return bool(self.api_key and self.account_id)
+        if bool(self.api_key and self.account_id):
+            return True
+        if self.api_key and not self.account_id:
+            from app.service.zernio_service import zernio_service
+            discovered = zernio_service.discover_account_and_profile(self.api_key)
+            if discovered and discovered.get("account_id"):
+                self.account_id = discovered["account_id"]
+                logger.info(f"Auto-discovered instagram_client account_id: {self.account_id}")
+                return True
+        return False
 
     def fetch_unread_messages(self, amount: int = 10) -> list[dict]:
         """

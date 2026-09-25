@@ -193,7 +193,8 @@ def get_system_status(db: Session) -> Dict[str, Any]:
         "bot": {
             "enabled": settings.bot_enabled,
             "follow_gate_enabled": settings.follow_gate_enabled,
-            "instagram_connected": is_connected
+            "instagram_connected": is_connected,
+            "instagram_username": settings.instagram_username
         }
     }
 
@@ -221,6 +222,7 @@ def create_backup(db: Session) -> Dict[str, Any]:
             "zernio_api_key": settings.zernio_api_key,
             "zernio_profile_id": settings.zernio_profile_id,
             "zernio_account_id": settings.zernio_account_id,
+            "instagram_username": settings.instagram_username,
         },
         "keywords": [
             {
@@ -280,6 +282,7 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
             if "zernio_api_key" in s_data: setting.zernio_api_key = s_data["zernio_api_key"]
             if "zernio_profile_id" in s_data: setting.zernio_profile_id = s_data["zernio_profile_id"]
             if "zernio_account_id" in s_data: setting.zernio_account_id = s_data["zernio_account_id"]
+            if "instagram_username" in s_data: setting.instagram_username = s_data["instagram_username"]
             apply_credentials_to_services(setting)
             restored_counts["settings"] = True
 

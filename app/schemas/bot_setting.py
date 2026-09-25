@@ -15,6 +15,7 @@ class BotSettingUpdate(BaseModel):
     zernio_api_key: str | None = None
     zernio_profile_id: str | None = None
     zernio_account_id: str | None = None
+    instagram_username: str | None = None
 
 
 class BotSettingResponse(BaseModel):
@@ -31,6 +32,7 @@ class BotSettingResponse(BaseModel):
     zernio_api_key: str | None = None
     zernio_profile_id: str | None = None
     zernio_account_id: str | None = None
+    instagram_username: str | None = None
     updated_at: datetime
 
     class Config:

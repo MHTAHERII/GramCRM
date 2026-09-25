@@ -184,13 +184,14 @@ async function loadDashboardStatus() {
     const badge = document.getElementById("dashboard-conn-badge");
     if (desc && badge) {
       if (bot.instagram_connected) {
-        desc.textContent = "ارتباط با سرورهای ابری Zernio و اینستاگرام پایدار است. وب‌هوک‌ها فعال هستند.";
-        badge.textContent = "متصل 🟢";
+        const userText = bot.instagram_username ? ` به پیج @${bot.instagram_username}` : "";
+        desc.textContent = `ارتباط با سرورهای ابری Zernio و اینستاگرام${userText} پایدار است. وب‌هوک‌ها فعال هستند.`;
+        badge.textContent = bot.instagram_username ? `@${bot.instagram_username} 🟢` : "متصل 🟢";
         badge.style.background = "rgba(16, 185, 129, 0.15)";
         badge.style.color = "#10b981";
         badge.style.border = "1px solid rgba(16, 185, 129, 0.3)";
       } else {
-        desc.textContent = "توکن API یا شناسه‌های اینستاگرام در تب تنظیمات وارد نشده است.";
+        desc.textContent = "توکن API اینستاگرام در تب تنظیمات وارد نشده است.";
         badge.textContent = "عدم اتصال 🔴";
         badge.style.background = "rgba(239, 68, 68, 0.15)";
         badge.style.color = "#ef4444";
@@ -727,6 +728,29 @@ async function loadSettings() {
   document.getElementById("setting-zernio-profile-id").value = settings.zernio_profile_id || "";
   document.getElementById("setting-zernio-account-id").value = settings.zernio_account_id || "";
 
+  // نمایش وضعیت و نام پیج متصل
+  const zBadge = document.getElementById("zernio-account-badge");
+  const zInfo = document.getElementById("zernio-connected-info");
+  const zUserEl = document.getElementById("zernio-connected-username");
+  if (settings.instagram_username) {
+    if (zBadge) {
+      zBadge.textContent = `🟢 @${settings.instagram_username}`;
+      zBadge.style.display = "inline-block";
+    }
+    if (zInfo && zUserEl) {
+      zUserEl.textContent = `@${settings.instagram_username}`;
+      zInfo.style.display = "block";
+    }
+  } else if (settings.zernio_account_id) {
+    if (zBadge) {
+      zBadge.textContent = "🟢 متصل";
+      zBadge.style.display = "inline-block";
+    }
+  } else {
+    if (zBadge) zBadge.style.display = "none";
+    if (zInfo) zInfo.style.display = "none";
+  }
+
   // فیلد نام کاربری
   document.getElementById("setting-admin-username").value = settings.admin_username || "admin";
   document.getElementById("setting-admin-password").value = "";
@@ -748,6 +772,13 @@ function updateBotBadge(enabled) {
   badge.textContent = enabled ? "ربات فعال" : "ربات خاموش";
   badge.classList.toggle("off", !enabled);
 }
+
+// دکمه نمایش/مخفی کردن توکن API
+document.getElementById("btn-toggle-token-vis")?.addEventListener("click", () => {
+  const input = document.getElementById("setting-zernio-api-key");
+  if (!input) return;
+  input.type = input.type === "password" ? "text" : "password";
+});
 
 document.getElementById("save-settings").addEventListener("click", async () => {
   const body = JSON.stringify({
@@ -777,11 +808,24 @@ document.getElementById("save-follow-gate").addEventListener("click", async () =
   }
 });
 
-// ذخیره کلید و شناسه‌های API اینستاگرام (Zernio)
+// ذخیره کلید و شناسه‌های API اینستاگرام (Zernio) با اتصال و استعلام خودکار
 document.getElementById("save-api-settings")?.addEventListener("click", async () => {
+  const saveBtn = document.getElementById("save-api-settings");
   const apiKey = document.getElementById("setting-zernio-api-key").value.trim();
   const profileId = document.getElementById("setting-zernio-profile-id").value.trim();
   const accountId = document.getElementById("setting-zernio-account-id").value.trim();
+  const alertEl = document.getElementById("connection-status-alert");
+
+  if (!apiKey) {
+    showToast("لطفاً کلید API توکن را وارد کنید", "error");
+    return;
+  }
+
+  saveBtn.disabled = true;
+  if (alertEl) {
+    alertEl.textContent = "در حال ذخیره و شناسایی خودکار اکانت اینستاگرام...";
+    alertEl.style.color = "#818cf8";
+  }
 
   const body = JSON.stringify({
     zernio_api_key: apiKey || null,
@@ -789,15 +833,103 @@ document.getElementById("save-api-settings")?.addEventListener("click", async ()
     zernio_account_id: accountId || null,
   });
   try {
-    await api("/settings/", { method: "PUT", body });
-    showToast("تنظیمات API با موفقیت ذخیره شد ✅", "success");
-    const alertEl = document.getElementById("connection-status-alert");
+    const updated = await api("/settings/", { method: "PUT", body });
+    
+    // پر کردن خودکار شناسه‌ها در فیلدهای پیشرفته
+    if (updated.zernio_profile_id) {
+      document.getElementById("setting-zernio-profile-id").value = updated.zernio_profile_id;
+    }
+    if (updated.zernio_account_id) {
+      document.getElementById("setting-zernio-account-id").value = updated.zernio_account_id;
+    }
+    if (updated.instagram_username) {
+      const badge = document.getElementById("zernio-account-badge");
+      const info = document.getElementById("zernio-connected-info");
+      const usernameEl = document.getElementById("zernio-connected-username");
+      if (badge) {
+        badge.textContent = `🟢 @${updated.instagram_username}`;
+        badge.style.display = "inline-block";
+      }
+      if (info && usernameEl) {
+        usernameEl.textContent = `@${updated.instagram_username}`;
+        info.style.display = "block";
+      }
+    }
+
+    showToast(`اتصال به اینستاگرام برقرار شد ✅${updated.instagram_username ? ' (@' + updated.instagram_username + ')' : ''}`, "success");
     if (alertEl) {
-      alertEl.textContent = "تنظیمات ذخیره شد. برای تست روی «بررسی وضعیت اتصال» کلیک کنید.";
-      alertEl.style.color = "#818cf8";
+      alertEl.textContent = `✅ تنظیمات ذخیره و متصل شد.${updated.instagram_username ? ' پیج فعال: @' + updated.instagram_username : ''}`;
+      alertEl.style.color = "#10b981";
     }
   } catch (err) {
     showToast(err.message, "error");
+    if (alertEl) {
+      alertEl.textContent = `❌ خطا در ذخیره تنظیمات: ${err.message}`;
+      alertEl.style.color = "#ef4444";
+    }
+  } finally {
+    saveBtn.disabled = false;
+  }
+});
+
+// استعلام فوری شناسه‌ها از سرور Zernio بدون نیاز به ذخیره کامل
+document.getElementById("btn-auto-discover")?.addEventListener("click", async () => {
+  const btn = document.getElementById("btn-auto-discover");
+  const apiKey = document.getElementById("setting-zernio-api-key").value.trim();
+  const alertEl = document.getElementById("connection-status-alert");
+
+  if (!apiKey) {
+    showToast("لطفاً ابتدا کلید API توکن را وارد کنید", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  if (alertEl) {
+    alertEl.textContent = "در حال استعلام شناسه‌ها از سرورهای Zernio...";
+    alertEl.style.color = "#818cf8";
+  }
+
+  try {
+    const res = await api("/settings/auto-discover", {
+      method: "POST",
+      body: JSON.stringify({ api_key: apiKey })
+    });
+    if (res.success && res.data) {
+      if (res.data.account_id) document.getElementById("setting-zernio-account-id").value = res.data.account_id;
+      if (res.data.profile_id) document.getElementById("setting-zernio-profile-id").value = res.data.profile_id;
+      if (res.data.username) {
+        const badge = document.getElementById("zernio-account-badge");
+        const info = document.getElementById("zernio-connected-info");
+        const usernameEl = document.getElementById("zernio-connected-username");
+        if (badge) {
+          badge.textContent = `🟢 @${res.data.username}`;
+          badge.style.display = "inline-block";
+        }
+        if (info && usernameEl) {
+          usernameEl.textContent = `@${res.data.username}`;
+          info.style.display = "block";
+        }
+      }
+      showToast(res.message, "success");
+      if (alertEl) {
+        alertEl.textContent = `✅ اکانت @${res.data.username || ''} با موفقیت شناسایی و تنظیم شد.`;
+        alertEl.style.color = "#10b981";
+      }
+    } else {
+      showToast(res.message || "خطا در استعلام اکانت", "error");
+      if (alertEl) {
+        alertEl.textContent = `❌ ${res.message}`;
+        alertEl.style.color = "#ef4444";
+      }
+    }
+  } catch (err) {
+    showToast(err.message, "error");
+    if (alertEl) {
+      alertEl.textContent = `❌ خطا: ${err.message}`;
+      alertEl.style.color = "#ef4444";
+    }
+  } finally {
+    btn.disabled = false;
   }
 });
 
@@ -814,7 +946,22 @@ document.getElementById("test-connection-btn")?.addEventListener("click", async 
   try {
     const res = await api("/settings/test-connection", { method: "POST" });
     if (res.success) {
-      alertEl.textContent = `${res.message} (تعداد اتوماسیون‌های فعال: ${res.automations_count ?? 0})`;
+      if (res.account_id) document.getElementById("setting-zernio-account-id").value = res.account_id;
+      if (res.profile_id) document.getElementById("setting-zernio-profile-id").value = res.profile_id;
+      if (res.username) {
+        const badge = document.getElementById("zernio-account-badge");
+        const info = document.getElementById("zernio-connected-info");
+        const usernameEl = document.getElementById("zernio-connected-username");
+        if (badge) {
+          badge.textContent = `🟢 @${res.username}`;
+          badge.style.display = "inline-block";
+        }
+        if (info && usernameEl) {
+          usernameEl.textContent = `@${res.username}`;
+          info.style.display = "block";
+        }
+      }
+      alertEl.textContent = `${res.message} ${res.username ? '(پیج: @' + res.username + ' | ' : '('}تعداد سناریوها: ${res.automations_count ?? 0})`;
       alertEl.style.color = "#10b981";
       showToast("اتصال با موفقیت تأیید شد ✅", "success");
     } else {

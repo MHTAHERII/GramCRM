@@ -450,3 +450,94 @@ input:invalid:not(:placeholder-shown) { border-color: rgba(239, 68, 68, 0.4); }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ---------------- 3X-UI Style Stat Cards & Widgets ---------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: linear-gradient(180deg, var(--card), var(--card-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: var(--t);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.5);
+}
+.stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.stat-title {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.stat-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+.stat-icon svg { width: 18px; height: 18px; }
+.stat-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.stat-sub {
+  font-size: 0.74rem;
+  color: var(--text-tertiary);
+}
+.stat-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.stat-progress-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  transition: width 0.4s ease;
+}
+
+/* ---------------- 3X-UI Style Log Terminal ---------------- */
+.log-console {
+  background: #080c14;
+  border: 1px solid #1e293b;
+  border-radius: var(--radius);
+  padding: 14px;
+  height: 340px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  direction: ltr;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.log-line { margin-bottom: 4px; }
+.log-line.INFO { color: #38bdf8; }
+.log-line.WARNING { color: #facc15; }
+.log-line.ERROR { color: #f87171; }
+.log-line.SUCCESS { color: #34d399; }

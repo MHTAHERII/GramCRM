@@ -33,7 +33,7 @@ echo "=== 5. Setting up Python Virtual Environment ==="
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/pip install psycopg2-binary requests uvicorn[standard] fastapi sqlalchemy pydantic python-dotenv itsdangerous
+./venv/bin/pip install psycopg2-binary requests uvicorn[standard] fastapi sqlalchemy pydantic python-dotenv itsdangerous psutil python-multipart
 
 echo "=== 6. Creating Production Environment Config (.env) ==="
 cat << 'EOF' > .env

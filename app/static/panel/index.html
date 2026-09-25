@@ -47,7 +47,11 @@
         <span id="bot-status" class="status-badge">…</span>
 
         <nav class="tabs">
-          <button class="tab active" data-tab="keywords" aria-label="کلمات کلیدی">
+          <button class="tab active" data-tab="dashboard" aria-label="داشبورد و وضعیت">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
+            <span class="tab-label">داشبورد و وضعیت</span>
+          </button>
+          <button class="tab" data-tab="keywords" aria-label="کلمات کلیدی">
             <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4"/><path d="m10.5 12.5 8-8"/><path d="m16 4 3 3"/><path d="m19 7 1.5-1.5"/></svg></span>
             <span class="tab-label">کلمات کلیدی</span>
           </button>
@@ -96,8 +100,143 @@
 
       <main>
 
+        <!-- تب داشبورد و وضعیت سیستم (3X-UI Style) -->
+        <section id="tab-dashboard" class="tab-panel active">
+          
+          <!-- ردیف مانیتورینگ سخت‌افزار سرور -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+            <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); display:flex; align-items:center; gap: 8px;">
+              ⚡ مانیتورینگ زنده منابع سرور
+            </h3>
+            <button id="btn-refresh-status" class="btn small ghost" type="button" style="padding: 2px 10px; font-size: 0.78rem;">
+              🔄 بروزرسانی زنده
+            </button>
+          </div>
+
+          <div class="stat-grid">
+            <!-- CPU -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">مصرف پردازنده (CPU)</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-cpu-val">0%</div>
+              <div class="stat-progress-track">
+                <div class="stat-progress-bar" id="stat-cpu-bar" style="width: 0%;"></div>
+              </div>
+              <div class="stat-sub" id="stat-cpu-sub">تعداد هسته: ۱</div>
+            </div>
+
+            <!-- RAM -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">حافظه رم (RAM)</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 19v-3"/><path d="M10 19v-3"/><path d="M14 19v-3"/><path d="M18 19v-3"/><path d="M4 11V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5"/><path d="M4 11h16v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5Z"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-ram-val">0%</div>
+              <div class="stat-progress-track">
+                <div class="stat-progress-bar" id="stat-ram-bar" style="width: 0%;"></div>
+              </div>
+              <div class="stat-sub" id="stat-ram-sub">0 MB / 0 MB</div>
+            </div>
+
+            <!-- Disk -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">فضای دیسک (Disk)</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-disk-val">0%</div>
+              <div class="stat-progress-track">
+                <div class="stat-progress-bar" id="stat-disk-bar" style="width: 0%;"></div>
+              </div>
+              <div class="stat-sub" id="stat-disk-sub">0 GB / 0 GB</div>
+            </div>
+
+            <!-- Uptime -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">آپتایم سرور (Uptime)</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" style="font-size: 1.1rem; padding-top: 4px;" id="stat-uptime-val">در حال بررسی…</div>
+              <div class="stat-sub" style="margin-top: auto;">وضعیت سرویس: کاملاً آنلاین 🟢</div>
+            </div>
+          </div>
+
+          <!-- ردیف آمار CRM و فروشگاه -->
+          <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 14px; display:flex; align-items:center; gap: 8px;">
+            📊 آمار تعاملات و مخاطبان اینستاگرام
+          </h3>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">کل پیام‌های دایرکت</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-total-messages">0</div>
+              <div class="stat-sub">پیام‌های ورودی و پاسخ‌های ارسالی</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">مشتریان و لیدها</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-total-customers">0</div>
+              <div class="stat-sub">مخاطبان ثبت‌شده در پایگاه داده</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">اتوماسیون‌های فعال</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-active-keywords">0</div>
+              <div class="stat-sub">کلمات کلیدی آماده پاسخگویی خودکار</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">محصولات فروشگاه</span>
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </span>
+              </div>
+              <div class="stat-value" id="stat-total-products">0</div>
+              <div class="stat-sub">اقلام ثبت‌شده در کاتالوگ انبار</div>
+            </div>
+          </div>
+
+          <!-- کارت وضعیت اتصال اینستاگرام -->
+          <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <h2 style="font-size: 1rem; margin-bottom: 4px;">وضعیت اتصال به API رسمی اینستاگرام</h2>
+              <p class="hint" id="dashboard-conn-desc">در حال بررسی ارتباط زنده با سرورهای Meta و Zernio…</p>
+            </div>
+            <div id="dashboard-conn-badge" class="badge" style="padding: 6px 14px; font-weight: 600; font-size: 0.82rem; border-radius: 99px;">
+              بررسی…
+            </div>
+          </div>
+        </section>
+
         <!-- تب کلمات کلیدی -->
-        <section id="tab-keywords" class="tab-panel active">
+        <section id="tab-keywords" class="tab-panel">
           <div class="card">
             <h2 id="keyword-form-title">افزودن کلمه کلیدی</h2>
             <p class="hint">اگر پیام مشتری شامل این کلمه باشد، ربات «پاسخ» را ارسال می‌کند.</p>
@@ -293,6 +432,51 @@
             </div>
             <div class="form-actions" style="margin-top: 1rem;">
               <button id="save-auth-settings" class="btn primary">ذخیره اطلاعات ورود</button>
+            </div>
+          </div>
+
+          <!-- کارت پشتیبان‌گیری و بازیابی اطلاعات دیتابیس (3X-UI Style) -->
+          <div class="card">
+            <h2>پشتیبان‌گیری و بازیابی اطلاعات (Backup & Restore)</h2>
+            <p class="hint">می‌توانید از تمامی کلمات کلیدی، مشتریان، محصولات و تنظیمات سیستم یک فایل پشتیبان با فرمت JSON دریافت کرده و در صورت نیاز با یک کلیک بازیابی کنید.</p>
+            
+            <div style="display: flex; gap: 14px; margin-top: 1.2rem; flex-wrap: wrap; align-items: center;">
+              <button id="btn-download-backup" class="btn primary" type="button">
+                📥 دانلود فایل پشتیبان (Backup)
+              </button>
+              
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="file" id="restore-file-input" accept=".json" style="display: none;">
+                <button id="btn-choose-restore" class="btn ghost" type="button">
+                  📤 انتخاب فایل بازیابی (Restore)
+                </button>
+                <span id="restore-file-name" class="hint" style="font-size: 0.8rem;"></span>
+                <button id="btn-submit-restore" class="btn primary hidden" type="button" style="background: #e11d48;">
+                  تأیید و بازگردانی اطلاعات
+                </button>
+              </div>
+            </div>
+            <div id="backup-restore-alert" class="hint" style="margin-top: 10px; font-weight: 500;"></div>
+          </div>
+
+          <!-- کارت کنسول لاگ‌های زنده سیستم (Web Log Viewer) -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2>کنسول لاگ‌های زنده سرور (System Logs)</h2>
+                <p class="hint">مشاهده خط‌به‌خط لاگ‌های رویدادها، وب‌هوک‌ها و پیام‌ها مستقیماً در مرورگر بدون نیاز به ترمینال SSH.</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
+                  <input type="checkbox" id="log-auto-refresh"> بروزرسانی خودکار (هر ۳ ثانیه)
+                </label>
+                <button id="btn-refresh-logs" class="btn small ghost" type="button">🔄 بروزرسانی</button>
+                <button id="btn-clear-logs" class="btn small ghost" type="button" style="color: #ef4444;">🧹 پاکسازی</button>
+              </div>
+            </div>
+
+            <div class="log-console" id="system-log-console">
+              در حال دریافت لاگ‌های سیستم…
             </div>
           </div>
         </section>

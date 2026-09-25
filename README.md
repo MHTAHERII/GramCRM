@@ -52,6 +52,9 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 | **Event Architecture** | **Real-Time Push Webhooks (<1s)** | Polling / Fragile sessions |
 | **Interactive Link Buttons** | ✅ Up to 3 Dynamic Glass Buttons | ❌ Plain text only |
 | **Interactive Follow Gate** | ✅ Native 2-Button Lock (`[Followed]`, `[View Page]`) | ❌ None |
+| **Live Resource Monitor** | ✅ CPU, RAM, Disk, Uptime (3X-UI Style) | ❌ None |
+| **1-Click Backup & Restore** | ✅ Instant JSON Database Export / Import | ❌ Complex SQL dumps |
+| **In-Browser Live Log Terminal** | ✅ Real-time Logs Console in GUI | ❌ Requires SSH terminal |
 | **In-Panel API & Credential Config** | ✅ 100% GUI-based (No CLI needed) | ❌ Manual file editing |
 | **Live Connection Diagnostic** | ✅ 1-Click Instant API Test | ❌ None |
 | **Modern Web Dashboard** | ✅ Next-Gen Dark UI | ❌ Basic or Non-existent |
@@ -61,9 +64,12 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 
 ### ✨ Key Capabilities
 
+* **📊 3X-UI Style Resource & CRM Dashboard:** Live hardware monitoring (CPU, RAM, Disk, and system Uptime) plus real-time interaction metrics (Total DMs, Leads, Automations).
 * **🤖 Comment-to-DM Automation:** Trigger personalized direct messages instantly when prospective customers comment specific keywords on any post or reel.
 * **🔘 Interactive Glass Link Buttons:** Attach up to 3 customizable interactive buttons (Payment gateways, Website, YouTube, Telegram channels, or WhatsApp support) directly under automated DMs.
 * **🔒 2-Button Follow-Gate Engine:** Maximize follower growth with interactive prompt buttons (`[Followed ✅]` and `[View Page 👀]`), unlocking content only after following.
+* **📥 1-Click Backup & Restore:** Complete one-click database export to JSON and instant restore with automatic Instagram cloud synchronization.
+* **📋 In-Browser Live Log Viewer:** Colored, real-time server log console with auto-refresh and clear tools, eliminating the need for terminal commands.
 * **🔑 Zero-Terminal Reseller Ready:** End-users and clients can set their own API token, Profile ID, Account ID, and change Admin Username and Password directly from the Web Settings tab with instant visual confirmation.
 * **⚡ 1-Click Live Connection Test:** Test API credentials and verify live Instagram connectivity directly from the dashboard.
 * **🔄 Live Cloud Auto-Sync:** Add, edit, or remove trigger keywords and buttons in the web panel, and have them automatically synced in the background.
@@ -162,6 +168,9 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 | **معماری دریافت پیام‌ها** | **وب‌هوک زنده رویدادمحور (<1s)** | اسکرپینگ ناپایدار و لاگین‌های مکرر |
 | **دکمه‌های شیشه‌ای تعاملی** | ✅ تا ۳ دکمه لینک‌دار با عنوان دلخواه | ❌ فقط متن ساده و خام |
 | **دروازه فالو دو دکمه‌ای** | ✅ قفل محتوا با دکمه‌های `[فالو کردم]` و `[مشاهده پیج]` | ❌ ندارد |
+| **مانیتورینگ منابع سخت‌افزاری** | ✅ مانیتور CPU، RAM، دیسک و آپتایم (مشابه 3X-UI) | ❌ ندارد |
+| **پشتیبان‌گیری و بازیابی** | ✅ دانلود و ریستور دیتابیس با ۱ کلیک (JSON) | ❌ دستی و پیچیده |
+| **کنسول لاگ‌های زنده** | ✅ مشاهده خط‌به‌خط لاگ‌ها در وب بدون SSH | ❌ نیازمند ترمینال لینوکس |
 | **تنظیمات API و رمز در پنل** | ✅ بدون نیاز به ترمینال (آماده فروش به مشتری) | ❌ ویرایش دستی فایل‌های سیستمی |
 | **تست آنلاین اتصال به اینستاگرام** | ✅ بررسی آنی وضعیت توکن با ۱ کلیک | ❌ ندارد |
 | **پنل مدیریت تحت وب** | ✅ الترا-مدرن با تم تیره لوکس | ❌ ابتدایی یا فاقد پنل |
@@ -171,9 +180,12 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 
 ### ✨ قابلیت‌های اصلی
 
+* **📊 داشبورد و مانیتورینگ پیشرفته سرور (3X-UI Style):** نمایش گرافیکی درصد مصرف CPU، حافظه RAM، فضای دیسک، آپتایم دقیق و آمار لحظه‌ای دایرکت‌ها و لیدها.
 * **🤖 اتوماسیون کامنت به دایرکت (Comment-to-DM):** ارسال خودکار دایرکت در کسری از ثانیه به محض درج کلیدواژه زیر پست‌ها یا ریلزها.
 * **🔘 دکمه‌های شیشه‌ای تعاملی (تا ۳ دکمه):** اتصال لینک‌های دلخواه (درگاه پرداخت آنلاین 💳، دوره آموزشی 🎓، سایت 🌐، کانال تلگرام 📢 یا پشتیبانی) با عنوان‌های سفارشی به زیر پیام‌های دایرکت.
 * **🔒 دروازه فالو هوشمند (Follow Gate):** مشتریان پیش از دریافت لینک، پیام قفل با دو دکمه تعاملی `[فالو کردم ✅]` و `[مشاهده پیج 👀]` را دریافت می‌کنند تا رشد فالوورهای پیج تضمین شود.
+* **📥 پشتیبان‌گیری و بازیابی با یک کلیک (Backup & Restore):** امکان دانلود کامل اطلاعات دیتابیس در قالب فایل JSON و بازیابی مجدد آن با تطبیق و همگام‌سازی ابری خودکار.
+* **📋 کنسول لاگ‌های زنده سیستم (Web Log Console):** مشاهده آنی تمامی گزارشات سرور و رویدادهای وب‌هوک مستقیماً در پنل وب با قابلیت پاکسازی و رفرش خودکار.
 * **🔑 پنل کاملاً مستقل برای فروش به مشتری:** خریداران می‌توانند توکن اختصاصی API اینستاگرام، شناسه‌های اکانت و نام کاربری/رمز عبور پنل را مستقیماً از تنظیمات پنل وب وارد و ویرایش کنند.
 * **⚡ تست زنده اتصال (Connection Test):** امکان بررسی اعتبار توکن و مشاهده وضعیت اتصال به سرورهای اینستاگرام تنها با یک کلیک در پنل.
 * **🔄 همگام‌سازی ابری خودکار (Auto-Sync):** با ایجاد، ویرایش یا حذف کلیدواژه در پنل مدیریت، تغییرات بلافاصله با اینستاگرام همگام می‌شود.

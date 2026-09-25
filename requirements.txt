@@ -6,3 +6,5 @@ pydantic
 python-dotenv
 instagrapi
 itsdangerous
+psutil
+python-multipart

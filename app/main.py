@@ -17,6 +17,7 @@ from app.routers.keyword import router as keyword_router
 from app.routers.settings import router as settings_router
 from app.routers.webhook import router as webhook_router
 from app.routers.zernio_webhook import router as zernio_webhook_router
+from app.routers.system import router as system_router
 from app.auth import router as auth_router
 from app.config import settings
 
@@ -136,6 +137,7 @@ app.include_router(keyword_router)
 app.include_router(settings_router)
 app.include_router(webhook_router)
 app.include_router(zernio_webhook_router)
+app.include_router(system_router)
 
 
 @app.get("/", include_in_schema=False)

@@ -104,15 +104,97 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
   showLogin();
 });
 
+/* ---------------- داشبورد و وضعیت زنده سرور (3X-UI Style) ---------------- */
+
+async function loadDashboardStatus() {
+  try {
+    const data = await api("/system/status");
+    const sys = data.system;
+    const crm = data.crm;
+    const bot = data.bot;
+
+    // CPU
+    const cpuVal = document.getElementById("stat-cpu-val");
+    const cpuBar = document.getElementById("stat-cpu-bar");
+    const cpuSub = document.getElementById("stat-cpu-sub");
+    if (cpuVal && cpuBar && cpuSub) {
+      cpuVal.textContent = `${sys.cpu_percent}%`;
+      cpuBar.style.width = `${Math.min(100, Math.max(0, sys.cpu_percent))}%`;
+      cpuSub.textContent = `تعداد هسته: ${sys.cpu_cores}`;
+    }
+
+    // RAM
+    const ramVal = document.getElementById("stat-ram-val");
+    const ramBar = document.getElementById("stat-ram-bar");
+    const ramSub = document.getElementById("stat-ram-sub");
+    if (ramVal && ramBar && ramSub) {
+      ramVal.textContent = `${sys.memory.percent}%`;
+      ramBar.style.width = `${Math.min(100, Math.max(0, sys.memory.percent))}%`;
+      ramSub.textContent = `${fmtNumber(sys.memory.used_mb)} MB / ${fmtNumber(sys.memory.total_mb)} MB`;
+    }
+
+    // Disk
+    const diskVal = document.getElementById("stat-disk-val");
+    const diskBar = document.getElementById("stat-disk-bar");
+    const diskSub = document.getElementById("stat-disk-sub");
+    if (diskVal && diskBar && diskSub) {
+      diskVal.textContent = `${sys.disk.percent}%`;
+      diskBar.style.width = `${Math.min(100, Math.max(0, sys.disk.percent))}%`;
+      diskSub.textContent = `${fmtNumber(sys.disk.used_gb)} GB / ${fmtNumber(sys.disk.total_gb)} GB`;
+    }
+
+    // Uptime
+    const uptimeVal = document.getElementById("stat-uptime-val");
+    if (uptimeVal) uptimeVal.textContent = sys.uptime;
+
+    // CRM
+    const msgEl = document.getElementById("stat-total-messages");
+    const custEl = document.getElementById("stat-total-customers");
+    const kwEl = document.getElementById("stat-active-keywords");
+    const prodEl = document.getElementById("stat-total-products");
+    if (msgEl) msgEl.textContent = fmtNumber(crm.total_messages);
+    if (custEl) custEl.textContent = fmtNumber(crm.total_customers);
+    if (kwEl) kwEl.textContent = fmtNumber(crm.active_keywords);
+    if (prodEl) prodEl.textContent = fmtNumber(crm.total_products);
+
+    // Instagram Connection
+    const desc = document.getElementById("dashboard-conn-desc");
+    const badge = document.getElementById("dashboard-conn-badge");
+    if (desc && badge) {
+      if (bot.instagram_connected) {
+        desc.textContent = "ارتباط با سرورهای ابری Zernio و اینستاگرام پایدار است. وب‌هوک‌ها فعال هستند.";
+        badge.textContent = "متصل 🟢";
+        badge.style.background = "rgba(16, 185, 129, 0.15)";
+        badge.style.color = "#10b981";
+        badge.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+      } else {
+        desc.textContent = "توکن API یا شناسه‌های اینستاگرام در تب تنظیمات وارد نشده است.";
+        badge.textContent = "عدم اتصال 🔴";
+        badge.style.background = "rgba(239, 68, 68, 0.15)";
+        badge.style.color = "#ef4444";
+        badge.style.border = "1px solid rgba(239, 68, 68, 0.3)";
+      }
+    }
+  } catch (err) {
+    console.error("Error loading dashboard status:", err);
+  }
+}
+
+document.getElementById("btn-refresh-status")?.addEventListener("click", () => {
+  loadDashboardStatus();
+  showToast("وضعیت سیستم به‌روزرسانی شد", "success");
+});
+
 /* ---------------- تب‌ها ---------------- */
 
 const loaders = {
+  dashboard: loadDashboardStatus,
   keywords: loadKeywords,
   conversations: loadConversations,
   products: loadProducts,
   settings: loadSettings,
 };
-let activeTab = "keywords";
+let activeTab = "dashboard";
 
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -531,6 +613,7 @@ async function loadSettings() {
 
   updateBotStatusText(settings.bot_enabled);
   updateBotBadge(settings.bot_enabled);
+  await fetchSystemLogs();
 }
 
 function updateBotStatusText(enabled) {
@@ -651,13 +734,142 @@ document.getElementById("save-auth-settings")?.addEventListener("click", async (
   }
 });
 
-/* ---------------- رفرش خودکار گفتگوها ---------------- */
+/* ---------------- پشتیبان‌گیری و بازیابی (Backup & Restore) ---------------- */
+
+// دانلود فایل پشتیبان
+document.getElementById("btn-download-backup")?.addEventListener("click", () => {
+  window.location.href = "/system/backup";
+  showToast("در حال آماده‌سازی و دانلود فایل پشتیبان...", "success");
+});
+
+// انتخاب فایل برای بازیابی
+const restoreFileInput = document.getElementById("restore-file-input");
+const restoreFileName = document.getElementById("restore-file-name");
+const submitRestoreBtn = document.getElementById("btn-submit-restore");
+
+document.getElementById("btn-choose-restore")?.addEventListener("click", () => {
+  restoreFileInput?.click();
+});
+
+restoreFileInput?.addEventListener("change", () => {
+  if (restoreFileInput.files.length > 0) {
+    const file = restoreFileInput.files[0];
+    if (restoreFileName) restoreFileName.textContent = `فایل انتخاب‌شده: ${file.name}`;
+    submitRestoreBtn?.classList.remove("hidden");
+  } else {
+    if (restoreFileName) restoreFileName.textContent = "";
+    submitRestoreBtn?.classList.add("hidden");
+  }
+});
+
+// ارسال و اجرای بازیابی دیتابیس
+submitRestoreBtn?.addEventListener("click", async () => {
+  if (!restoreFileInput || !restoreFileInput.files.length) return;
+  const file = restoreFileInput.files[0];
+
+  if (!confirm(`آیا مطمئن هستید که می‌خواهید اطلاعات را از فایل «${file.name}» بازیابی کنید؟`)) {
+    return;
+  }
+
+  submitRestoreBtn.disabled = true;
+  submitRestoreBtn.textContent = "در حال بازیابی…";
+  const alertEl = document.getElementById("backup-restore-alert");
+  if (alertEl) {
+    alertEl.textContent = "در حال ارسال فایل و بازیابی اطلاعات پایگاه داده...";
+    alertEl.style.color = "#94a3b8";
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/system/restore", {
+      method: "POST",
+      credentials: "same-origin",
+      body: formData,
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.detail || "خطا در بازیابی");
+
+    showToast("اطلاعات با موفقیت بازیابی شد! ✅", "success");
+    if (alertEl) {
+      alertEl.textContent = `✅ ${result.message} (کلمات کلیدی: ${result.restored.keywords}، محصولات: ${result.restored.products}، مشتریان: ${result.restored.customers})`;
+      alertEl.style.color = "#10b981";
+    }
+    submitRestoreBtn.classList.add("hidden");
+    if (restoreFileName) restoreFileName.textContent = "";
+    restoreFileInput.value = "";
+    await loadSettings();
+  } catch (err) {
+    showToast(err.message, "error");
+    if (alertEl) {
+      alertEl.textContent = `❌ ${err.message}`;
+      alertEl.style.color = "#ef4444";
+    }
+  } finally {
+    submitRestoreBtn.disabled = false;
+    submitRestoreBtn.textContent = "تأیید و بازگردانی اطلاعات";
+  }
+});
+
+/* ---------------- مشاهده لاگ‌های زنده سرور (Log Viewer) ---------------- */
+
+async function fetchSystemLogs() {
+  const consoleEl = document.getElementById("system-log-console");
+  if (!consoleEl) return;
+
+  try {
+    const data = await api("/system/logs?limit=150");
+    if (!data.logs || data.logs.length === 0) {
+      consoleEl.innerHTML = `<span style="color:#64748b;">(هیچ لاگی در سیستم ثبت نشده است)</span>`;
+      return;
+    }
+    consoleEl.innerHTML = data.logs.map(log => {
+      const cls = log.level || "INFO";
+      return `<div class="log-line ${cls}">[${esc(log.time)}] [${esc(log.level)}] [${esc(log.logger)}]: ${esc(log.message)}</div>`;
+    }).join("");
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  } catch (err) {
+    consoleEl.innerHTML = `<span style="color:#ef4444;">خطا در دریافت لاگ‌ها: ${esc(err.message)}</span>`;
+  }
+}
+
+document.getElementById("btn-refresh-logs")?.addEventListener("click", () => {
+  fetchSystemLogs();
+  showToast("لاگ‌های سیستم بروزرسانی شدند", "success");
+});
+
+document.getElementById("btn-clear-logs")?.addEventListener("click", async () => {
+  if (!confirm("آیا مایل به پاکسازی کنسول لاگ‌ها هستید؟")) return;
+  try {
+    await api("/system/logs", { method: "DELETE" });
+    const consoleEl = document.getElementById("system-log-console");
+    if (consoleEl) consoleEl.innerHTML = `<span style="color:#64748b;">(کنسول لاگ‌ها پاکسازی شد)</span>`;
+    showToast("کنسول لاگ‌ها پاکسازی شد", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+});
+
+// بروزرسانی خودکار لاگ‌ها هر ۳ ثانیه اگر تیک زده شده باشد
+setInterval(() => {
+  const autoCheckbox = document.getElementById("log-auto-refresh");
+  if (autoCheckbox && autoCheckbox.checked && activeTab === "settings") {
+    fetchSystemLogs();
+  }
+}, 3000);
+
+/* ---------------- رفرش خودکار گفتگوها و وضعیت سرور ---------------- */
 
 setInterval(async () => {
-  // فقط وقتی تب گفتگوها باز و کاربر وارد شده است رفرش کن
-  if (activeTab !== "conversations" || !loginOverlay.classList.contains("hidden")) return;
-  await loadConversations();
-  if (selectedCustomerId) await loadChatMessages();
+  if (loginOverlay.classList.contains("hidden")) {
+    if (activeTab === "conversations") {
+      await loadConversations();
+      if (selectedCustomerId) await loadChatMessages();
+    } else if (activeTab === "dashboard") {
+      await loadDashboardStatus();
+    }
+  }
 }, 10_000);
 
 /* ---------------- راه‌اندازی ---------------- */
@@ -666,7 +878,7 @@ async function init() {
   try {
     const settings = await api("/settings/");
     updateBotBadge(settings.bot_enabled);
-    await loadKeywords();
+    await loadDashboardStatus();
   } catch (err) {
     if (err.message !== "unauthorized") showToast(err.message, "error");
   }

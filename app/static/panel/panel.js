@@ -58,10 +58,38 @@ function fmtNumber(n) {
 
 function showToast(message, type = "") {
   const toast = document.getElementById("toast");
-  toast.textContent = message;
+  if (!toast) return;
+
+  let icon = "";
+  if (type === "success") {
+    icon = `<span style="font-size: 1.15rem; line-height: 1;">✓</span>`;
+  } else if (type === "error") {
+    icon = `<span style="font-size: 1.15rem; line-height: 1;">✕</span>`;
+  }
+
+  toast.innerHTML = `${icon}<span>${message}</span>`;
   toast.className = "toast " + type;
+  toast.classList.remove("hidden");
+
   clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(() => toast.classList.add("hidden"), 3200);
+  showToast._timer = setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 3200);
+}
+
+function flashButtonSuccess(btn, originalText = null, successText = "✓ ذخیره شد") {
+  if (!btn) return;
+  const oldText = originalText || btn.textContent;
+  btn.textContent = successText;
+  btn.style.transition = "all 0.2s ease";
+  const oldBg = btn.style.background;
+  btn.style.background = "#10b981";
+  btn.style.borderColor = "#10b981";
+  setTimeout(() => {
+    btn.textContent = oldText;
+    btn.style.background = oldBg;
+    btn.style.borderColor = "";
+  }, 1800);
 }
 
 /* ---------------- لایه ارتباط با API ---------------- */
@@ -324,7 +352,7 @@ async function loadKeywords() {
 async function toggleKeyword(id) {
   try {
     await api(`/keywords/${id}/toggle`, { method: "PATCH" });
-    showToast("وضعیت کلمه کلیدی تغییر کرد", "success");
+    showToast("وضعیت کلمه کلیدی با موفقیت تغییر کرد", "success");
   } catch (err) {
     showToast(err.message, "error");
     loadKeywords();
@@ -335,7 +363,7 @@ async function deleteKeyword(id) {
   if (!confirm("این کلمه کلیدی حذف شود؟")) return;
   try {
     await api(`/keywords/${id}`, { method: "DELETE" });
-    showToast("کلمه کلیدی حذف شد", "success");
+    showToast("کلمه کلیدی با موفقیت حذف شد", "success");
     loadKeywords();
   } catch (err) {
     showToast(err.message, "error");
@@ -402,10 +430,10 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
   try {
     if (editingKeywordId) {
       await api(`/keywords/${editingKeywordId}`, { method: "PUT", body });
-      showToast("کلمه کلیدی به‌روزرسانی شد", "success");
+      showToast("کلمه کلیدی با موفقیت ویرایش و ذخیره شد", "success");
     } else {
       await api("/keywords/", { method: "POST", body });
-      showToast("کلمه کلیدی اضافه شد", "success");
+      showToast("کلمه کلیدی جدید با موفقیت ذخیره شد", "success");
     }
     resetKeywordForm();
     loadKeywords();
@@ -729,10 +757,10 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
   try {
     if (editingProductId) {
       await api(`/products/${editingProductId}`, { method: "PUT", body });
-      showToast("محصول به‌روزرسانی شد", "success");
+      showToast("محصول با موفقیت ویرایش و ذخیره شد", "success");
     } else {
       await api("/products/", { method: "POST", body });
-      showToast("محصول اضافه شد", "success");
+      showToast("محصول جدید با موفقیت ذخیره شد", "success");
     }
     resetProductForm();
     loadProducts();
@@ -745,7 +773,7 @@ async function deleteProduct(id) {
   if (!confirm("این محصول حذف شود؟")) return;
   try {
     await api(`/products/${id}`, { method: "DELETE" });
-    showToast("محصول حذف شد", "success");
+    showToast("محصول با موفقیت حذف شد", "success");
     loadProducts();
   } catch (err) {
     showToast(err.message, "error");
@@ -819,6 +847,7 @@ document.getElementById("btn-toggle-token-vis")?.addEventListener("click", () =>
 });
 
 document.getElementById("save-settings").addEventListener("click", async () => {
+  const btn = document.getElementById("save-settings");
   const body = JSON.stringify({
     bot_enabled: document.getElementById("bot-enabled").checked,
     fallback_message: document.getElementById("fallback-message").value,
@@ -827,20 +856,23 @@ document.getElementById("save-settings").addEventListener("click", async () => {
     const updated = await api("/settings/", { method: "PUT", body });
     updateBotStatusText(updated.bot_enabled);
     updateBotBadge(updated.bot_enabled);
-    showToast("تنظیمات ذخیره شد", "success");
+    flashButtonSuccess(btn, "ذخیره تنظیمات", "✓ ذخیره شد");
+    showToast("تنظیمات عمومی با موفقیت ذخیره شد", "success");
   } catch (err) {
     showToast(err.message, "error");
   }
 });
 
 document.getElementById("save-follow-gate").addEventListener("click", async () => {
+  const btn = document.getElementById("save-follow-gate");
   const body = JSON.stringify({
     follow_gate_enabled: document.getElementById("follow-gate-enabled").checked,
     follow_gate_message: document.getElementById("follow-gate-message").value,
   });
   try {
     await api("/settings/", { method: "PUT", body });
-    showToast("دروازه فالو ذخیره شد", "success");
+    flashButtonSuccess(btn, "ذخیره دروازه فالو", "✓ ذخیره شد");
+    showToast("تنظیمات دروازه فالو با موفقیت ذخیره شد", "success");
   } catch (err) {
     showToast(err.message, "error");
   }
@@ -894,7 +926,8 @@ document.getElementById("save-api-settings")?.addEventListener("click", async ()
       }
     }
 
-    showToast(`اتصال به اینستاگرام برقرار شد ✅${updated.instagram_username ? ' (@' + updated.instagram_username + ')' : ''}`, "success");
+    flashButtonSuccess(saveBtn, "ذخیره و اتصال خودکار ⚡", "✓ ذخیره شد");
+    showToast(`تنظیمات اتصال با موفقیت ذخیره شد${updated.instagram_username ? ' (@' + updated.instagram_username + ')' : ''}`, "success");
     if (alertEl) {
       alertEl.textContent = `✅ تنظیمات ذخیره و متصل شد.${updated.instagram_username ? ' پیج فعال: @' + updated.instagram_username : ''}`;
       alertEl.style.color = "#10b981";
@@ -1034,7 +1067,9 @@ document.getElementById("save-auth-settings")?.addEventListener("click", async (
   try {
     await api("/settings/", { method: "PUT", body: JSON.stringify(payload) });
     document.getElementById("setting-admin-password").value = "";
-    showToast("اطلاعات ورود به پنل با موفقیت ذخیره شد 🔐", "success");
+    const authBtn = document.getElementById("save-auth-settings");
+    flashButtonSuccess(authBtn, "ذخیره اطلاعات ورود", "✓ ذخیره شد");
+    showToast("اطلاعات ورود به پنل با موفقیت ذخیره شد", "success");
   } catch (err) {
     showToast(err.message, "error");
   }

@@ -403,17 +403,54 @@ input:invalid:not(:placeholder-shown) { border-color: rgba(239, 68, 68, 0.4); }
 .product-card .p-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--border); }
 .product-card .p-stock { font-size: 0.78rem; font-weight: 600; color: #a7f3d0; background: var(--success-soft); border: 1px solid rgba(16, 185, 129, 0.25); padding: 4px 10px; border-radius: 99px; }
 
-/* ---------------- Toast ---------------- */
+/* ---------------- Toast / Notification ---------------- */
 .toast {
-  position: fixed; bottom: 28px; inset-inline-start: 28px; z-index: 200;
-  max-width: 340px; padding: 13px 18px; border-radius: var(--radius);
-  font-size: 0.88rem; font-weight: 500; color: var(--text);
-  background: rgba(26, 31, 43, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); animation: toastIn 0.3s var(--ease);
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  min-width: 290px;
+  max-width: min(92vw, 440px);
+  padding: 12px 22px;
+  border-radius: 9999px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  direction: rtl;
+  text-align: center;
+  pointer-events: none;
 }
-.toast.success { border-inline-start: 3px solid var(--success); }
-.toast.error { border-inline-start: 3px solid var(--danger); }
-@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.toast.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.35), 0 0 20px rgba(16, 185, 129, 0.25);
+}
+.toast.error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.35);
+}
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -24px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
 
 /* ---------------- Login overlay ---------------- */
 .overlay {

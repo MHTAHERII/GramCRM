@@ -442,8 +442,24 @@ async function loadConversations(isBackground = false) {
 
   if (!conversations.length) {
     list.innerHTML = `<div class="empty">هنوز گفتگویی وجود ندارد</div>`;
+    list.dataset.fingerprint = "";
     return;
   }
+
+  // بررسی عدم تغییر دیتا برای جلوگیری از رفرش و پرش تصویری (Silent Background Poll)
+  const convFingerprint = JSON.stringify(conversations.map(c => [
+    c.customer?.id,
+    c.customer?.username,
+    c.last_message?.id,
+    c.last_message?.text,
+    c.last_message?.created_at,
+    c.customer?.id === selectedCustomerId
+  ]));
+
+  if (list.dataset.fingerprint === convFingerprint) {
+    return; // دیتا تغییر نکرده؛ DOM دست نخورده باقی می‌ماند
+  }
+  list.dataset.fingerprint = convFingerprint;
 
   list.innerHTML = conversations.map((c) => {
     const customer = c.customer;
@@ -486,8 +502,19 @@ function renderMessageList(messages) {
 
   if (!messages || !messages.length) {
     messagesBox.innerHTML = `<div class="empty">پیامی رد و بدل نشده است</div>`;
+    messagesBox.dataset.fingerprint = "";
     return;
   }
+
+  // بررسی تفاوت پیام‌ها؛ اگر هیچ پیام جدیدی اضافه نشده باشد، DOM اصلاً بازنویسی نمی‌شود
+  const msgFingerprint = JSON.stringify(messages.map(m => [m.id, m._pending, m.text]));
+  if (messagesBox.dataset.fingerprint === msgFingerprint) {
+    return; // هیچ پیامی تغییر نکرده؛ مانع از پرش اسکرول و چشمک صفحه شو
+  }
+  messagesBox.dataset.fingerprint = msgFingerprint;
+
+  // اگر کاربر نزدیک پایین چت باشد، بعد از رندر اسکرول شود؛ اگر بالاتر را می‌خواند اسکرولش نپرد
+  const isNearBottom = messagesBox.scrollHeight - messagesBox.scrollTop - messagesBox.clientHeight < 150;
 
   messagesBox.innerHTML = messages.map((m) => {
     const isPending = m._pending;
@@ -505,11 +532,16 @@ function renderMessageList(messages) {
       </div>
     `;
   }).join("");
-  messagesBox.scrollTop = messagesBox.scrollHeight;
+
+  if (isNearBottom) {
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
 }
 
 async function selectConversation(customerId) {
   selectedCustomerId = customerId;
+  const messagesBox = document.getElementById("chat-messages");
+  if (messagesBox) messagesBox.dataset.fingerprint = ""; // ریست برای بارگذاری تمیز پیام‌های کاربر جدید
 
   // ۱. آپدیت فوری استایل active روی آیتم‌ها بدون رفرش کل لیست (۰ میلی‌ثانیه!)
   document.querySelectorAll(".conversation-item").forEach((el) => {

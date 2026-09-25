@@ -18,12 +18,15 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE perfume_bot TO botuse
 
 echo "=== 4. Setting up Project Repository ==="
 cd /root
-if [ -d "Instagram-Perfume-Assistant" ]; then
+if [ -d "GramCRM" ]; then
+    cd GramCRM
+    git pull origin main
+elif [ -d "Instagram-Perfume-Assistant" ]; then
     cd Instagram-Perfume-Assistant
     git pull origin main
 else
-    git clone https://github.com/MHTAHERII/Instagram-Perfume-Assistant.git
-    cd Instagram-Perfume-Assistant
+    git clone https://github.com/MHTAHERII/GramCRM.git
+    cd GramCRM
 fi
 
 echo "=== 5. Setting up Python Virtual Environment ==="

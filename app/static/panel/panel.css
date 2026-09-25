@@ -268,7 +268,7 @@ td.actions, .actions { display: flex; gap: 6px; white-space: nowrap; }
 .field:last-of-type { margin-bottom: 0; }
 .field label { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px; }
-input[type="text"], input[type="number"], input[type="password"], input[type="url"], input[type="email"],
+input[type="text"], input[type="number"], input[type="password"], input[type="url"], input[type="email"], select,
 textarea, #fallback-message, #follow-gate-message, #chat-input {
   width: 100%; padding: 11px 14px; border-radius: var(--radius);
   border: 1px solid var(--border); background: var(--bg-secondary);
@@ -276,7 +276,7 @@ textarea, #fallback-message, #follow-gate-message, #chat-input {
 }
 .keyword-btn-row {
   display: grid;
-  grid-template-columns: 1fr 1.25fr auto;
+  grid-template-columns: 155px 1fr 1.3fr auto;
   gap: 12px;
   align-items: flex-end;
   margin-bottom: 10px;
@@ -285,7 +285,7 @@ textarea, #fallback-message, #follow-gate-message, #chat-input {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius);
 }
-@media (max-width: 640px) {
+@media (max-width: 820px) {
   .keyword-btn-row {
     grid-template-columns: 1fr;
     gap: 8px;

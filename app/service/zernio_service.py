@@ -181,17 +181,23 @@ class ZernioService:
             "alsoMatchInDms": True
         }
 
-        # افزودن دکمه‌های لینک‌دار تعاملی (حداکثر ۳ دکمه طبق استاندارد اینستاگرام)
+        # افزودن دکمه‌های لینک‌دار یا تعاملی (حداکثر ۳ دکمه طبق استاندارد اینستاگرام)
         formatted_buttons = []
         if buttons:
             for b in buttons[:3]:
                 if isinstance(b, dict):
+                    b_type = b.get("type", "url")
                     t = b.get("title", "").strip()
                     u = b.get("url", "").strip()
                 else:
+                    b_type = getattr(b, "type", "url")
                     t = getattr(b, "title", "").strip()
                     u = getattr(b, "url", "").strip()
-                if t and u:
+                if not t:
+                    continue
+                if b_type == "postback":
+                    formatted_buttons.append({"type": "postback", "title": t, "payload": t})
+                elif u:
                     formatted_buttons.append({"type": "url", "title": t, "url": u})
         elif button_title and button_url:
             formatted_buttons.append({"type": "url", "title": button_title.strip(), "url": button_url.strip()})
@@ -207,9 +213,14 @@ class ZernioService:
             if follow_gate_buttons:
                 fg_btn_list = []
                 for b in follow_gate_buttons[:3]:
-                    t = b.get("title", "").strip() if isinstance(b, dict) else ""
-                    u = b.get("url", "").strip() if isinstance(b, dict) else ""
-                    if t and u:
+                    b_type = b.get("type", "url") if isinstance(b, dict) else getattr(b, "type", "url")
+                    t = b.get("title", "").strip() if isinstance(b, dict) else getattr(b, "title", "").strip()
+                    u = b.get("url", "").strip() if isinstance(b, dict) else getattr(b, "url", "").strip()
+                    if not t:
+                        continue
+                    if b_type == "postback" or "فالو کردم" in t:
+                        fg_btn_list.append({"type": "postback", "title": t, "payload": t})
+                    elif u:
                         fg_btn_list.append({"type": "url", "title": t, "url": u})
                 if fg_btn_list:
                     fg_payload["buttons"] = fg_btn_list

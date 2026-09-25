@@ -263,22 +263,47 @@ document.querySelectorAll(".tab").forEach((tab) => {
 let editingKeywordId = null;
 let keywordsCache = [];
 
-function createButtonRow(title = "", url = "") {
+function createButtonRow(title = "", url = "", type = "url") {
+  if (!type) type = url ? "url" : "postback";
   const row = document.createElement("div");
   row.className = "keyword-btn-row";
   row.innerHTML = `
     <div class="field" style="margin-bottom: 0;">
-      <label style="font-size: 0.78rem;">متن دکمه (مثلاً: پرداخت آنلاین 💳)</label>
-      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+      <label style="font-size: 0.78rem;">نوع دکمه</label>
+      <select class="btn-type-select" style="height: 42px; cursor: pointer;">
+        <option value="url" ${type === "url" ? "selected" : ""}>🔗 باز کردن لینک</option>
+        <option value="postback" ${type === "postback" ? "selected" : ""}>💬 ارسال پیام در دایرکت</option>
+      </select>
     </div>
     <div class="field" style="margin-bottom: 0;">
-      <label style="font-size: 0.78rem;">لینک اینترنتی (URL)</label>
-      <input type="url" class="btn-url-input" placeholder="https://..." value="${esc(url)}">
+      <label style="font-size: 0.78rem;">متن دکمه (مثلاً: ثبت سفارش 🛍️)</label>
+      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+    </div>
+    <div class="field btn-target-field" style="margin-bottom: 0;">
+      <label class="btn-target-label" style="font-size: 0.78rem;">${type === "postback" ? "رفتار دکمه" : "لینک اینترنتی (URL)"}</label>
+      <input type="url" class="btn-url-input ${type === "postback" ? "hidden" : ""}" placeholder="https://..." value="${esc(url)}">
+      <div class="btn-postback-badge ${type === "postback" ? "" : "hidden"}" style="height: 42px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius); line-height: 1.3;">
+        <span>⚡</span>
+        <span>با لمس این دکمه، متن آن خودکار ارسال می‌شود</span>
+      </div>
     </div>
     <div style="display: flex; align-items: flex-end;">
       <button type="button" class="btn small ghost btn-remove-row" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); height: 42px; width: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); flex-shrink: 0;" title="حذف این دکمه">✕</button>
     </div>
   `;
+
+  const select = row.querySelector(".btn-type-select");
+  const urlInput = row.querySelector(".btn-url-input");
+  const badge = row.querySelector(".btn-postback-badge");
+  const label = row.querySelector(".btn-target-label");
+
+  select.addEventListener("change", () => {
+    const isPostback = select.value === "postback";
+    urlInput.classList.toggle("hidden", isPostback);
+    badge.classList.toggle("hidden", !isPostback);
+    label.textContent = isPostback ? "رفتار دکمه" : "لینک اینترنتی (URL)";
+  });
+
   row.querySelector(".btn-remove-row").addEventListener("click", () => {
     row.remove();
     checkButtonCount();
@@ -294,14 +319,14 @@ function checkButtonCount() {
   addBtn.style.display = count >= 3 ? "none" : "inline-flex";
 }
 
-function addKeywordButtonRow(title = "", url = "") {
+function addKeywordButtonRow(title = "", url = "", type = "url") {
   const container = document.getElementById("keyword-buttons-container");
   if (!container) return;
   if (container.querySelectorAll(".keyword-btn-row").length >= 3) {
     showToast("حداکثر ۳ دکمه می‌توانید اضافه کنید", "error");
     return;
   }
-  container.appendChild(createButtonRow(title, url));
+  container.appendChild(createButtonRow(title, url, type));
   checkButtonCount();
 }
 
@@ -384,7 +409,7 @@ function startEditKeyword(id) {
     const btns = (k.buttons && k.buttons.length)
       ? k.buttons
       : (k.button_title && k.button_url ? [{ title: k.button_title, url: k.button_url }] : []);
-    btns.forEach(b => addKeywordButtonRow(b.title, b.url));
+    btns.forEach(b => addKeywordButtonRow(b.title, b.url, b.type || (b.url ? "url" : "postback")));
   }
 
   document.getElementById("keyword-submit").textContent = "ذخیره تغییرات";
@@ -410,11 +435,28 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
   const container = document.getElementById("keyword-buttons-container");
   const rows = container ? container.querySelectorAll(".keyword-btn-row") : [];
   const buttons = [];
+  const userEl = document.getElementById("zernio-connected-username");
+  const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
+
   rows.forEach(r => {
+    const bType = r.querySelector(".btn-type-select")?.value || "url";
     const t = r.querySelector(".btn-title-input")?.value.trim();
-    const u = r.querySelector(".btn-url-input")?.value.trim();
-    if (t && u) {
-      buttons.push({ title: t, url: u });
+    let u = r.querySelector(".btn-url-input")?.value.trim();
+    if (t) {
+      if (bType === "postback") {
+        const deepLink = rawUsername ? `https://ig.me/m/${rawUsername}?text=${encodeURIComponent(t)}` : "";
+        buttons.push({
+          type: "postback",
+          title: t,
+          url: u || deepLink || "https://instagram.com"
+        });
+      } else if (u) {
+        buttons.push({
+          type: "url",
+          title: t,
+          url: u
+        });
+      }
     }
   });
 
@@ -841,22 +883,53 @@ async function loadSettings() {
   await fetchVersionInfo();
 }
 
-function createFollowGateButtonRow(title = "", url = "") {
+function createFollowGateButtonRow(title = "", url = "", type = "url") {
+  if (!type) {
+    type = (title && title.includes("فالو کردم")) ? "postback" : (url ? "url" : "postback");
+  }
+
   const row = document.createElement("div");
   row.className = "keyword-btn-row fg-btn-row";
   row.innerHTML = `
     <div class="field" style="margin-bottom: 0;">
-      <label style="font-size: 0.78rem;">متن دکمه (مثلاً: مشاهده پیج و فالو کردن 📱)</label>
-      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+      <label style="font-size: 0.78rem;">نوع دکمه</label>
+      <select class="btn-type-select" style="height: 42px; cursor: pointer;">
+        <option value="url" ${type === "url" ? "selected" : ""}>🔗 باز کردن لینک</option>
+        <option value="postback" ${type === "postback" ? "selected" : ""}>💬 ارسال پیام در دایرکت</option>
+      </select>
     </div>
     <div class="field" style="margin-bottom: 0;">
-      <label style="font-size: 0.78rem;">لینک اینترنتی (URL)</label>
-      <input type="url" class="btn-url-input" placeholder="https://instagram.com/..." value="${esc(url)}">
+      <label style="font-size: 0.78rem;">متن دکمه (مثلاً: فالو کردم ✅)</label>
+      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+    </div>
+    <div class="field btn-target-field" style="margin-bottom: 0;">
+      <label class="btn-target-label" style="font-size: 0.78rem;">${type === "postback" ? "رفتار دکمه" : "لینک اینترنتی (URL)"}</label>
+      <input type="url" class="btn-url-input ${type === "postback" ? "hidden" : ""}" placeholder="https://instagram.com/..." value="${esc(url)}">
+      <div class="btn-postback-badge ${type === "postback" ? "" : "hidden"}" style="height: 42px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius); line-height: 1.3;">
+        <span>⚡</span>
+        <span>با لمس این دکمه، متن آن خودکار ارسال می‌شود</span>
+      </div>
     </div>
     <div style="display: flex; align-items: flex-end;">
       <button type="button" class="btn small ghost btn-remove-fg-row" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); height: 42px; width: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); flex-shrink: 0;" title="حذف این دکمه">✕</button>
     </div>
   `;
+
+  const select = row.querySelector(".btn-type-select");
+  const urlInput = row.querySelector(".btn-url-input");
+  const badge = row.querySelector(".btn-postback-badge");
+  const label = row.querySelector(".btn-target-label");
+
+  select.addEventListener("change", () => {
+    const isPostback = select.value === "postback";
+    urlInput.classList.toggle("hidden", isPostback);
+    badge.classList.toggle("hidden", !isPostback);
+    label.textContent = isPostback ? "رفتار دکمه" : "لینک اینترنتی (URL)";
+    if (isPostback && !row.querySelector(".btn-title-input").value) {
+      row.querySelector(".btn-title-input").value = "فالو کردم ✅";
+    }
+  });
+
   row.querySelector(".btn-remove-fg-row").addEventListener("click", () => {
     row.remove();
     checkFollowGateButtonCount();
@@ -872,30 +945,33 @@ function checkFollowGateButtonCount() {
   addBtn.style.display = count >= 3 ? "none" : "inline-flex";
 }
 
-function addFollowGateButtonRow(title = "", url = "") {
+function addFollowGateButtonRow(title = "", url = "", type = "url") {
   const container = document.getElementById("follow-gate-buttons-container");
   if (!container) return;
   if (container.querySelectorAll(".fg-btn-row").length >= 3) {
     showToast("حداکثر ۳ دکمه می‌توانید اضافه کنید", "error");
     return;
   }
-  container.appendChild(createFollowGateButtonRow(title, url));
+  container.appendChild(createFollowGateButtonRow(title, url, type));
   checkFollowGateButtonCount();
 }
 
 document.getElementById("btn-add-follow-gate-button")?.addEventListener("click", () => {
-  let defaultUrl = "";
-  let defaultTitle = "";
   const container = document.getElementById("follow-gate-buttons-container");
-  if (container && container.querySelectorAll(".fg-btn-row").length === 0) {
-    const userEl = document.getElementById("zernio-connected-username");
-    const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
-    if (rawUsername) {
-      defaultTitle = "مشاهده پیج و فالو کردن 📱";
-      defaultUrl = `https://instagram.com/${rawUsername}`;
-    }
+  const count = container ? container.querySelectorAll(".fg-btn-row").length : 0;
+  const userEl = document.getElementById("zernio-connected-username");
+  const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
+
+  if (count === 0) {
+    const defaultTitle = "مشاهده پیج و فالو کردن 📱";
+    const defaultUrl = rawUsername ? `https://instagram.com/${rawUsername}` : "";
+    addFollowGateButtonRow(defaultTitle, defaultUrl, "url");
+  } else if (count === 1) {
+    const defaultTitle = "فالو کردم ✅";
+    addFollowGateButtonRow(defaultTitle, "", "postback");
+  } else {
+    addFollowGateButtonRow("", "", "url");
   }
-  addFollowGateButtonRow(defaultTitle, defaultUrl);
 });
 
 function updateBotStatusText(enabled) {
@@ -939,11 +1015,28 @@ document.getElementById("save-follow-gate").addEventListener("click", async () =
   const fgContainer = document.getElementById("follow-gate-buttons-container");
   const rows = fgContainer ? fgContainer.querySelectorAll(".fg-btn-row") : [];
   const buttons = [];
+  const userEl = document.getElementById("zernio-connected-username");
+  const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
+
   rows.forEach(r => {
+    const bType = r.querySelector(".btn-type-select")?.value || "url";
     const t = r.querySelector(".btn-title-input")?.value.trim();
-    const u = r.querySelector(".btn-url-input")?.value.trim();
-    if (t && u) {
-      buttons.push({ title: t, url: u });
+    let u = r.querySelector(".btn-url-input")?.value.trim();
+    if (t) {
+      if (bType === "postback") {
+        const deepLink = rawUsername ? `https://ig.me/m/${rawUsername}?text=${encodeURIComponent(t)}` : "";
+        buttons.push({
+          type: "postback",
+          title: t,
+          url: u || deepLink || "https://instagram.com"
+        });
+      } else if (u) {
+        buttons.push({
+          type: "url",
+          title: t,
+          url: u
+        });
+      }
     }
   });
 

@@ -435,6 +435,65 @@
             </div>
           </div>
 
+          <!-- کارت به‌روزرسانی پنل با یک کلیک (1-Click Updater) -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2>به‌روزرسانی خودکار پنل (1-Click Updater)</h2>
+                <p class="hint">بررسی خودکار نسخه‌های جدید از مخزن رسمی گیت‌هاب و ارتقاء پنل با یک کلیک (مشابه 3X-UI).</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="btn-check-update" class="btn ghost small" type="button">
+                  🔍 بررسی نسخه جدید
+                </button>
+              </div>
+            </div>
+
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.2rem;">
+              <div class="stat-card" style="padding: 14px;">
+                <div class="stat-top">
+                  <span class="stat-label">نسخه نصب‌شده فعلی</span>
+                  <span class="badge" id="updater-local-badge" style="background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); font-family: monospace;">-</span>
+                </div>
+                <div class="stat-sub" id="updater-local-date" style="margin-top: 6px;">تاریخ: -</div>
+              </div>
+
+              <div class="stat-card" style="padding: 14px;">
+                <div class="stat-top">
+                  <span class="stat-label">آخرین نسخه در گیت‌هاب</span>
+                  <span class="badge" id="updater-remote-badge" style="background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); font-family: monospace;">-</span>
+                </div>
+                <div class="stat-sub" id="updater-remote-date" style="margin-top: 6px;">تاریخ: -</div>
+              </div>
+
+              <div class="stat-card" style="padding: 14px;">
+                <div class="stat-top">
+                  <span class="stat-label">وضعیت سیستم</span>
+                  <span class="badge" id="updater-status-badge" style="background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3);">در حال بررسی…</span>
+                </div>
+                <div class="stat-sub" id="updater-status-sub" style="margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</div>
+              </div>
+            </div>
+
+            <!-- جعبه جزییات آخرین کامیت -->
+            <div id="updater-commit-box" style="display: none; padding: 12px 16px; background: rgba(0,0,0,0.25); border: 1px dashed rgba(255,255,255,0.1); border-radius: var(--radius); margin-bottom: 1.2rem;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">آخرین تغییرات (Commit Message):</span>
+              <div id="updater-commit-msg" style="font-size: 0.85rem; color: #e2e8f0; font-weight: 500; margin-top: 4px; font-family: monospace;"></div>
+            </div>
+
+            <!-- دکمه و وضعیت آپدیت -->
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <button id="btn-run-update" class="btn primary" type="button" style="background: linear-gradient(135deg, #10b981, #059669); border: none;">
+                🚀 به‌روزرسانی به آخرین نسخه
+              </button>
+              <div id="updater-loading-indicator" class="hidden" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #38bdf8;">
+                <span class="spin">⏳</span>
+                <span id="updater-loading-text">در حال اعمال به‌روزرسانی و بارگذاری مجدد…</span>
+              </div>
+            </div>
+            <div id="updater-alert" class="hint" style="margin-top: 10px; font-weight: 500;"></div>
+          </div>
+
           <!-- کارت پشتیبان‌گیری و بازیابی اطلاعات دیتابیس (3X-UI Style) -->
           <div class="card">
             <h2>پشتیبان‌گیری و بازیابی اطلاعات (Backup & Restore)</h2>

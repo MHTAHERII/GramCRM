@@ -1,9 +1,13 @@
 import collections
 import datetime
+import json
 import logging
 import os
+import re
 import shutil
+import subprocess
 import time
+import urllib.request
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
@@ -318,3 +322,181 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         db.rollback()
         raise e
+
+
+def get_version_info() -> Dict[str, Any]:
+    """
+    استعلام نسخه فعلی کدها در سرور و مقایسه با آخرین کامیت مخزن گیت‌هاب (مشابه 3X-UI)
+    """
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+    # ۱. استخراج مشخصات مخزن گیت‌هاب
+    repo_name = "MHTAHERII/GramCRM"
+    try:
+        remote_url = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"],
+            cwd=base_dir,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        match = re.search(r"github\.com[:/](.+?)(?:\.git)?$", remote_url)
+        if match:
+            repo_name = match.group(1)
+    except Exception:
+        pass
+
+    # ۲. استعلام کامیت و تاریخ لوکال
+    local_commit = "نامشخص"
+    local_date = ""
+    local_message = ""
+    try:
+        local_commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=base_dir,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        local_date = subprocess.check_output(
+            ["git", "log", "-1", "--format=%cd", "--date=short"],
+            cwd=base_dir,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        local_message = subprocess.check_output(
+            ["git", "log", "-1", "--pretty=%s"],
+            cwd=base_dir,
+            stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+    except Exception as e:
+        logging.getLogger("system_service").warning(f"Could not read local git info: {e}")
+
+    # ۳. استعلام آخرین کامیت از GitHub API
+    remote_commit = "نامشخص"
+    remote_date = ""
+    remote_message = ""
+    has_update = False
+    check_error = None
+
+    try:
+        api_url = f"https://api.github.com/repos/{repo_name}/commits/main"
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                "User-Agent": "GramCRM-Updater/1.0",
+                "Accept": "application/vnd.github.v3+json"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            remote_full_sha = data.get("sha", "")
+            remote_commit = remote_full_sha[:7] if remote_full_sha else "نامشخص"
+
+            commit_obj = data.get("commit", {})
+            full_msg = commit_obj.get("message", "")
+            remote_message = full_msg.split("\n")[0] if full_msg else ""
+
+            author_obj = commit_obj.get("author", {})
+            date_raw = author_obj.get("date", "")
+            remote_date = date_raw[:10] if date_raw else ""
+
+            if local_commit != "نامشخص" and remote_commit != "نامشخص":
+                if local_commit != remote_commit and not remote_full_sha.startswith(local_commit):
+                    has_update = True
+
+    except Exception as e:
+        check_error = "امکان اتصال به گیت‌هاب وجود ندارد یا سقف درخواست موقت است."
+        logging.getLogger("system_service").warning(f"GitHub API check failed: {e}")
+
+    # وضعیت نهایی
+    if check_error:
+        status_text = check_error
+    elif has_update:
+        status_text = "نسخه جدید در دسترس است! می‌توانید سیستم را به‌روزرسانی کنید."
+    else:
+        status_text = "سیستم شما کاملاً به‌روز است (آخرین نسخه)."
+
+    return {
+        "repo": repo_name,
+        "local_commit": local_commit,
+        "local_date": local_date,
+        "local_message": local_message,
+        "remote_commit": remote_commit,
+        "remote_date": remote_date,
+        "remote_message": remote_message,
+        "has_update": has_update,
+        "status": status_text,
+        "error": check_error
+    }
+
+
+def execute_system_update() -> Dict[str, Any]:
+    """
+    اجرای به‌روزرسانی پنل با یک کلیک:
+    دریافت آخرین تغییرات از گیت‌هاب، نصب نیازمندی‌ها، و راه‌اندازی مجدد سرویس gramcrm
+    """
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+    if os.name == "nt":
+        # محیط ویندوز (توسعه لوکال)
+        try:
+            res = subprocess.run(
+                ["git", "pull", "origin", "main"],
+                cwd=base_dir,
+                capture_output=True,
+                text=True,
+                timeout=25
+            )
+            return {
+                "success": True,
+                "message": "دستور git pull در ویندوز با موفقیت انجام شد.",
+                "output": (res.stdout or res.stderr).strip(),
+                "restarting": False
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"خطا در به‌روزرسانی روی ویندوز: {str(e)}",
+                "restarting": False
+            }
+    else:
+        # محیط لینوکس (سرور عملیاتی با systemd)
+        log_file = "/tmp/gramcrm_update.log"
+        script_file = "/tmp/gramcrm_updater.sh"
+
+        script_content = f"""#!/bin/bash
+sleep 1
+cd "{base_dir}" >> {log_file} 2>&1
+echo "=== شروع به‌روزرسانی GramCRM در $(date) ===" >> {log_file} 2>&1
+git fetch --all >> {log_file} 2>&1
+git reset --hard origin/main >> {log_file} 2>&1
+if [ -d "./venv" ]; then
+    ./venv/bin/pip install -r requirements.txt >> {log_file} 2>&1
+else
+    pip install -r requirements.txt >> {log_file} 2>&1 || true
+fi
+echo "=== راه‌اندازی مجدد سرویس gramcrm ===" >> {log_file} 2>&1
+systemctl restart gramcrm >> {log_file} 2>&1 || true
+"""
+        try:
+            with open(script_file, "w", encoding="utf-8") as f:
+                f.write(script_content)
+            os.chmod(script_file, 0o755)
+
+            # اجرای کاملاً مستقل از پروسس فعلی
+            subprocess.Popen(
+                ["bash", script_file],
+                cwd=base_dir,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True
+            )
+
+            return {
+                "success": True,
+                "message": "فرآیند به‌روزرسانی آغاز شد. کدها از گیت‌هاب دریافت شده و پنل ظرف ۱۰ ثانیه آینده به‌صورت خودکار ریستارت خواهد شد.",
+                "restarting": True
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"خطا در اجرای اسکریپت به‌روزرسانی: {str(e)}",
+                "restarting": False
+            }
+

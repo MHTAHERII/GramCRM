@@ -54,6 +54,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 | **Interactive Follow Gate** | ✅ Native 2-Button Lock (`[Followed]`, `[View Page]`) | ❌ None |
 | **Live Resource Monitor** | ✅ CPU, RAM, Disk, Uptime (3X-UI Style) | ❌ None |
 | **1-Click Backup & Restore** | ✅ Instant JSON Database Export / Import | ❌ Complex SQL dumps |
+| **1-Click Auto Updater** | ✅ GitHub 1-Click Updater (3X-UI Style) | ❌ Manual SSH commands |
 | **In-Browser Live Log Terminal** | ✅ Real-time Logs Console in GUI | ❌ Requires SSH terminal |
 | **In-Panel API & Credential Config** | ✅ 100% GUI-based (No CLI needed) | ❌ Manual file editing |
 | **Live Connection Diagnostic** | ✅ 1-Click Instant API Test | ❌ None |
@@ -65,6 +66,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 ### ✨ Key Capabilities
 
 * **📊 3X-UI Style Resource & CRM Dashboard:** Live hardware monitoring (CPU, RAM, Disk, and system Uptime) plus real-time interaction metrics (Total DMs, Leads, Automations).
+* **🔄 1-Click System Updater (3X-UI Style):** Seamlessly check for new GitHub releases/commits and upgrade the entire panel with one click directly from the Settings tab without SSH terminal access.
 * **🤖 Comment-to-DM Automation:** Trigger personalized direct messages instantly when prospective customers comment specific keywords on any post or reel.
 * **🔘 Interactive Glass Link Buttons:** Attach up to 3 customizable interactive buttons (Payment gateways, Website, YouTube, Telegram channels, or WhatsApp support) directly under automated DMs.
 * **🔒 2-Button Follow-Gate Engine:** Maximize follower growth with interactive prompt buttons (`[Followed ✅]` and `[View Page 👀]`), unlocking content only after following.
@@ -170,6 +172,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 | **دروازه فالو دو دکمه‌ای** | ✅ قفل محتوا با دکمه‌های `[فالو کردم]` و `[مشاهده پیج]` | ❌ ندارد |
 | **مانیتورینگ منابع سخت‌افزاری** | ✅ مانیتور CPU، RAM، دیسک و آپتایم (مشابه 3X-UI) | ❌ ندارد |
 | **پشتیبان‌گیری و بازیابی** | ✅ دانلود و ریستور دیتابیس با ۱ کلیک (JSON) | ❌ دستی و پیچیده |
+| **به‌روزرسانی با یک کلیک** | ✅ آپدیت خودکار از گیت‌هاب (مشابه 3X-UI) | ❌ دستورات دستی SSH و Git |
 | **کنسول لاگ‌های زنده** | ✅ مشاهده خط‌به‌خط لاگ‌ها در وب بدون SSH | ❌ نیازمند ترمینال لینوکس |
 | **تنظیمات API و رمز در پنل** | ✅ بدون نیاز به ترمینال (آماده فروش به مشتری) | ❌ ویرایش دستی فایل‌های سیستمی |
 | **تست آنلاین اتصال به اینستاگرام** | ✅ بررسی آنی وضعیت توکن با ۱ کلیک | ❌ ندارد |
@@ -181,6 +184,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 ### ✨ قابلیت‌های اصلی
 
 * **📊 داشبورد و مانیتورینگ پیشرفته سرور (3X-UI Style):** نمایش گرافیکی درصد مصرف CPU، حافظه RAM، فضای دیسک، آپتایم دقیق و آمار لحظه‌ای دایرکت‌ها و لیدها.
+* **🔄 به‌روزرسانی پنل با یک کلیک (1-Click Updater):** بررسی خودکار آخرین نسخه‌ها از مخزن رسمی گیت‌هاب و امکان ارتقاء کل پروژه و پکیج‌ها تنها با یک کلیک از داخل پنل بدون نیاز به دستورات SSH.
 * **🤖 اتوماسیون کامنت به دایرکت (Comment-to-DM):** ارسال خودکار دایرکت در کسری از ثانیه به محض درج کلیدواژه زیر پست‌ها یا ریلزها.
 * **🔘 دکمه‌های شیشه‌ای تعاملی (تا ۳ دکمه):** اتصال لینک‌های دلخواه (درگاه پرداخت آنلاین 💳، دوره آموزشی 🎓، سایت 🌐، کانال تلگرام 📢 یا پشتیبانی) با عنوان‌های سفارشی به زیر پیام‌های دایرکت.
 * **🔒 دروازه فالو هوشمند (Follow Gate):** مشتریان پیش از دریافت لینک، پیام قفل با دو دکمه تعاملی `[فالو کردم ✅]` و `[مشاهده پیج 👀]` را دریافت می‌کنند تا رشد فالوورهای پیج تضمین شود.

@@ -614,6 +614,7 @@ async function loadSettings() {
   updateBotStatusText(settings.bot_enabled);
   updateBotBadge(settings.bot_enabled);
   await fetchSystemLogs();
+  await fetchVersionInfo();
 }
 
 function updateBotStatusText(enabled) {
@@ -858,6 +859,145 @@ setInterval(() => {
     fetchSystemLogs();
   }
 }, 3000);
+
+/* ---------------- به‌روزرسانی پنل (1-Click Updater) ---------------- */
+
+async function fetchVersionInfo() {
+  const localBadge = document.getElementById("updater-local-badge");
+  const localDate = document.getElementById("updater-local-date");
+  const remoteBadge = document.getElementById("updater-remote-badge");
+  const remoteDate = document.getElementById("updater-remote-date");
+  const statusBadge = document.getElementById("updater-status-badge");
+  const statusSub = document.getElementById("updater-status-sub");
+  const commitBox = document.getElementById("updater-commit-box");
+  const commitMsg = document.getElementById("updater-commit-msg");
+  const runBtn = document.getElementById("btn-run-update");
+  const alertEl = document.getElementById("updater-alert");
+
+  if (!localBadge) return;
+
+  statusBadge.textContent = "در حال بررسی…";
+  statusBadge.style.background = "rgba(100, 116, 139, 0.15)";
+  statusBadge.style.color = "#94a3b8";
+  statusBadge.style.border = "1px solid rgba(100, 116, 139, 0.3)";
+
+  try {
+    const data = await api("/system/version");
+    localBadge.textContent = data.local_commit || "-";
+    if (localDate) localDate.textContent = data.local_date ? `تاریخ: ${data.local_date}` : "";
+    remoteBadge.textContent = data.remote_commit || "-";
+    if (remoteDate) remoteDate.textContent = data.remote_date ? `تاریخ: ${data.remote_date}` : "";
+
+    if (data.remote_message && commitBox && commitMsg) {
+      commitMsg.textContent = data.remote_message;
+      commitBox.style.display = "block";
+    }
+
+    if (data.has_update) {
+      statusBadge.textContent = "نسخه جدید موجود است 🚀";
+      statusBadge.style.background = "rgba(245, 158, 11, 0.15)";
+      statusBadge.style.color = "#fbbf24";
+      statusBadge.style.border = "1px solid rgba(245, 158, 11, 0.3)";
+      if (statusSub) statusSub.textContent = data.status;
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.textContent = "🚀 به‌روزرسانی به آخرین نسخه";
+        runBtn.style.opacity = "1";
+      }
+      if (alertEl) {
+        alertEl.textContent = "یک نسخه جدیدتر در گیت‌هاب یافت شد. جهت اعمال، روی دکمه به‌روزرسانی کلیک کنید.";
+        alertEl.style.color = "#fbbf24";
+      }
+    } else if (data.error) {
+      statusBadge.textContent = "خطا در بررسی";
+      statusBadge.style.background = "rgba(239, 68, 68, 0.15)";
+      statusBadge.style.color = "#f87171";
+      statusBadge.style.border = "1px solid rgba(239, 68, 68, 0.3)";
+      if (statusSub) statusSub.textContent = data.error;
+    } else {
+      statusBadge.textContent = "سیستم به‌روز است ✓";
+      statusBadge.style.background = "rgba(16, 185, 129, 0.15)";
+      statusBadge.style.color = "#34d399";
+      statusBadge.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+      if (statusSub) statusSub.textContent = data.status;
+      if (alertEl) {
+        alertEl.textContent = "سیستم شما با آخرین کامیت مخزن گیت‌هاب همگام است.";
+        alertEl.style.color = "#10b981";
+      }
+    }
+  } catch (err) {
+    statusBadge.textContent = "خطا";
+    statusBadge.style.background = "rgba(239, 68, 68, 0.15)";
+    statusBadge.style.color = "#f87171";
+    if (statusSub) statusSub.textContent = err.message;
+  }
+}
+
+document.getElementById("btn-check-update")?.addEventListener("click", async () => {
+  const btn = document.getElementById("btn-check-update");
+  btn.disabled = true;
+  await fetchVersionInfo();
+  btn.disabled = false;
+  showToast("وضعیت نسخه بررسی شد", "success");
+});
+
+document.getElementById("btn-run-update")?.addEventListener("click", async () => {
+  if (!confirm("آیا از به‌روزرسانی پنل به آخرین نسخه مخزن گیت‌هاب اطمینان دارید؟\nدر طول این فرآیند، کدهای جدید دریافت شده و سرویس پنل ریستارت خواهد شد.")) {
+    return;
+  }
+
+  const runBtn = document.getElementById("btn-run-update");
+  const checkBtn = document.getElementById("btn-check-update");
+  const indicator = document.getElementById("updater-loading-indicator");
+  const loadingText = document.getElementById("updater-loading-text");
+  const alertEl = document.getElementById("updater-alert");
+
+  runBtn.disabled = true;
+  if (checkBtn) checkBtn.disabled = true;
+  indicator?.classList.remove("hidden");
+  if (alertEl) {
+    alertEl.textContent = "در حال ارسال دستور به‌روزرسانی به سرور...";
+    alertEl.style.color = "#38bdf8";
+  }
+
+  try {
+    const res = await api("/system/update", { method: "POST" });
+    if (!res.success) {
+      throw new Error(res.message || "خطا در فرآیند به‌روزرسانی");
+    }
+
+    showToast("دستور به‌روزرسانی با موفقیت صادر شد 🚀", "success");
+    if (alertEl) {
+      alertEl.textContent = res.message;
+      alertEl.style.color = "#10b981";
+    }
+
+    // شمارش معکوس جهت رفرش صفحه پس از ریستارت سرویس
+    let countdown = 10;
+    if (loadingText) loadingText.textContent = `در حال ریستارت سرویس... بارگذاری خودکار صفحه در ${countdown} ثانیه`;
+
+    const timer = setInterval(() => {
+      countdown -= 1;
+      if (countdown > 0) {
+        if (loadingText) loadingText.textContent = `در حال ریستارت سرویس... بارگذاری خودکار صفحه در ${countdown} ثانیه`;
+      } else {
+        clearInterval(timer);
+        if (loadingText) loadingText.textContent = "در حال بارگذاری مجدد پنل...";
+        window.location.reload();
+      }
+    }, 1000);
+
+  } catch (err) {
+    showToast(err.message, "error");
+    if (alertEl) {
+      alertEl.textContent = `❌ ${err.message}`;
+      alertEl.style.color = "#ef4444";
+    }
+    runBtn.disabled = false;
+    if (checkBtn) checkBtn.disabled = false;
+    indicator?.classList.add("hidden");
+  }
+});
 
 /* ---------------- رفرش خودکار گفتگوها و وضعیت سرور ---------------- */
 

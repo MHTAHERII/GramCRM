@@ -10,7 +10,9 @@ from app.service.system_service import (
     create_backup,
     restore_backup,
     get_logs,
-    clear_logs
+    clear_logs,
+    get_version_info,
+    execute_system_update
 )
 
 router = APIRouter(prefix="/system", tags=["System"], dependencies=[Depends(require_auth)])
@@ -77,3 +79,23 @@ def purge_logs():
     """خالی کردن بافر لاگ‌های سرور"""
     clear_logs()
     return {"success": True, "message": "لاگ‌های سیستم پاکسازی شدند"}
+
+
+@router.get("/version", summary="استعلام وضعیت نسخه پنل و بررسی آخرین تغییرات گیت‌هاب")
+def check_version():
+    """بررسی نسخه فعلی سرور در مقایسه با آخرین کامیت مخزن گیت‌هاب جهت تشخیص آپدیت"""
+    try:
+        return get_version_info()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطا در بررسی نسخه: {str(e)}")
+
+
+@router.post("/update", summary="اجرای به‌روزرسانی پنل به آخرین نسخه با یک کلیک")
+def trigger_update():
+    """دریافت آخرین کدهای پروژه از گیت‌هاب، بروزرسانی پکیج‌ها، و راه‌اندازی مجدد سرویس"""
+    try:
+        result = execute_system_update()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطا در اجرای به‌روزرسانی: {str(e)}")
+

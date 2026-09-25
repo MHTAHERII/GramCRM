@@ -24,10 +24,32 @@ function parseDate(iso) {
 function fmtTime(iso) {
   const d = parseDate(iso);
   if (!d || isNaN(d)) return "";
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+
+  if (isToday) {
+    return new Intl.DateTimeFormat("fa-IR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d);
+  }
+
   return new Intl.DateTimeFormat("fa-IR", {
-    dateStyle: "short",
-    timeStyle: "short",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(d);
+}
+
+function fmtConvTime(iso) {
+  const d = parseDate(iso);
+  if (!d || isNaN(d)) return "";
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit" }).format(d);
+  }
+  return new Intl.DateTimeFormat("fa-IR", { month: "numeric", day: "numeric" }).format(d);
 }
 
 function fmtNumber(n) {
@@ -427,7 +449,7 @@ async function loadConversations(isBackground = false) {
     const last = c.last_message;
     const name = customer.name || customer.username || "کاربر " + customer.instagram_id;
     const preview = last ? last.text : "بدون پیام";
-    const time = last ? fmtTime(last.created_at) : "";
+    const time = last ? fmtConvTime(last.created_at) : "";
     const isActive = customer.id === selectedCustomerId;
     return `
       <div class="conversation-item ${isActive ? "active" : ""}"
@@ -472,10 +494,12 @@ function renderMessageList(messages) {
       <div class="msg ${esc(m.sender)}" ${m.id ? `id="msg-${m.id}"` : ""}>
         <div class="bubble">
           ${m.sender !== "customer" ? `<span class="sender">${SENDER_LABEL[m.sender] || m.sender}</span>` : ""}
-          ${esc(m.text)}
-          <span class="time" id="status-${m.id}">
-            ${isPending ? "در حال ارسال… ⏳" : fmtTime(m.created_at)}
-          </span>
+          <div class="bubble-content">
+            <span class="bubble-text">${esc(m.text)}</span>
+            <span class="time" id="status-${m.id}">
+              ${isPending ? "در حال ارسال… ⏳" : fmtTime(m.created_at)}
+            </span>
+          </div>
         </div>
       </div>
     `;

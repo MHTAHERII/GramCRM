@@ -265,19 +265,18 @@ let keywordsCache = [];
 
 function createButtonRow(title = "", url = "") {
   const row = document.createElement("div");
-  row.className = "grid-2 keyword-btn-row";
-  row.style.cssText = "margin-bottom: 8px; align-items: flex-end;";
+  row.className = "keyword-btn-row";
   row.innerHTML = `
     <div class="field" style="margin-bottom: 0;">
       <label style="font-size: 0.78rem;">متن دکمه (مثلاً: پرداخت آنلاین 💳)</label>
       <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
     </div>
-    <div class="field" style="margin-bottom: 0; display: flex; gap: 8px; align-items: flex-end;">
-      <div style="flex: 1;">
-        <label style="font-size: 0.78rem;">لینک اینترنتی (URL)</label>
-        <input type="url" class="btn-url-input" placeholder="https://..." value="${esc(url)}">
-      </div>
-      <button type="button" class="btn small ghost btn-remove-row" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); height: 38px; padding: 0 10px;" title="حذف این دکمه">✕</button>
+    <div class="field" style="margin-bottom: 0;">
+      <label style="font-size: 0.78rem;">لینک اینترنتی (URL)</label>
+      <input type="url" class="btn-url-input" placeholder="https://..." value="${esc(url)}">
+    </div>
+    <div style="display: flex; align-items: flex-end;">
+      <button type="button" class="btn small ghost btn-remove-row" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); height: 42px; width: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); flex-shrink: 0;" title="حذف این دکمه">✕</button>
     </div>
   `;
   row.querySelector(".btn-remove-row").addEventListener("click", () => {

@@ -267,12 +267,29 @@ td.actions, .actions { display: flex; gap: 6px; white-space: nowrap; }
 .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
 .field:last-of-type { margin-bottom: 0; }
 .field label { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
-.grid-2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
-input[type="text"], input[type="number"], input[type="password"],
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px; }
+input[type="text"], input[type="number"], input[type="password"], input[type="url"], input[type="email"],
 textarea, #fallback-message, #follow-gate-message, #chat-input {
   width: 100%; padding: 11px 14px; border-radius: var(--radius);
   border: 1px solid var(--border); background: var(--bg-secondary);
   color: var(--text); font-size: 0.9rem; transition: var(--t); outline: none; resize: vertical;
+}
+.keyword-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr auto;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius);
+}
+@media (max-width: 640px) {
+  .keyword-btn-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 textarea { line-height: 1.7; min-height: 44px; }
 input::placeholder, textarea::placeholder { color: var(--text-tertiary); }

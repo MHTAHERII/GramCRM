@@ -129,36 +129,90 @@ document.querySelectorAll(".tab").forEach((tab) => {
 let editingKeywordId = null;
 let keywordsCache = [];
 
+function createButtonRow(title = "", url = "") {
+  const row = document.createElement("div");
+  row.className = "grid-2 keyword-btn-row";
+  row.style.cssText = "margin-bottom: 8px; align-items: flex-end;";
+  row.innerHTML = `
+    <div class="field" style="margin-bottom: 0;">
+      <label style="font-size: 0.78rem;">متن دکمه (مثلاً: پرداخت آنلاین 💳)</label>
+      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+    </div>
+    <div class="field" style="margin-bottom: 0; display: flex; gap: 8px; align-items: flex-end;">
+      <div style="flex: 1;">
+        <label style="font-size: 0.78rem;">لینک اینترنتی (URL)</label>
+        <input type="url" class="btn-url-input" placeholder="https://..." value="${esc(url)}">
+      </div>
+      <button type="button" class="btn small ghost btn-remove-row" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); height: 38px; padding: 0 10px;" title="حذف این دکمه">✕</button>
+    </div>
+  `;
+  row.querySelector(".btn-remove-row").addEventListener("click", () => {
+    row.remove();
+    checkButtonCount();
+  });
+  return row;
+}
+
+function checkButtonCount() {
+  const container = document.getElementById("keyword-buttons-container");
+  const addBtn = document.getElementById("btn-add-keyword-button");
+  if (!container || !addBtn) return;
+  const count = container.querySelectorAll(".keyword-btn-row").length;
+  addBtn.style.display = count >= 3 ? "none" : "inline-flex";
+}
+
+function addKeywordButtonRow(title = "", url = "") {
+  const container = document.getElementById("keyword-buttons-container");
+  if (!container) return;
+  if (container.querySelectorAll(".keyword-btn-row").length >= 3) {
+    showToast("حداکثر ۳ دکمه می‌توانید اضافه کنید", "error");
+    return;
+  }
+  container.appendChild(createButtonRow(title, url));
+  checkButtonCount();
+}
+
+document.getElementById("btn-add-keyword-button")?.addEventListener("click", () => {
+  addKeywordButtonRow();
+});
+
 async function loadKeywords() {
   keywordsCache = await api("/keywords/");
   const tbody = document.getElementById("keywords-body");
   document.getElementById("keywords-empty").classList.toggle("hidden", keywordsCache.length > 0);
 
-  tbody.innerHTML = keywordsCache.map((k) => `
-    <tr>
-      <td class="kw-text">${esc(k.keyword)}</td>
-      <td class="kw-response">
-        <div>${esc(k.response)}</div>
-        ${k.button_title && k.button_url ? `
-          <div style="margin-top:6px;">
-            <a href="${esc(k.button_url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:0.75rem;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;text-decoration:none;">
-              🔘 ${esc(k.button_title)}
-            </a>
-          </div>
-        ` : ""}
-      </td>
-      <td>
-        <label class="switch" title="روشن/خاموش">
-          <input type="checkbox" ${k.active ? "checked" : ""} onchange="toggleKeyword(${k.id})">
-          <span class="slider"></span>
-        </label>
-      </td>
-      <td class="actions">
-        <button class="btn small ghost" onclick="startEditKeyword(${k.id})">ویرایش</button>
-        <button class="btn small ghost" onclick="deleteKeyword(${k.id})">حذف</button>
-      </td>
-    </tr>
-  `).join("");
+  tbody.innerHTML = keywordsCache.map((k) => {
+    const btns = (k.buttons && k.buttons.length)
+      ? k.buttons
+      : (k.button_title && k.button_url ? [{ title: k.button_title, url: k.button_url }] : []);
+    return `
+      <tr>
+        <td class="kw-text">${esc(k.keyword)}</td>
+        <td class="kw-response">
+          <div>${esc(k.response)}</div>
+          ${btns.length ? `
+            <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px;">
+              ${btns.map(b => `
+                <a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:0.75rem;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;text-decoration:none;">
+                  🔘 ${esc(b.title)}
+                </a>
+              `).join("")}
+            </div>
+          ` : ""}
+        </td>
+        <td>
+          <label class="switch" title="روشن/خاموش">
+            <input type="checkbox" ${k.active ? "checked" : ""} onchange="toggleKeyword(${k.id})">
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td class="actions">
+          <button class="btn small ghost" onclick="startEditKeyword(${k.id})">ویرایش</button>
+          <button class="btn small ghost" onclick="deleteKeyword(${k.id})">حذف</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
 }
 
 async function toggleKeyword(id) {
@@ -189,8 +243,17 @@ function startEditKeyword(id) {
   document.getElementById("keyword-form-title").textContent = "ویرایش کلمه کلیدی";
   document.getElementById("keyword-input").value = k.keyword;
   document.getElementById("keyword-response-input").value = k.response;
-  document.getElementById("keyword-button-title").value = k.button_title || "";
-  document.getElementById("keyword-button-url").value = k.button_url || "";
+
+  // بازسازی ردیف‌های دکمه‌ها
+  const container = document.getElementById("keyword-buttons-container");
+  if (container) {
+    container.innerHTML = "";
+    const btns = (k.buttons && k.buttons.length)
+      ? k.buttons
+      : (k.button_title && k.button_url ? [{ title: k.button_title, url: k.button_url }] : []);
+    btns.forEach(b => addKeywordButtonRow(b.title, b.url));
+  }
+
   document.getElementById("keyword-submit").textContent = "ذخیره تغییرات";
   document.getElementById("keyword-cancel").classList.remove("hidden");
   document.getElementById("keyword-input").focus();
@@ -199,8 +262,9 @@ function startEditKeyword(id) {
 function resetKeywordForm() {
   editingKeywordId = null;
   document.getElementById("keyword-form").reset();
-  document.getElementById("keyword-button-title").value = "";
-  document.getElementById("keyword-button-url").value = "";
+  const container = document.getElementById("keyword-buttons-container");
+  if (container) container.innerHTML = "";
+  checkButtonCount();
   document.getElementById("keyword-form-title").textContent = "افزودن کلمه کلیدی";
   document.getElementById("keyword-submit").textContent = "افزودن";
   document.getElementById("keyword-cancel").classList.add("hidden");
@@ -210,14 +274,25 @@ document.getElementById("keyword-cancel").addEventListener("click", resetKeyword
 
 document.getElementById("keyword-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const btnTitle = document.getElementById("keyword-button-title").value.trim();
-  const btnUrl = document.getElementById("keyword-button-url").value.trim();
+  const container = document.getElementById("keyword-buttons-container");
+  const rows = container ? container.querySelectorAll(".keyword-btn-row") : [];
+  const buttons = [];
+  rows.forEach(r => {
+    const t = r.querySelector(".btn-title-input")?.value.trim();
+    const u = r.querySelector(".btn-url-input")?.value.trim();
+    if (t && u) {
+      buttons.push({ title: t, url: u });
+    }
+  });
+
   const body = JSON.stringify({
     keyword: document.getElementById("keyword-input").value.trim(),
     response: document.getElementById("keyword-response-input").value.trim(),
-    button_title: btnTitle ? btnTitle : null,
-    button_url: btnUrl ? btnUrl : null,
+    buttons: buttons,
+    button_title: buttons.length ? buttons[0].title : null,
+    button_url: buttons.length ? buttons[0].url : null,
   });
+
   try {
     if (editingKeywordId) {
       await api(`/keywords/${editingKeywordId}`, { method: "PUT", body });

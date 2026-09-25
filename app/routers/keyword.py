@@ -46,11 +46,22 @@ def create_keyword(
     if exists:
         raise HTTPException(status_code=409, detail="این کلیدواژه قبلاً ثبت شده است")
 
+    btn_list = []
+    if keyword.buttons:
+        for b in keyword.buttons[:3]:
+            t = b.title.strip()
+            u = b.url.strip()
+            if t and u:
+                btn_list.append({"title": t, "url": u})
+    elif keyword.button_title and keyword.button_url:
+        btn_list.append({"title": keyword.button_title.strip(), "url": keyword.button_url.strip()})
+
     new_keyword = Keyword(
         keyword=keyword.keyword.strip(),
         response=keyword.response.strip(),
-        button_title=keyword.button_title.strip() if keyword.button_title else None,
-        button_url=keyword.button_url.strip() if keyword.button_url else None
+        buttons=btn_list if btn_list else None,
+        button_title=btn_list[0]["title"] if btn_list else None,
+        button_url=btn_list[0]["url"] if btn_list else None
     )
 
     db.add(new_keyword)
@@ -97,11 +108,25 @@ def update_keyword(
     if keyword_data.response is not None:
         keyword.response = keyword_data.response.strip()
 
-    if keyword_data.button_title is not None:
-        keyword.button_title = keyword_data.button_title.strip() if keyword_data.button_title.strip() else None
-
-    if keyword_data.button_url is not None:
-        keyword.button_url = keyword_data.button_url.strip() if keyword_data.button_url.strip() else None
+    if keyword_data.buttons is not None:
+        btn_list = []
+        for b in keyword_data.buttons[:3]:
+            t = b.title.strip()
+            u = b.url.strip()
+            if t and u:
+                btn_list.append({"title": t, "url": u})
+        keyword.buttons = btn_list if btn_list else None
+        keyword.button_title = btn_list[0]["title"] if btn_list else None
+        keyword.button_url = btn_list[0]["url"] if btn_list else None
+    else:
+        if keyword_data.button_title is not None:
+            keyword.button_title = keyword_data.button_title.strip() if keyword_data.button_title.strip() else None
+        if keyword_data.button_url is not None:
+            keyword.button_url = keyword_data.button_url.strip() if keyword_data.button_url.strip() else None
+        if keyword.button_title and keyword.button_url:
+            keyword.buttons = [{"title": keyword.button_title, "url": keyword.button_url}]
+        elif keyword_data.button_title == "" or keyword_data.button_url == "":
+            keyword.buttons = None
 
     if keyword_data.active is not None:
         keyword.active = keyword_data.active

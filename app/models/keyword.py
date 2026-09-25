@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON
 from datetime import datetime
 from app.database import Base
 
@@ -34,6 +34,11 @@ class Keyword(Base):
     button_url = Column(
         String(500),
         nullable=True
+    )
+    buttons = Column(
+        JSON,
+        nullable=True,
+        default=list
     )
 
     created_at = Column(

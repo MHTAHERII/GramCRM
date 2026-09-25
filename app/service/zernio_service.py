@@ -45,6 +45,7 @@ class ZernioService:
         name: str,
         keywords: list[str],
         dm_message: str,
+        buttons: list[dict] | None = None,
         button_title: str | None = None,
         button_url: str | None = None,
         follow_gate_message: str | None = None
@@ -52,7 +53,7 @@ class ZernioService:
         """
         ساخت اتوماسیون جدید کامنت به دایرکت:
         - اگر follow_gate_message ست باشد: اینستاگرام پیام قفل فالو با دو دکمه تعاملی می‌فرستد.
-        - اگر button_title و button_url ست باشد: پیام نهایی همراه با دکمه لینک‌دار شکیل ارسال می‌شود.
+        - اگر buttons یا button_title/button_url ست باشد: پیام نهایی همراه با دکمه‌های لینک‌دار شکیل (تا ۳ دکمه) ارسال می‌شود.
         """
         if not self.is_configured():
             logger.warning("Zernio is not configured.")
@@ -67,15 +68,23 @@ class ZernioService:
             "alsoMatchInDms": True
         }
 
-        # افزودن دکمه لینک‌دار شبیه دکمه یوتیوب
-        if button_title and button_url:
-            payload["buttons"] = [
-                {
-                    "type": "url",
-                    "title": button_title.strip(),
-                    "url": button_url.strip()
-                }
-            ]
+        # افزودن دکمه‌های لینک‌دار تعاملی (حداکثر ۳ دکمه طبق استاندارد اینستاگرام)
+        formatted_buttons = []
+        if buttons:
+            for b in buttons[:3]:
+                if isinstance(b, dict):
+                    t = b.get("title", "").strip()
+                    u = b.get("url", "").strip()
+                else:
+                    t = getattr(b, "title", "").strip()
+                    u = getattr(b, "url", "").strip()
+                if t and u:
+                    formatted_buttons.append({"type": "url", "title": t, "url": u})
+        elif button_title and button_url:
+            formatted_buttons.append({"type": "url", "title": button_title.strip(), "url": button_url.strip()})
+
+        if formatted_buttons:
+            payload["buttons"] = formatted_buttons
 
         # افزودن قفل فالو با دو دکمه «فالو کردم» و «مشاهده پیج»
         if follow_gate_message:
@@ -141,6 +150,7 @@ class ZernioService:
                 name=auto_name,
                 keywords=[kw.keyword],
                 dm_message=kw.response,
+                buttons=kw.buttons,
                 button_title=kw.button_title,
                 button_url=kw.button_url,
                 follow_gate_message=fg_msg

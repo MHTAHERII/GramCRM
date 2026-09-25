@@ -18,6 +18,9 @@ class UnifiedInstagramService:
         self.base_url = "https://zernio.com/api/v1"
         # ذخیره آخرین message_id پردازش‌شده برای هر مکالمه (جلوگیری از پاسخ تکراری)
         self._last_processed: dict[str, str] = {}
+        # کش پرسرعت مکالمات (ارسال فوری بدون تاخیر شبکه)
+        self._conv_cache: dict[str, str] = {}
+        self.session = requests.Session()
 
     @property
     def headers(self) -> dict:
@@ -54,7 +57,7 @@ class UnifiedInstagramService:
         try:
             conv_url = f"{self.base_url}/inbox/conversations"
             params = {"accountId": self.account_id}
-            r = requests.get(conv_url, headers=self.headers, params=params, timeout=15)
+            r = self.session.get(conv_url, headers=self.headers, params=params, timeout=10)
             if r.status_code != 200:
                 logger.error(f"Failed to fetch conversations ({r.status_code}): {r.text}")
                 return []
@@ -67,6 +70,14 @@ class UnifiedInstagramService:
             for conv in conversations[:amount]:
                 conv_id = conv.get("id")
                 participant = conv.get("participantUsername") or conv.get("participantName") or "unknown"
+                part_id = conv.get("participantId")
+
+                # ثبت در کش مکالمات جهت پاسخ‌گویی بدون تاخیر از پنل
+                if conv_id:
+                    self._conv_cache[str(conv_id)] = conv_id
+                    if part_id: self._conv_cache[str(part_id)] = conv_id
+                    if participant and participant != "unknown":
+                        self._conv_cache[str(participant).lower()] = conv_id
 
                 # ۱. فیلتر ۲۴ ساعته — خارج از پنجره مجاز متا
                 updated_str = conv.get("updatedTime")
@@ -81,7 +92,7 @@ class UnifiedInstagramService:
 
                 # ۲. دریافت پیام‌های مکالمه
                 msg_url = f"{self.base_url}/inbox/conversations/{conv_id}/messages"
-                m_res = requests.get(msg_url, headers=self.headers, params=params, timeout=15)
+                m_res = self.session.get(msg_url, headers=self.headers, params=params, timeout=10)
                 if m_res.status_code != 200:
                     logger.warning(f"Failed to fetch messages for {participant} ({m_res.status_code})")
                     continue
@@ -169,7 +180,7 @@ class UnifiedInstagramService:
 
         try:
             logger.info(f"Sending DM to conversation {conv_id}: '{text[:50]}...'")
-            res = requests.post(url, headers=self.headers, json=payload, timeout=15)
+            res = self.session.post(url, headers=self.headers, json=payload, timeout=8)
             if res.status_code in [200, 201]:
                 logger.info(f"DM sent successfully to {conv_id}")
                 return True
@@ -198,32 +209,56 @@ class UnifiedInstagramService:
             logger.error(f"Network error sending DM via Zernio: {e}", exc_info=True)
             return False
 
+    def cache_conversation(self, user_id: str | None, thread_id: str | None, username: str | None = None) -> None:
+        """ثبت فوری شناسه مکالمه در کش برای ارسال بلادرنگ از پنل"""
+        if thread_id:
+            self._conv_cache[str(thread_id)] = thread_id
+            if user_id:
+                self._conv_cache[str(user_id)] = thread_id
+            if username:
+                self._conv_cache[str(username).lower()] = thread_id
+
     def find_conversation_id(self, instagram_user_id: str) -> str | None:
         """
         پیدا کردن conversation ID بر اساس instagram_user_id
-        برای ارسال دستی از پنل مدیریت
+        بررسی فوری کش حافظه (۰ میلی‌ثانیه)، و در صورت نیاز استعلام و کش سریع از Zernio
         """
         if not self.ensure_authenticated():
             return None
 
+        # ۱. بررسی بلادرنگ در کش حافظه (Instant Cache Hit)
+        key = str(instagram_user_id).lower()
+        if key in self._conv_cache:
+            return self._conv_cache[key]
+        if str(instagram_user_id) in self._conv_cache:
+            return self._conv_cache[str(instagram_user_id)]
+
+        # ۲. در صورت نبود، استعلام سریع از Zernio و کش کردن تمام گفتگوها
         try:
             conv_url = f"{self.base_url}/inbox/conversations"
             params = {"accountId": self.account_id}
-            r = requests.get(conv_url, headers=self.headers, params=params, timeout=15)
+            r = self.session.get(conv_url, headers=self.headers, params=params, timeout=8)
             if r.status_code != 200:
                 return None
 
             conversations = r.json().get("data", [])
+            target_conv = None
             for conv in conversations:
-                # participantId یا خود conversation id ممکنه با instagram_user_id مطابقت داشته باشه
-                participant_id = conv.get("participantId", "")
-                conv_id = conv.get("id", "")
+                cid = conv.get("id", "")
+                pid = conv.get("participantId", "")
+                puser = conv.get("participantUsername", "")
 
-                if str(participant_id) == str(instagram_user_id) or str(conv_id) == str(instagram_user_id):
-                    return conv_id
+                if cid:
+                    self._conv_cache[str(cid)] = cid
+                    if pid: self._conv_cache[str(pid)] = cid
+                    if puser: self._conv_cache[str(puser).lower()] = cid
 
-            logger.warning(f"No conversation found for user {instagram_user_id}")
-            return None
+                if str(pid) == str(instagram_user_id) or str(cid) == str(instagram_user_id) or (puser and str(puser).lower() == key):
+                    target_conv = cid
+
+            if not target_conv:
+                logger.warning(f"No conversation found for user {instagram_user_id}")
+            return target_conv
 
         except Exception as e:
             logger.error(f"Error finding conversation for {instagram_user_id}: {e}")

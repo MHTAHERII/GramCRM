@@ -55,6 +55,9 @@ async def receive_zernio_webhook(request: Request, db: Session = Depends(get_db)
             return {"status": "IGNORED_OUTGOING"}
 
         if sender_id and text:
+            # کش کردن سریع شناسه مکالمه جهت پاسخ‌های بدون تاخیر
+            instagram_client.cache_conversation(user_id=sender_id, thread_id=conv_id, username=sender_name)
+
             logger.info(f"Zernio Webhook: Processing message from {sender_name or sender_id}: '{text[:40]}...'")
             reply = process_incoming_message(
                 db=db,

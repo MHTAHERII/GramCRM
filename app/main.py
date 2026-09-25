@@ -78,6 +78,9 @@ def run_schema_migrations() -> None:
         conn.execute(text(
             "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_account_id VARCHAR(100);"
         ))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
+        ))
 
 
 @asynccontextmanager

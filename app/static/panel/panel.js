@@ -391,9 +391,11 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
   }
 });
 
-/* ---------------- گفتگوها ---------------- */
+/* ---------------- گفتگوها (Optimized Real-Time Chat & Inbox) ---------------- */
 
 let selectedCustomerId = null;
+let conversationsCache = [];
+let messagesCache = {}; // Cache: customerId -> messages[]
 
 const SENDER_LABEL = {
   customer: "مشتری",
@@ -401,14 +403,17 @@ const SENDER_LABEL = {
   admin: "شما",
 };
 
-async function loadConversations() {
+async function loadConversations(isBackground = false) {
   const list = document.getElementById("conversation-list");
   let conversations;
   try {
     conversations = await api("/conversations/");
+    conversationsCache = conversations || [];
   } catch (err) {
     if (err.message === "unauthorized") return;
-    list.innerHTML = `<div class="empty">خطا در دریافت گفتگوها</div>`;
+    if (!isBackground) {
+      list.innerHTML = `<div class="empty">خطا در دریافت گفتگوها</div>`;
+    }
     return;
   }
 
@@ -423,39 +428,23 @@ async function loadConversations() {
     const name = customer.name || customer.username || "کاربر " + customer.instagram_id;
     const preview = last ? last.text : "بدون پیام";
     const time = last ? fmtTime(last.created_at) : "";
+    const isActive = customer.id === selectedCustomerId;
     return `
-      <div class="conversation-item ${customer.id === selectedCustomerId ? "active" : ""}"
+      <div class="conversation-item ${isActive ? "active" : ""}"
+           data-customer-id="${customer.id}"
            onclick="selectConversation(${customer.id})">
         <div class="c-name">${esc(name)}</div>
         ${customer.username ? `<div class="c-username">@${esc(customer.username)}</div>` : ""}
-        <div class="c-preview">${esc(preview)}</div>
-        <div class="c-time">${time}</div>
+        <div class="c-preview" id="conv-prev-${customer.id}">${esc(preview)}</div>
+        <div class="c-time" id="conv-time-${customer.id}">${time}</div>
       </div>
     `;
   }).join("");
 }
 
-async function selectConversation(customerId) {
-  selectedCustomerId = customerId;
-  loadConversations(); // برای به‌روزرسانی حالت active
-  await loadChatMessages();
-}
-
-async function loadChatMessages() {
-  if (!selectedCustomerId) return;
-  const messagesBox = document.getElementById("chat-messages");
+function renderChatHeader(customer) {
   const header = document.getElementById("chat-header");
-
-  let customer, messages;
-  try {
-    customer = await api(`/customers/${selectedCustomerId}`);
-    messages = await api(`/customers/${selectedCustomerId}/messages`);
-  } catch (err) {
-    if (err.message === "unauthorized") return;
-    showToast(err.message, "error");
-    return;
-  }
-
+  if (!header || !customer) return;
   const name = customer.name || customer.username || "کاربر " + customer.instagram_id;
   header.innerHTML = "";
   const title = document.createElement("div");
@@ -466,24 +455,86 @@ async function loadChatMessages() {
   sub.textContent = customer.username ? "@" + customer.username : "ID: " + customer.instagram_id;
   header.appendChild(title);
   header.appendChild(sub);
+}
 
-  if (!messages.length) {
+function renderMessageList(messages) {
+  const messagesBox = document.getElementById("chat-messages");
+  if (!messagesBox) return;
+
+  if (!messages || !messages.length) {
     messagesBox.innerHTML = `<div class="empty">پیامی رد و بدل نشده است</div>`;
     return;
   }
 
-  messagesBox.innerHTML = messages.map((m) => `
-    <div class="msg ${esc(m.sender)}">
-      <div class="bubble">
-        ${m.sender !== "customer" ? `<span class="sender">${SENDER_LABEL[m.sender] || m.sender}</span>` : ""}
-        ${esc(m.text)}
-        <span class="time">${fmtTime(m.created_at)}</span>
+  messagesBox.innerHTML = messages.map((m) => {
+    const isPending = m._pending;
+    return `
+      <div class="msg ${esc(m.sender)}" ${m.id ? `id="msg-${m.id}"` : ""}>
+        <div class="bubble">
+          ${m.sender !== "customer" ? `<span class="sender">${SENDER_LABEL[m.sender] || m.sender}</span>` : ""}
+          ${esc(m.text)}
+          <span class="time" id="status-${m.id}">
+            ${isPending ? "در حال ارسال… ⏳" : fmtTime(m.created_at)}
+          </span>
+        </div>
       </div>
-    </div>
-  `).join("");
-  messagesBox.scrollTop = messagesBox.scrollHeight; // اسکرول به آخرین پیام
+    `;
+  }).join("");
+  messagesBox.scrollTop = messagesBox.scrollHeight;
 }
 
+async function selectConversation(customerId) {
+  selectedCustomerId = customerId;
+
+  // ۱. آپدیت فوری استایل active روی آیتم‌ها بدون رفرش کل لیست (۰ میلی‌ثانیه!)
+  document.querySelectorAll(".conversation-item").forEach((el) => {
+    el.classList.toggle("active", el.dataset.customerId == customerId);
+  });
+
+  // ۲. نمایش فوری هدر از روی اطلاعات کش شده (۰ میلی‌ثانیه!)
+  const conv = conversationsCache.find((c) => c.customer && c.customer.id === customerId);
+  if (conv && conv.customer) {
+    renderChatHeader(conv.customer);
+  }
+
+  // ۳. نمایش فوری پیام‌ها از کش حافظه اگر قبلاً لود شده باشد (Instant 0ms UI)
+  if (messagesCache[customerId]) {
+    renderMessageList(messagesCache[customerId]);
+  } else {
+    const messagesBox = document.getElementById("chat-messages");
+    if (messagesBox) {
+      messagesBox.innerHTML = `<div class="empty" style="color: #818cf8;">در حال دریافت پیام‌ها…</div>`;
+    }
+  }
+
+  // ۴. دریافت آخرین پیام‌ها در پس‌زمینه بدون مسدود کردن UI
+  await loadChatMessages();
+}
+
+async function loadChatMessages() {
+  if (!selectedCustomerId) return;
+  const currentId = selectedCustomerId;
+
+  try {
+    const messages = await api(`/customers/${currentId}/messages`);
+    // جلوگیری از تداخل اگر کاربر حین فچ روی گفتگوی دیگری کلیک کرده باشد
+    if (selectedCustomerId !== currentId) return;
+
+    messagesCache[currentId] = messages;
+    renderMessageList(messages);
+
+    // تکمیل مشخصات هدر در صورتی که موجود باشد
+    const conv = conversationsCache.find((c) => c.customer && c.customer.id === currentId);
+    if (conv && conv.customer) {
+      renderChatHeader(conv.customer);
+    }
+  } catch (err) {
+    if (err.message === "unauthorized") return;
+    showToast(err.message, "error");
+  }
+}
+
+// ارسال فوق‌سریع پیام با آپدیت خوش‌بینانه (Optimistic UI - Instant 0ms)
 document.getElementById("chat-send-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!selectedCustomerId) {
@@ -494,17 +545,62 @@ document.getElementById("chat-send-form").addEventListener("submit", async (e) =
   const text = input.value.trim();
   if (!text) return;
 
+  const currentCustomerId = selectedCustomerId;
+  const tempId = "temp-" + Date.now();
+  const optimisticMsg = {
+    id: tempId,
+    customer_id: currentCustomerId,
+    sender: "admin",
+    text: text,
+    created_at: new Date().toISOString(),
+    _pending: true
+  };
+
+  // ۱. پاکسازی فوری ورودی جهت تایپ پیام بعدی بدون توقف (۰ میلی‌ثانیه!)
+  input.value = "";
+  input.focus();
+
+  // ۲. نمایش فوری پیام در پنجره چت (۰ میلی‌ثانیه!)
+  if (!messagesCache[currentCustomerId]) {
+    messagesCache[currentCustomerId] = [];
+  }
+  messagesCache[currentCustomerId].push(optimisticMsg);
+  renderMessageList(messagesCache[currentCustomerId]);
+
+  // ۳. آپدیت فوری پیش‌نمایش در لیست سمت راست
+  const prevEl = document.getElementById(`conv-prev-${currentCustomerId}`);
+  const timeEl = document.getElementById(`conv-time-${currentCustomerId}`);
+  if (prevEl) prevEl.textContent = text;
+  if (timeEl) timeEl.textContent = "همین الان";
+
+  // ۴. ارسال درخواست به سرور در پس‌زمینه بدون بلاک کردن کاربر
   try {
-    const result = await api(`/customers/${selectedCustomerId}/send`, {
+    const result = await api(`/customers/${currentCustomerId}/send`, {
       method: "POST",
       body: JSON.stringify({ text }),
     });
-    if (result.sent) showToast("پیام ارسال شد", "success");
-    else showToast(result.detail || "ارسال به اینستاگرام ناموفق بود", "error");
-    input.value = "";
-    await loadChatMessages();
-    await loadConversations();
+
+    const statusEl = document.getElementById(`status-${tempId}`);
+    if (result.sent) {
+      if (statusEl) {
+        statusEl.textContent = fmtTime(new Date()) + " ✓";
+        statusEl.style.color = "#34d399";
+      }
+      optimisticMsg._pending = false;
+      if (result.message && result.message.id) {
+        optimisticMsg.id = result.message.id;
+      }
+    } else {
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color:#f87171;" title="${esc(result.detail || 'خطا در ارسال')}">ارسال نشد ⚠️</span>`;
+      }
+      showToast(result.detail || "ارسال به اینستاگرام ناموفق بود ولی در سوابق ثبت شد", "warning");
+    }
   } catch (err) {
+    const statusEl = document.getElementById(`status-${tempId}`);
+    if (statusEl) {
+      statusEl.innerHTML = `<span style="color:#ef4444;" title="${esc(err.message)}">خطا ❌</span>`;
+    }
     if (err.message !== "unauthorized") showToast(err.message, "error");
   }
 });

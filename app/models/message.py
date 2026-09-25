@@ -11,8 +11,9 @@ class Message(Base):
 
     customer_id = Column(
         Integer,
-        ForeignKey("customers.id"),#پیام متعلق به کدام مشتریه
-        nullable=False
+        ForeignKey("customers.id"),
+        nullable=False,
+        index=True
     )
 
     text = Column(Text, nullable=False)

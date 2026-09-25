@@ -32,6 +32,13 @@ def poll_cycle() -> int:
     try:
         for msg in messages:
             try:
+                # کش کردن اتصال کاربر به مکالمه جهت پاسخ‌های آنی ادمین از پنل
+                instagram_client.cache_conversation(
+                    user_id=msg.get("user_id"),
+                    thread_id=msg.get("thread_id"),
+                    username=msg.get("username")
+                )
+
                 reply = process_incoming_message(
                     db=db,
                     instagram_user_id=msg["user_id"],

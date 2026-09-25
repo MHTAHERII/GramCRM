@@ -2,6 +2,7 @@ from typing import List
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.auth import require_auth
@@ -26,22 +27,32 @@ conversations_router = APIRouter(
 
 @conversations_router.get("/", response_model=List[ConversationResponse])
 def get_conversations(db: Session = Depends(get_db)):
-    """لیست گفتگوها برای صندوق پنل: هر مشتری + آخرین پیامش، مرتب از تازه‌ترین"""
-    conversations = []
-    for customer in db.query(Customer).all():
-        last_message = (
-            db.query(Message)
-            .filter(Message.customer_id == customer.id)
-            .order_by(Message.created_at.desc(), Message.id.desc())
-            .first()
+    """لیست گفتگوها برای صندوق پنل: بهینه‌سازی‌شده در ۲ کوئری فوق‌سریع بدون N+1"""
+    customers = db.query(Customer).all()
+    if not customers:
+        return []
+
+    # استخراج آخرین پیام هر مشتری در ۱ کوئری فوق‌سریع
+    subq = (
+        db.query(
+            Message.customer_id,
+            func.max(Message.id).label("max_id")
         )
-        conversations.append({
-            "customer": customer,
-            "last_message": last_message
-        })
+        .group_by(Message.customer_id)
+        .subquery()
+    )
+    last_messages = db.query(Message).join(subq, Message.id == subq.c.max_id).all()
+    last_msg_map = {m.customer_id: m for m in last_messages}
+
+    conversations = [
+        {
+            "customer": cust,
+            "last_message": last_msg_map.get(cust.id)
+        }
+        for cust in customers
+    ]
 
     # گفتگوهای دارای پیام از تازه‌ترین، بقیه در انتها
-    # (datetime.min جایگزین None تا مقایسه تاریخ‌ها خطا ندهد)
     conversations.sort(
         key=lambda c: (
             c["last_message"].created_at if c["last_message"] else datetime.min

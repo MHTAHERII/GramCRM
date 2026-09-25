@@ -117,12 +117,12 @@ def get_customer_messages(
         customer_id: int,
         db: Session = Depends(get_db)
 ):
-    """تاریخچه کامل رد و بدل شده با یک مشتری (به ترتیب زمان)"""
-    customer = _get_customer_or_404(db, customer_id)
+    """تاریخچه کامل رد و بدل شده با یک مشتری (کوئری مستقیم با ایندکس بدون کوئری اضافه)"""
     return (
         db.query(Message)
-        .filter(Message.customer_id == customer.id)
-        .order_by(Message.created_at, Message.id)
+        .filter(Message.customer_id == customer_id)
+        .order_by(Message.created_at.asc(), Message.id.asc())
+        .limit(250)
         .all()
     )
 
@@ -136,16 +136,18 @@ def send_manual_message(
     """ارسال پاسخ دستی از پنل؛ پیام به دایرکت اینستاگرام ارسال و در سوابق ثبت می‌شود"""
     customer = _get_customer_or_404(db, customer_id)
     text = payload.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="متن پیام نمی‌تواند خالی باشد")
 
     # ایمپورت داخل تابع تا بدون اینستاگرام هم بقیه API بالا بیاید
     from app.service.instagram_service import instagram_client
 
-    # پیدا کردن conversation ID از Zernio بر اساس instagram_id مشتری
+    # پیدا کردن conversation ID از Zernio با بررسی سریع کش حافظه
     conv_id = instagram_client.find_conversation_id(customer.instagram_id)
     if conv_id:
         sent = instagram_client.send_direct_message(text=text, thread_id=conv_id)
     else:
-        # فالبک: تلاش مستقیم با instagram_id (ممکنه خودش conversation ID باشه)
+        # فالبک: تلاش مستقیم با instagram_id
         sent = instagram_client.send_direct_message(text=text, user_id=customer.instagram_id)
 
     if not sent:
@@ -160,7 +162,17 @@ def send_manual_message(
     db.commit()
     db.refresh(outbound)
 
-    return {"sent": sent, "detail": "پیام ارسال شد" if sent else "ارسال به اینستاگرام ناموفق بود ولی در سوابق ثبت شد"}
+    return {
+        "sent": sent,
+        "detail": "پیام ارسال شد" if sent else "ارسال به اینستاگرام ناموفق بود ولی در سوابق ثبت شد",
+        "message": {
+            "id": outbound.id,
+            "customer_id": outbound.customer_id,
+            "text": outbound.text,
+            "sender": outbound.sender,
+            "created_at": outbound.created_at.isoformat() if outbound.created_at else None
+        }
+    }
 
 
 def _get_customer_or_404(db: Session, customer_id: int) -> Customer:

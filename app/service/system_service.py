@@ -48,6 +48,11 @@ class LogBufferHandler(logging.Handler):
                 "raw": self.format(record)
             }
             LOG_BUFFER.append(log_entry)
+            try:
+                from app.service.ws_manager import ws_manager
+                ws_manager.broadcast_sync("system_log", log_entry)
+            except Exception:
+                pass
         except Exception:
             pass
 

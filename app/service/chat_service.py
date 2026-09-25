@@ -13,6 +13,29 @@ from app.service.bot_settings import (
 logger = logging.getLogger(__name__)
 
 
+def _broadcast_msg(message: Message, customer: Customer):
+    """ارسال بلادرنگ رویداد پیام به پنل ادمین از طریق وب‌سوکت"""
+    try:
+        from app.service.ws_manager import ws_manager
+        ws_manager.broadcast_sync("new_message", {
+            "message": {
+                "id": message.id,
+                "customer_id": customer.id,
+                "text": message.text,
+                "sender": message.sender,
+                "created_at": message.created_at.isoformat() if message.created_at else None
+            },
+            "customer": {
+                "id": customer.id,
+                "name": customer.name,
+                "username": customer.username,
+                "instagram_id": customer.instagram_id
+            }
+        })
+    except Exception as e:
+        logger.debug(f"WS broadcast failed: {e}")
+
+
 def _claims_followed(text: str) -> bool:
     """تشخیص اینکه پیام کاربر اعلام فالو کردن است (مثل: فالو کردم / فالو شدم)"""
     norm = normalize_text(text)
@@ -93,6 +116,9 @@ def process_incoming_message(
     db.commit()
     db.refresh(inbound_message)
 
+    # اطلاع‌رسانی بلادرنگ به پنل از طریق وب‌سوکت
+    _broadcast_msg(inbound_message, customer)
+
     # ۴. پیام قدیمی (قبل از استارت ربات) فقط در سوابق می‌ماند تا جواب دیرهنگام و بی‌دلیل ارسال نشود
     if not is_new:
         logger.info(f"پیام قدیمی مشتری {customer.id} فقط ذخیره شد؛ پاسخ خودکار ارسال نشد.")
@@ -134,8 +160,11 @@ def process_incoming_message(
                         .first()
                     )
                     if not last_bot or last_bot.text != REMINDER_NOT_FOLLOWED:
-                        db.add(Message(customer_id=customer.id, text=REMINDER_NOT_FOLLOWED, sender="bot"))
+                        rem_msg = Message(customer_id=customer.id, text=REMINDER_NOT_FOLLOWED, sender="bot")
+                        db.add(rem_msg)
                         db.commit()
+                        db.refresh(rem_msg)
+                        _broadcast_msg(rem_msg, customer)
                         return REMINDER_NOT_FOLLOWED
                 # پیام فالو همین تازگی رفته؛ تکرار نمی‌کنیم تا اسپم نشود
                 logger.info(f"مشتری {customer.id} هنوز فالو نکرده و پیام فالو تازه رسیده؛ ساکت ماندیم.")
@@ -143,8 +172,11 @@ def process_incoming_message(
 
             # پیام فالو نگرفته یا کول‌داون گذشته → دوباره می‌فرستیم
             gate_text = bot_settings.follow_gate_message
-            db.add(Message(customer_id=customer.id, text=gate_text, sender="bot"))
+            gate_msg = Message(customer_id=customer.id, text=gate_text, sender="bot")
+            db.add(gate_msg)
             db.commit()
+            db.refresh(gate_msg)
+            _broadcast_msg(gate_msg, customer)
             logger.info(f"دروازه فالو: مشتری {customer.id} فالو نبود؛ پیام فالو ارسال شد.")
             return gate_text
 
@@ -180,6 +212,7 @@ def process_incoming_message(
     db.add(outbound_message)
     db.commit()
     db.refresh(outbound_message)
+    _broadcast_msg(outbound_message, customer)
 
     logger.info(f"پاسخ تولید شد برای مشتری {customer.id}: '{reply_text[:30]}...'")
     return reply_text

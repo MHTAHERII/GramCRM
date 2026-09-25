@@ -18,6 +18,8 @@ from app.routers.settings import router as settings_router
 from app.routers.webhook import router as webhook_router
 from app.routers.zernio_webhook import router as zernio_webhook_router
 from app.routers.system import router as system_router
+from app.routers.websocket import router as websocket_router
+from app.service.ws_manager import ws_manager
 from app.service.system_service import setup_logging
 from app.auth import router as auth_router
 from app.config import settings
@@ -90,6 +92,7 @@ def run_schema_migrations() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
+    ws_manager.set_loop(asyncio.get_running_loop())
     logger.info("GramCRM server started. All logs are actively recorded.")
     # ساخت جداول دیتابیس
     Base.metadata.create_all(bind=engine)
@@ -147,6 +150,7 @@ app.include_router(settings_router)
 app.include_router(webhook_router)
 app.include_router(zernio_webhook_router)
 app.include_router(system_router)
+app.include_router(websocket_router)
 
 
 @app.get("/", include_in_schema=False)

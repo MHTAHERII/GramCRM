@@ -8,3 +8,4 @@ instagrapi
 itsdangerous
 psutil
 python-multipart
+websockets

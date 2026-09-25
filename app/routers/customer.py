@@ -162,6 +162,27 @@ def send_manual_message(
     db.commit()
     db.refresh(outbound)
 
+    # اطلاع‌رسانی بلادرنگ به پنل
+    try:
+        from app.service.ws_manager import ws_manager
+        ws_manager.broadcast_sync("new_message", {
+            "message": {
+                "id": outbound.id,
+                "customer_id": customer.id,
+                "text": outbound.text,
+                "sender": outbound.sender,
+                "created_at": outbound.created_at.isoformat() if outbound.created_at else None
+            },
+            "customer": {
+                "id": customer.id,
+                "name": customer.name,
+                "username": customer.username,
+                "instagram_id": customer.instagram_id
+            }
+        })
+    except Exception as e:
+        logger.debug(f"WS manual message broadcast failed: {e}")
+
     return {
         "sent": sent,
         "detail": "پیام ارسال شد" if sent else "ارسال به اینستاگرام ناموفق بود ولی در سوابق ثبت شد",

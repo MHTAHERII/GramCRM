@@ -426,21 +426,11 @@ const SENDER_LABEL = {
   admin: "شما",
 };
 
-async function loadConversations(isBackground = false) {
+function renderConversationsList(conversations) {
   const list = document.getElementById("conversation-list");
-  let conversations;
-  try {
-    conversations = await api("/conversations/");
-    conversationsCache = conversations || [];
-  } catch (err) {
-    if (err.message === "unauthorized") return;
-    if (!isBackground) {
-      list.innerHTML = `<div class="empty">خطا در دریافت گفتگوها</div>`;
-    }
-    return;
-  }
+  if (!list) return;
 
-  if (!conversations.length) {
+  if (!conversations || !conversations.length) {
     list.innerHTML = `<div class="empty">هنوز گفتگویی وجود ندارد</div>`;
     list.dataset.fingerprint = "";
     return;
@@ -479,6 +469,22 @@ async function loadConversations(isBackground = false) {
       </div>
     `;
   }).join("");
+}
+
+async function loadConversations(isBackground = false) {
+  const list = document.getElementById("conversation-list");
+  let conversations;
+  try {
+    conversations = await api("/conversations/");
+    conversationsCache = conversations || [];
+    renderConversationsList(conversationsCache);
+  } catch (err) {
+    if (err.message === "unauthorized") return;
+    if (!isBackground && list) {
+      list.innerHTML = `<div class="empty">خطا در دریافت گفتگوها</div>`;
+    }
+    return;
+  }
 }
 
 function renderChatHeader(customer) {
@@ -1151,13 +1157,13 @@ document.getElementById("btn-clear-logs")?.addEventListener("click", async () =>
   }
 });
 
-// بروزرسانی خودکار لاگ‌ها هر ۳ ثانیه اگر تیک زده شده باشد
+// دریافت دوره‌ای لاگ‌ها فقط در صورتی که وب‌سوکت قطع باشد (Fallback)
 setInterval(() => {
   const autoCheckbox = document.getElementById("log-auto-refresh");
-  if (autoCheckbox && autoCheckbox.checked && activeTab === "settings") {
+  if (autoCheckbox && autoCheckbox.checked && activeTab === "settings" && (!ws || ws.readyState !== WebSocket.OPEN)) {
     fetchSystemLogs();
   }
-}, 3000);
+}, 10000);
 
 /* ---------------- به‌روزرسانی پنل (1-Click Updater) ---------------- */
 
@@ -1298,18 +1304,137 @@ document.getElementById("btn-run-update")?.addEventListener("click", async () =>
   }
 });
 
-/* ---------------- رفرش خودکار گفتگوها و وضعیت سرور ---------------- */
+/* ---------------- اتصال زنده وب‌سوکت (Real-Time WebSocket) ---------------- */
+
+let ws = null;
+let wsReconnectTimer = null;
+let wsPingInterval = null;
+
+function initWebSocket() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    return;
+  }
+
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+  try {
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log("WebSocket connected 🟢 (Real-Time Push فعال شد)");
+      clearInterval(wsPingInterval);
+      wsPingInterval = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "ping" }));
+        }
+      }, 25000);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        handleWsEvent(payload);
+      } catch (err) {
+        console.debug("WS parse error:", err);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket disconnected 🔴 (تلاش مجدد پس از ۳ ثانیه...)");
+      clearInterval(wsPingInterval);
+      clearTimeout(wsReconnectTimer);
+      wsReconnectTimer = setTimeout(initWebSocket, 3000);
+    };
+
+    ws.onerror = () => {
+      try { ws.close(); } catch (_) {}
+    };
+  } catch (err) {
+    console.debug("WS init error:", err);
+    clearTimeout(wsReconnectTimer);
+    wsReconnectTimer = setTimeout(initWebSocket, 4000);
+  }
+}
+
+function handleWsEvent(payload) {
+  if (!payload || !payload.type) return;
+
+  if (payload.type === "new_message") {
+    const { message, customer } = payload.data || {};
+    if (!message) return;
+
+    // ۱. به‌روزرسانی یا درج گفتگو در بالای لیست
+    if (customer && customer.id) {
+      const custId = customer.id;
+      let convIndex = conversationsCache.findIndex(c => c.customer && c.customer.id === custId);
+      if (convIndex !== -1) {
+        const conv = conversationsCache[convIndex];
+        conv.last_message = message;
+        conversationsCache.splice(convIndex, 1);
+        conversationsCache.unshift(conv);
+      } else {
+        conversationsCache.unshift({
+          customer: customer,
+          last_message: message
+        });
+      }
+      renderConversationsList(conversationsCache);
+    }
+
+    // ۲. اگر چت این کاربر در صفحه باز است، پیام را آنی اضافه کن
+    if (selectedCustomerId && customer && selectedCustomerId === customer.id) {
+      if (!messagesCache[customer.id]) {
+        messagesCache[customer.id] = [];
+      }
+
+      const existingIdx = messagesCache[customer.id].findIndex(m => 
+        (m.id && m.id === message.id) || 
+        (m._pending && m.text === message.text && m.sender === message.sender)
+      );
+
+      if (existingIdx !== -1) {
+        messagesCache[customer.id][existingIdx] = message;
+      } else {
+        messagesCache[customer.id].push(message);
+      }
+
+      renderMessageList(messagesCache[customer.id]);
+    }
+  } else if (payload.type === "system_log") {
+    // درج بلادرنگ لاگ زنده در کنسول بدون نیاز به پولینگ
+    const log = payload.data;
+    const consoleEl = document.getElementById("system-log-console");
+    if (consoleEl && log && activeTab === "settings") {
+      const cls = log.level || "INFO";
+      const logLine = document.createElement("div");
+      logLine.className = `log-line ${cls}`;
+      logLine.textContent = `[${log.time}] [${log.level}] [${log.logger}]: ${log.message}`;
+      consoleEl.appendChild(logLine);
+      
+      if (consoleEl.children.length > 500) {
+        consoleEl.removeChild(consoleEl.firstChild);
+      }
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+  }
+}
+
+/* ---------------- پشتیبان همگام‌سازی دوره‌ای (Fallback Sync) ---------------- */
 
 setInterval(async () => {
   if (loginOverlay.classList.contains("hidden")) {
-    if (activeTab === "conversations") {
-      await loadConversations();
-      if (selectedCustomerId) await loadChatMessages();
-    } else if (activeTab === "dashboard") {
-      await loadDashboardStatus();
+    // فقط در صورتی که وب‌سوکت قطع باشد، پولینگ آرام انجام بده
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      if (activeTab === "conversations") {
+        await loadConversations(true);
+        if (selectedCustomerId) await loadChatMessages();
+      } else if (activeTab === "dashboard") {
+        await loadDashboardStatus();
+      }
     }
   }
-}, 10_000);
+}, 30_000);
 
 /* ---------------- راه‌اندازی ---------------- */
 
@@ -1318,6 +1443,7 @@ async function init() {
     const settings = await api("/settings/");
     updateBotBadge(settings.bot_enabled);
     await loadDashboardStatus();
+    initWebSocket();
   } catch (err) {
     if (err.message !== "unauthorized") showToast(err.message, "error");
   }

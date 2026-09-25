@@ -27,7 +27,7 @@
 ### 💡 Overview
 **GramCRM** is a next-generation social commerce and customer relationship management (CRM) platform designed specifically for Instagram businesses. Unlike traditional, fragile, and high-risk scraping bots, GramCRM operates on **Official Meta / Zernio Cloud APIs** with **sub-second real-time webhooks**, ensuring **zero account ban risk** and maximum enterprise reliability.
 
-It features an ultra-modern, Linear/Stripe-inspired web dashboard for managing conversations, products, automated keywords, and business settings without requiring complex frontend frameworks.
+It features an ultra-modern, Linear/Stripe-inspired web dashboard for managing conversations, products, automated keywords, interactive buttons, and business settings without requiring complex frontend frameworks or server terminal knowledge for end-users.
 
 ---
 
@@ -50,9 +50,11 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 | :--- | :---: | :---: |
 | **Account Ban Risk** | **Zero (Official Cloud API)** | High (Pattern detected by Meta) |
 | **Event Architecture** | **Real-Time Push Webhooks (<1s)** | Polling / Fragile sessions |
-| **Comment-to-DM Engine** | ✅ Native & Instant | ❌ Fragile / Often fails |
+| **Interactive Link Buttons** | ✅ Up to 3 Dynamic Glass Buttons | ❌ Plain text only |
+| **Interactive Follow Gate** | ✅ Native 2-Button Lock (`[Followed]`, `[View Page]`) | ❌ None |
+| **In-Panel API & Credential Config** | ✅ 100% GUI-based (No CLI needed) | ❌ Manual file editing |
+| **Live Connection Diagnostic** | ✅ 1-Click Instant API Test | ❌ None |
 | **Modern Web Dashboard** | ✅ Next-Gen Dark UI | ❌ Basic or Non-existent |
-| **Follow Gate (Audience Growth)** | ✅ Built-in | ❌ None |
 | **Production Server Deploy** | ✅ 1-Line Automated Script | ❌ Complex Manual Setup |
 
 ---
@@ -60,8 +62,11 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 ### ✨ Key Capabilities
 
 * **🤖 Comment-to-DM Automation:** Trigger personalized direct messages instantly when prospective customers comment specific keywords on any post or reel.
-* **🔄 Live Cloud Auto-Sync:** Add, edit, or remove trigger keywords from the web panel, and have them automatically synced in the background.
-* **🔒 Follow-Gate Engine:** Encourage account growth by requesting non-followers to follow the page before receiving automated pricing or catalogs.
+* **🔘 Interactive Glass Link Buttons:** Attach up to 3 customizable interactive buttons (Payment gateways, Website, YouTube, Telegram channels, or WhatsApp support) directly under automated DMs.
+* **🔒 2-Button Follow-Gate Engine:** Maximize follower growth with interactive prompt buttons (`[Followed ✅]` and `[View Page 👀]`), unlocking content only after following.
+* **🔑 Zero-Terminal Reseller Ready:** End-users and clients can set their own API token, Profile ID, Account ID, and change Admin Username and Password directly from the Web Settings tab with instant visual confirmation.
+* **⚡ 1-Click Live Connection Test:** Test API credentials and verify live Instagram connectivity directly from the dashboard.
+* **🔄 Live Cloud Auto-Sync:** Add, edit, or remove trigger keywords and buttons in the web panel, and have them automatically synced in the background.
 * **💬 Unified Chat Inbox (CRM):** Real-time customer overview, conversation history, and manual replies sent directly to Instagram from the web console.
 * **🛍️ Product & Catalog Management:** Track stock levels, prices, and product details with PostgreSQL persistence.
 * **🎨 Ultra-Modern UI:** Dark obsidian color scheme, subtle glassmorphism, responsive across desktop and mobile devices.
@@ -82,7 +87,7 @@ flowchart TD
         Core <--> Panel[🎨 Web Dashboard /panel]
     end
     
-    Admin([👨‍💻 Store Operator]) <-->|Manage & Reply| Panel
+    Admin([👨‍💻 Store Operator / Buyer]) <-->|Manage & Reply| Panel
 ```
 
 ---
@@ -132,7 +137,7 @@ https://crm.yourdomain.com/webhook/zernio
 ### 💡 معرفی پروژه
 **GramCRM** یک پلتفرم نسل جدید برای اتوماسیون فروش، مدیریت مشتریان و پشتیبانی خودکار در اینستاگرام است. برخلاف ربات‌های سنتی و پرریسک، GramCRM با استفاده از **API رسمی متصل به زیرساخت ابری Zernio** و **وب‌هوک‌های بلادرنگ (Real-Time Webhooks)** کار می‌کند که **ریسک بن یا محدودیت اکانت را به صفر می‌رساند**.
 
-این سیستم به همراه یک **داشبورد تحت وب الترا-مدرن (Linear/Stripe Style)** با فونت زیبای وزیرمتن ارائه می‌شود که امکان پاسخ‌گویی دستی، مدیریت محصولات، و تعریف کلیدواژه‌ها را در اختیارتان قرار می‌دهد.
+این سیستم به همراه یک **داشبورد تحت وب الترا-مدرن (Linear/Stripe Style)** با فونت زیبای وزیرمتن ارائه می‌شود که امکان پاسخ‌گویی دستی، مدیریت محصولات، تعریف دکمه‌های شیشه‌ای لینک‌دار، و پیکربندی کامل سیستم را بدون نیاز به هیچ‌گونه دانش فنی به خریداران و مدیران ارائه می‌دهد.
 
 ---
 
@@ -155,9 +160,11 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 | :--- | :---: | :---: |
 | **ریسک بن شدن پیج** | **صفر (کاملاً رسمی و امن)** | بسیار بالا (شناسایی توسط الگوریتم‌های متا) |
 | **معماری دریافت پیام‌ها** | **وب‌هوک زنده رویدادمحور (<1s)** | اسکرپینگ ناپایدار و لاگین‌های مکرر |
-| **اتوماسیون کامنت به دایرکت** | ✅ بومی و آنی | ❌ ناپایدار و با تاخیر |
+| **دکمه‌های شیشه‌ای تعاملی** | ✅ تا ۳ دکمه لینک‌دار با عنوان دلخواه | ❌ فقط متن ساده و خام |
+| **دروازه فالو دو دکمه‌ای** | ✅ قفل محتوا با دکمه‌های `[فالو کردم]` و `[مشاهده پیج]` | ❌ ندارد |
+| **تنظیمات API و رمز در پنل** | ✅ بدون نیاز به ترمینال (آماده فروش به مشتری) | ❌ ویرایش دستی فایل‌های سیستمی |
+| **تست آنلاین اتصال به اینستاگرام** | ✅ بررسی آنی وضعیت توکن با ۱ کلیک | ❌ ندارد |
 | **پنل مدیریت تحت وب** | ✅ الترا-مدرن با تم تیره لوکس | ❌ ابتدایی یا فاقد پنل |
-| **دروازه جذب فالوور (Follow Gate)** | ✅ افزایش تضمینی فالوور | ❌ محدود |
 | **راه‌اندازی سرور (VPS)** | ✅ تک‌دستوری و خودکار | ❌ نیازمند کانفیگ دستی پیچیده |
 
 ---
@@ -165,8 +172,11 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 ### ✨ قابلیت‌های اصلی
 
 * **🤖 اتوماسیون کامنت به دایرکت (Comment-to-DM):** ارسال خودکار دایرکت در کسری از ثانیه به محض درج کلیدواژه زیر پست‌ها یا ریلزها.
-* **🔄 همگام‌سازی ابری خودکار (Auto-Sync):** با ایجاد، ویرایش یا حذف کلیدواژه در پنل مدیریت، تغییرات بلافاصله با سرورهای اینستاگرام همگام می‌شود.
-* **🔒 دروازه فالو هوشمند (Follow Gate):** مشتریان پیش از دریافت قیمت یا لینک کاتالوگ، به فالو کردن پیج هدایت می‌شوند تا رشد پیج تضمین شود.
+* **🔘 دکمه‌های شیشه‌ای تعاملی (تا ۳ دکمه):** اتصال لینک‌های دلخواه (درگاه پرداخت آنلاین 💳، دوره آموزشی 🎓، سایت 🌐، کانال تلگرام 📢 یا پشتیبانی) با عنوان‌های سفارشی به زیر پیام‌های دایرکت.
+* **🔒 دروازه فالو هوشمند (Follow Gate):** مشتریان پیش از دریافت لینک، پیام قفل با دو دکمه تعاملی `[فالو کردم ✅]` و `[مشاهده پیج 👀]` را دریافت می‌کنند تا رشد فالوورهای پیج تضمین شود.
+* **🔑 پنل کاملاً مستقل برای فروش به مشتری:** خریداران می‌توانند توکن اختصاصی API اینستاگرام، شناسه‌های اکانت و نام کاربری/رمز عبور پنل را مستقیماً از تنظیمات پنل وب وارد و ویرایش کنند.
+* **⚡ تست زنده اتصال (Connection Test):** امکان بررسی اعتبار توکن و مشاهده وضعیت اتصال به سرورهای اینستاگرام تنها با یک کلیک در پنل.
+* **🔄 همگام‌سازی ابری خودکار (Auto-Sync):** با ایجاد، ویرایش یا حذف کلیدواژه در پنل مدیریت، تغییرات بلافاصله با اینستاگرام همگام می‌شود.
 * **💬 صندوق پیام‌های یکپارچه (Inbox CRM):** مشاهده زنده تاریخچه پیام‌های هر مشتری و امکان ارسال پاسخ مستقیم از پنل به دایرکت کاربر.
 * **🛍️ انبارداری و ثبت محصولات:** کاتالوگ کالاها، قیمت‌گذاری و ثبت موجودی با دیتابیس پایدار PostgreSQL.
 * **🎨 طراحی مدرن و واکنش‌گرا:** طراحی شده بر اساس استانداردهای روز با فونت فارسی وزیرمتن (Vazirmatn).
@@ -235,7 +245,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-- **پنل مدیریت:** `http://127.0.0.1:8000/panel` (رمز عبور: `admin123`)
+- **پنل مدیریت:** `http://127.0.0.1:8000/panel` (نام کاربری: `admin` | رمز عبور: `admin123`)
 - **مستندات سواگر:** `http://127.0.0.1:8000/docs`
 
 ---

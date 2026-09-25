@@ -91,16 +91,16 @@ flowchart TD
 
 ```bash
 # Check service status
-systemctl status perfumebot
+systemctl status gramcrm
 
 # Restart application
-systemctl restart perfumebot
+systemctl restart gramcrm
 
 # View live real-time logs
-journalctl -u perfumebot -f -n 50
+journalctl -u gramcrm -f -n 50
 
 # Stop service
-systemctl stop perfumebot
+systemctl stop gramcrm
 ```
 
 ---
@@ -189,16 +189,16 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 
 ```bash
 # بررسی وضعیت اجرای زنده سرویس
-systemctl status perfumebot
+systemctl status gramcrm
 
 # راه‌اندازی مجدد (Restart)
-systemctl restart perfumebot
+systemctl restart gramcrm
 
 # مشاهده لاگ‌های زنده سیستم
-journalctl -u perfumebot -f -n 50
+journalctl -u gramcrm -f -n 50
 
 # توقف موقت سرویس
-systemctl stop perfumebot
+systemctl stop gramcrm
 ```
 
 ---

@@ -52,8 +52,15 @@ ZERNIO_ACCOUNT_ID=6ab54a588d284ffb213d4274
 META_VERIFY_TOKEN=perfume_bot_verify_token_2026
 EOF
 
+# Determine cloned directory
+if [ -d "/root/GramCRM" ]; then
+    APP_DIR="/root/GramCRM"
+else
+    APP_DIR="/root/Instagram-Perfume-Assistant"
+fi
+
 echo "=== 7. Setting up 24/7 Systemd Service ==="
-cat << 'EOF' > /etc/systemd/system/perfumebot.service
+cat << EOF > /etc/systemd/system/gramcrm.service
 [Unit]
 Description=GramCRM - Instagram Sales Automation & CRM
 After=network.target postgresql.service
@@ -61,8 +68,8 @@ After=network.target postgresql.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root/Instagram-Perfume-Assistant
-ExecStart=/root/Instagram-Perfume-Assistant/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+WorkingDirectory=${APP_DIR}
+ExecStart=${APP_DIR}/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
@@ -72,11 +79,11 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable perfumebot
-systemctl restart perfumebot
+systemctl enable gramcrm
+systemctl restart gramcrm
 
 echo "=== 8. Configuring Nginx Reverse Proxy (Port 80 -> 8000) ==="
-cat << 'EOF' > /etc/nginx/sites-available/perfumebot
+cat << 'EOF' > /etc/nginx/sites-available/gramcrm
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -97,7 +104,7 @@ server {
 }
 EOF
 
-ln -sf /etc/nginx/sites-available/perfumebot /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/gramcrm /etc/nginx/sites-enabled/default
 nginx -t
 systemctl restart nginx
 

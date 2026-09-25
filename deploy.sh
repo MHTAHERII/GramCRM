@@ -1,11 +1,15 @@
 #!/bin/bash
 set -e
 
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+
 echo "=== 1. Updating System Packages ==="
-apt update && apt upgrade -y
+apt-get update
+apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
 
 echo "=== 2. Installing Dependencies (Python, PostgreSQL, Nginx, Git) ==="
-apt install -y python3-pip python3-venv git postgresql postgresql-contrib nginx curl ufw
+apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" python3-pip python3-venv git postgresql postgresql-contrib nginx curl ufw
 
 echo "=== 3. Configuring PostgreSQL Database ==="
 sudo -u postgres psql -c "CREATE USER botuser WITH PASSWORD 'perfume_secret_73752';" || true

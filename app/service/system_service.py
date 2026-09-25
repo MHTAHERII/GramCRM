@@ -22,14 +22,24 @@ from app.service.zernio_service import zernio_service
 # ثبت زمان استارت پروسس برای محاسبه دقیق آپتایم
 START_TIME = time.time()
 
-# بافر حافظه‌ای حلقوی لاگ‌ها (حداکثر ۴۰۰ خط اخیر)
-LOG_BUFFER = collections.deque(maxlen=400)
+# بافر حافظه‌ای حلقوی لاگ‌ها (حداکثر ۵۰۰ خط اخیر)
+LOG_BUFFER = collections.deque(maxlen=500)
 
 
 class LogBufferHandler(logging.Handler):
     """هندلر ثبت لاگ‌ها در بافر حافظه جهت نمایش زنده در پنل وب"""
+    def __init__(self):
+        super().__init__()
+        self._last_id = None
+
     def emit(self, record: logging.LogRecord) -> None:
         try:
+            # جلوگیری از ثبت تکراری یک لاگ در صورت انتشار از لاگر فرزند به روت
+            rec_id = (record.created, record.name, record.getMessage())
+            if rec_id == self._last_id:
+                return
+            self._last_id = rec_id
+
             log_entry = {
                 "time": datetime.datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S"),
                 "level": record.levelname,
@@ -44,7 +54,43 @@ class LogBufferHandler(logging.Handler):
 
 log_buffer_handler = LogBufferHandler()
 log_buffer_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
-logging.getLogger().addHandler(log_buffer_handler)
+
+
+def setup_logging():
+    """تنظیم روت لاگر و اتصال هندلر بافر به تمام لاگرهای سیستم جهت مانیتورینگ زنده"""
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    if log_buffer_handler not in root.handlers:
+        root.addHandler(log_buffer_handler)
+
+    for logger_name in [
+        "uvicorn",
+        "uvicorn.access",
+        "uvicorn.error",
+        "fastapi",
+        "ig_worker",
+        "zernio_service",
+        "zernio_webhook",
+        "instagram_service",
+        "system_service"
+    ]:
+        l = logging.getLogger(logger_name)
+        l.setLevel(logging.INFO)
+        if log_buffer_handler not in l.handlers:
+            l.addHandler(log_buffer_handler)
+
+
+# اجرای اولیه هنگام ایمپورت
+setup_logging()
+
+# ثبت لاگ استارت اولیه سیستم در بافر
+LOG_BUFFER.append({
+    "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "level": "INFO",
+    "logger": "system",
+    "message": "کنسول ثبت لاگ‌های زنده سرور GramCRM با موفقیت فعال شد.",
+    "raw": f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} [INFO] system: کنسول ثبت لاگ‌های زنده سرور GramCRM با موفقیت فعال شد."
+})
 
 
 def get_logs(limit: int = 150) -> List[Dict[str, Any]]:

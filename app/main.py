@@ -18,11 +18,12 @@ from app.routers.settings import router as settings_router
 from app.routers.webhook import router as webhook_router
 from app.routers.zernio_webhook import router as zernio_webhook_router
 from app.routers.system import router as system_router
+from app.service.system_service import setup_logging
 from app.auth import router as auth_router
 from app.config import settings
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = logging.getLogger("main")
 
 PANEL_DIR = Path(__file__).resolve().parent / "static" / "panel"
 
@@ -85,6 +86,8 @@ def run_schema_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging()
+    logger.info("GramCRM server started. All logs are actively recorded.")
     # ساخت جداول دیتابیس
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created/verified.")

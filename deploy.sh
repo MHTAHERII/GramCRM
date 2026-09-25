@@ -104,11 +104,19 @@ ufw allow 80/tcp || true
 ufw allow 443/tcp || true
 ufw --force enable || true
 
-SERVER_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
+SERVER_IPV4=$(curl -4 -s --max-time 4 https://api.ipify.org || curl -4 -s --max-time 4 https://ifconfig.me || hostname -I | awk '{print $1}')
+SERVER_IPV6=$(curl -6 -s --max-time 4 https://api64.ipify.org || curl -6 -s --max-time 4 https://ifconfig.me || true)
 
 echo ""
 echo "=========================================================="
 echo "  🎉 GramCRM INSTALLED & RUNNING 24/7! 🚀"
-echo "  🌐 Admin Panel: http://${SERVER_IP}/panel"
-echo "  🔗 Webhook URL: http://${SERVER_IP}/webhook/zernio"
+echo "=========================================================="
+if [ -n "$SERVER_IPV4" ]; then
+echo "  🌐 IPv4 Panel:    http://${SERVER_IPV4}/panel"
+echo "  🔗 IPv4 Webhook:  http://${SERVER_IPV4}/webhook/zernio"
+fi
+if [ -n "$SERVER_IPV6" ] && [ "$SERVER_IPV6" != "$SERVER_IPV4" ]; then
+echo "  🌐 IPv6 Panel:    http://[${SERVER_IPV6}]/panel"
+echo "  🔗 IPv6 Webhook:  http://[${SERVER_IPV6}]/webhook/zernio"
+fi
 echo "=========================================================="

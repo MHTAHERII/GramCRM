@@ -18,6 +18,7 @@
       <h1>ورود به GramCRM</h1>
       <p class="hint">برای ورود به پنل، رمز عبور را وارد کنید</p>
       <form id="login-form">
+        <input type="text" id="login-username" placeholder="نام کاربری (پیش‌فرض: admin)" autocomplete="username" value="admin" style="margin-bottom: 10px;">
         <input type="password" id="login-password" placeholder="رمز عبور" autocomplete="current-password">
         <div id="login-error" class="error hidden"></div>
         <button type="submit" id="login-btn">ورود</button>
@@ -248,6 +249,50 @@
             </div>
             <div class="form-actions">
               <button id="save-follow-gate" class="btn primary">ذخیره دروازه فالو</button>
+            </div>
+          </div>
+
+          <!-- کارت اتصال به API اینستاگرام -->
+          <div class="card">
+            <h2>اتصال به اینستاگرام (API Zernio)</h2>
+            <p class="hint">برای اتصال ربات به اینستاگرام، کلید API و شناسه‌های اکانت Zernio خود را در این بخش وارد کنید.</p>
+            <div class="field" style="margin-top: 1rem;">
+              <label for="setting-zernio-api-key">کلید API توکن (API Key)</label>
+              <input id="setting-zernio-api-key" type="password" placeholder="sk_...">
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="setting-zernio-profile-id">شناسه پروفایل (Profile ID)</label>
+                <input id="setting-zernio-profile-id" type="text" placeholder="مثلاً: 6ab54273...">
+              </div>
+              <div class="field">
+                <label for="setting-zernio-account-id">شناسه اکانت (Account ID)</label>
+                <input id="setting-zernio-account-id" type="text" placeholder="مثلاً: 6ab54a58...">
+              </div>
+            </div>
+            <div class="form-actions" style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
+              <button id="save-api-settings" class="btn primary">ذخیره تنظیمات API</button>
+              <button id="test-connection-btn" class="btn ghost" type="button">بررسی وضعیت اتصال ⚡</button>
+            </div>
+            <div id="connection-status-alert" class="hint" style="margin-top: 10px; font-weight: 500;"></div>
+          </div>
+
+          <!-- کارت امنیت و اطلاعات ورود به پنل -->
+          <div class="card">
+            <h2>امنیت و حساب کاربری ادمین</h2>
+            <p class="hint">نام کاربری و رمز عبور ورود به پنل مدیریت را از این بخش می‌توانید تغییر دهید.</p>
+            <div class="grid-2" style="margin-top: 1rem;">
+              <div class="field">
+                <label for="setting-admin-username">نام کاربری ادمین</label>
+                <input id="setting-admin-username" type="text" placeholder="admin">
+              </div>
+              <div class="field">
+                <label for="setting-admin-password">رمز عبور جدید (اختیاری)</label>
+                <input id="setting-admin-password" type="password" placeholder="برای تغییر، رمز جدید بنویسید">
+              </div>
+            </div>
+            <div class="form-actions" style="margin-top: 1rem;">
+              <button id="save-auth-settings" class="btn primary">ذخیره اطلاعات ورود</button>
             </div>
           </div>
         </section>

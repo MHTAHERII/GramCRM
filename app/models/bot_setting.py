@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
 from datetime import datetime
 from app.database import Base
 
@@ -25,6 +25,15 @@ class BotSetting(Base):
     comment_reply_enabled = Column(Boolean, default=True, nullable=False)
     comment_public_reply_enabled = Column(Boolean, default=False, nullable=False)
     comment_public_reply_text = Column(Text, nullable=True, default="پاسخ براتون دایرکت شد 🌸")
+
+    # اطلاعات ورود به پنل مدیریت
+    admin_username = Column(String(100), default="admin", nullable=False)
+    admin_password = Column(String(100), nullable=True)
+
+    # اطلاعات اتصال به API اینستاگرام (Zernio)
+    zernio_api_key = Column(String(255), nullable=True)
+    zernio_profile_id = Column(String(100), nullable=True)
+    zernio_account_id = Column(String(100), nullable=True)
 
     updated_at = Column(
         DateTime,

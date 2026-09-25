@@ -83,11 +83,12 @@ function hideLogin() {
 
 document.getElementById("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const username = document.getElementById("login-username")?.value.trim() || "";
   const password = document.getElementById("login-password").value;
   try {
     await api("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ username, password }),
     });
     document.getElementById("login-password").value = "";
     hideLogin();
@@ -515,9 +516,19 @@ async function deleteProduct(id) {
 async function loadSettings() {
   const settings = await api("/settings/");
   document.getElementById("bot-enabled").checked = settings.bot_enabled;
-  document.getElementById("fallback-message").value = settings.fallback_message;
+  document.getElementById("fallback-message").value = settings.fallback_message || "";
   document.getElementById("follow-gate-enabled").checked = settings.follow_gate_enabled;
-  document.getElementById("follow-gate-message").value = settings.follow_gate_message;
+  document.getElementById("follow-gate-message").value = settings.follow_gate_message || "";
+
+  // فیلدهای توکن و اکانت Zernio
+  document.getElementById("setting-zernio-api-key").value = settings.zernio_api_key || "";
+  document.getElementById("setting-zernio-profile-id").value = settings.zernio_profile_id || "";
+  document.getElementById("setting-zernio-account-id").value = settings.zernio_account_id || "";
+
+  // فیلد نام کاربری
+  document.getElementById("setting-admin-username").value = settings.admin_username || "admin";
+  document.getElementById("setting-admin-password").value = "";
+
   updateBotStatusText(settings.bot_enabled);
   updateBotBadge(settings.bot_enabled);
 }
@@ -557,6 +568,84 @@ document.getElementById("save-follow-gate").addEventListener("click", async () =
   try {
     await api("/settings/", { method: "PUT", body });
     showToast("دروازه فالو ذخیره شد", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+});
+
+// ذخیره کلید و شناسه‌های API اینستاگرام (Zernio)
+document.getElementById("save-api-settings")?.addEventListener("click", async () => {
+  const apiKey = document.getElementById("setting-zernio-api-key").value.trim();
+  const profileId = document.getElementById("setting-zernio-profile-id").value.trim();
+  const accountId = document.getElementById("setting-zernio-account-id").value.trim();
+
+  const body = JSON.stringify({
+    zernio_api_key: apiKey || null,
+    zernio_profile_id: profileId || null,
+    zernio_account_id: accountId || null,
+  });
+  try {
+    await api("/settings/", { method: "PUT", body });
+    showToast("تنظیمات API با موفقیت ذخیره شد ✅", "success");
+    const alertEl = document.getElementById("connection-status-alert");
+    if (alertEl) {
+      alertEl.textContent = "تنظیمات ذخیره شد. برای تست روی «بررسی وضعیت اتصال» کلیک کنید.";
+      alertEl.style.color = "#818cf8";
+    }
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+});
+
+// تست زنده اتصال به اینستاگرام
+document.getElementById("test-connection-btn")?.addEventListener("click", async () => {
+  const btn = document.getElementById("test-connection-btn");
+  const alertEl = document.getElementById("connection-status-alert");
+  if (!alertEl) return;
+
+  btn.disabled = true;
+  alertEl.textContent = "در حال بررسی وضعیت اتصال به سرورهای اینستاگرام...";
+  alertEl.style.color = "#94a3b8";
+
+  try {
+    const res = await api("/settings/test-connection", { method: "POST" });
+    if (res.success) {
+      alertEl.textContent = `${res.message} (تعداد اتوماسیون‌های فعال: ${res.automations_count ?? 0})`;
+      alertEl.style.color = "#10b981";
+      showToast("اتصال با موفقیت تأیید شد ✅", "success");
+    } else {
+      alertEl.textContent = `❌ ${res.message}`;
+      alertEl.style.color = "#ef4444";
+      showToast("خطا در اتصال به اینستاگرام", "error");
+    }
+  } catch (err) {
+    alertEl.textContent = `❌ ${err.message}`;
+    alertEl.style.color = "#ef4444";
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ذخیره اطلاعات ورود به پنل (یوزرنیم و پسورد)
+document.getElementById("save-auth-settings")?.addEventListener("click", async () => {
+  const username = document.getElementById("setting-admin-username").value.trim();
+  const password = document.getElementById("setting-admin-password").value;
+
+  if (!username) {
+    showToast("نام کاربری نمی‌تواند خالی باشد", "error");
+    return;
+  }
+
+  const payload = { admin_username: username };
+  if (password.trim()) {
+    payload.admin_password = password.trim();
+  }
+
+  try {
+    await api("/settings/", { method: "PUT", body: JSON.stringify(payload) });
+    document.getElementById("setting-admin-password").value = "";
+    showToast("اطلاعات ورود به پنل با موفقیت ذخیره شد 🔐", "success");
   } catch (err) {
     showToast(err.message, "error");
   }

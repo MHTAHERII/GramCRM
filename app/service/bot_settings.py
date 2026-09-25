@@ -23,6 +23,25 @@ REMINDER_NOT_FOLLOWED = (
 )
 
 
+def apply_credentials_to_services(setting: BotSetting):
+    """به‌روزرسانی کلیدها و شناسه‌های Zernio در سرویس‌های زنده برنامه"""
+    try:
+        from app.service.zernio_service import zernio_service
+        from app.service.instagram_service import instagram_client
+
+        if setting.zernio_api_key:
+            zernio_service.api_key = setting.zernio_api_key
+            instagram_client.api_key = setting.zernio_api_key
+        if setting.zernio_profile_id:
+            zernio_service.profile_id = setting.zernio_profile_id
+        if setting.zernio_account_id:
+            zernio_service.account_id = setting.zernio_account_id
+            instagram_client.account_id = setting.zernio_account_id
+    except Exception as e:
+        import logging
+        logging.getLogger("bot_settings").error(f"Error applying credentials to services: {e}")
+
+
 def get_bot_settings(db: Session) -> BotSetting:
     """بازگرداندن رکورد تنظیمات؛ در اولین اجرا رکورد پیش‌فرض ساخته می‌شود."""
     setting = db.query(BotSetting).filter(BotSetting.id == 1).first()
@@ -33,10 +52,12 @@ def get_bot_settings(db: Session) -> BotSetting:
             fallback_message=DEFAULT_FALLBACK_REPLY,
             follow_gate_enabled=False,
             follow_gate_message=DEFAULT_FOLLOW_GATE_MESSAGE,
+            admin_username="admin"
         )
         db.add(setting)
         db.commit()
         db.refresh(setting)
+        apply_credentials_to_services(setting)
         return setting
 
     # رکوردهای ساخته‌شده قبل از اضافه شدن فیلدها ممکن است NULL باشند
@@ -56,7 +77,13 @@ def get_bot_settings(db: Session) -> BotSetting:
     if getattr(setting, "comment_public_reply_text", None) is None:
         setting.comment_public_reply_text = "پاسخ براتون دایرکت شد 🌸"
         changed = True
+    if getattr(setting, "admin_username", None) is None:
+        setting.admin_username = "admin"
+        changed = True
     if changed:
         db.commit()
         db.refresh(setting)
+
+    apply_credentials_to_services(setting)
     return setting
+

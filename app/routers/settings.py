@@ -24,7 +24,23 @@ def _sync_zernio_bg():
 
 @router.get("/", response_model=BotSettingResponse)
 def get_settings(db: Session = Depends(get_db)):
-    return get_bot_settings(db)
+    setting = get_bot_settings(db)
+    return BotSettingResponse(
+        id=setting.id,
+        bot_enabled=setting.bot_enabled,
+        fallback_message=setting.fallback_message,
+        follow_gate_enabled=setting.follow_gate_enabled,
+        follow_gate_message=setting.follow_gate_message,
+        comment_reply_enabled=setting.comment_reply_enabled,
+        comment_public_reply_enabled=setting.comment_public_reply_enabled,
+        comment_public_reply_text=setting.comment_public_reply_text,
+        admin_username=setting.admin_username or "admin",
+        has_custom_password=bool(setting.admin_password),
+        zernio_api_key=setting.zernio_api_key,
+        zernio_profile_id=setting.zernio_profile_id,
+        zernio_account_id=setting.zernio_account_id,
+        updated_at=setting.updated_at
+    )
 
 
 @router.put("/", response_model=BotSettingResponse)
@@ -49,8 +65,64 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         stripped = data.comment_public_reply_text.strip()
         setting.comment_public_reply_text = stripped if stripped else "پاسخ براتون دایرکت شد 🌸"
 
+    # تنظیمات کاربری و امنیت
+    if data.admin_username is not None and data.admin_username.strip():
+        setting.admin_username = data.admin_username.strip()
+    if data.admin_password is not None and data.admin_password.strip():
+        setting.admin_password = data.admin_password.strip()
+
+    # تنظیمات توکن و شناسه‌های API اینستاگرام (Zernio)
+    if data.zernio_api_key is not None:
+        setting.zernio_api_key = data.zernio_api_key.strip() if data.zernio_api_key.strip() else None
+    if data.zernio_profile_id is not None:
+        setting.zernio_profile_id = data.zernio_profile_id.strip() if data.zernio_profile_id.strip() else None
+    if data.zernio_account_id is not None:
+        setting.zernio_account_id = data.zernio_account_id.strip() if data.zernio_account_id.strip() else None
+
     db.commit()
     db.refresh(setting)
 
+    from app.service.bot_settings import apply_credentials_to_services
+    apply_credentials_to_services(setting)
+
     background_tasks.add_task(_sync_zernio_bg)
-    return setting
+
+    return BotSettingResponse(
+        id=setting.id,
+        bot_enabled=setting.bot_enabled,
+        fallback_message=setting.fallback_message,
+        follow_gate_enabled=setting.follow_gate_enabled,
+        follow_gate_message=setting.follow_gate_message,
+        comment_reply_enabled=setting.comment_reply_enabled,
+        comment_public_reply_enabled=setting.comment_public_reply_enabled,
+        comment_public_reply_text=setting.comment_public_reply_text,
+        admin_username=setting.admin_username or "admin",
+        has_custom_password=bool(setting.admin_password),
+        zernio_api_key=setting.zernio_api_key,
+        zernio_profile_id=setting.zernio_profile_id,
+        zernio_account_id=setting.zernio_account_id,
+        updated_at=setting.updated_at
+    )
+
+
+@router.post("/test-connection", summary="بررسی وضعیت اتصال به اینستاگرام و Zernio")
+def test_connection(db: Session = Depends(get_db)):
+    """تست زنده توکن و شناسه‌ها جهت اطمینان از صحت ارتباط با اینستاگرام"""
+    setting = get_bot_settings(db)
+    if not zernio_service.is_configured():
+        return {
+            "success": False,
+            "message": "توکن API، شناسه Profile یا شناسه Account هنوز کامل وارد نشده‌اند."
+        }
+    try:
+        automations = zernio_service.list_comment_automations()
+        return {
+            "success": True,
+            "message": "اتصال به اینستاگرام و Zernio با موفقیت برقرار است! ✅",
+            "automations_count": len(automations)
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"خطا در برقراری ارتباط: {str(e)}"
+        }

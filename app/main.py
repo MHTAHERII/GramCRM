@@ -62,6 +62,21 @@ def run_schema_migrations() -> None:
         conn.execute(text(
             "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS buttons JSON;"
         ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100) DEFAULT 'admin';"
+        ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_password VARCHAR(100);"
+        ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_api_key VARCHAR(255);"
+        ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_profile_id VARCHAR(100);"
+        ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_account_id VARCHAR(100);"
+        ))
 
 
 @asynccontextmanager

@@ -16,4 +16,9 @@ class Customer(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    messages = relationship("Message", back_populates="customer")
+    # با حذف مشتری، پیام‌هایش هم حذف می‌شوند تا خطای FK رخ ندهد
+    messages = relationship(
+        "Message",
+        back_populates="customer",
+        cascade="all, delete-orphan"
+    )

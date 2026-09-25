@@ -1,0 +1,297 @@
+html
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پنل مدیریت ربات دایرکت</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+  <!-- صفحه ورود -->
+  <div id="login-overlay" class="overlay hidden">
+    <div class="login-card">
+      <div class="login-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6"/><path d="M10 4v3.2a2 2 0 0 1-.5 1.3L7.8 10.4A5 5 0 0 0 6.6 13.6V18a3 3 0 0 0 3 3h4.8a3 3 0 0 0 3-3v-4.4a5 5 0 0 0-1.2-3.2l-1.7-1.9a2 2 0 0 1-.5-1.3V4"/><path d="M8 15h8"/></svg>
+      </div>
+      <h1>پنل مدیریت ربات</h1>
+      <p class="hint">برای ورود، رمز عبور پنل را وارد کنید</p>
+      <form id="login-form">
+        <input type="password" id="login-password" placeholder="رمز عبور" autocomplete="current-password">
+        <div id="login-error" class="error hidden"></div>
+        <button type="submit" id="login-btn">ورود</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="app-shell">
+
+    <!-- روکش تیره برای منوی موبایل (فقط بصری) -->
+    <div class="scrim" data-close-drawer aria-hidden="true"></div>
+
+    <!-- سایدبار -->
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6"/><path d="M10 4v3.2a2 2 0 0 1-.5 1.3L7.8 10.4A5 5 0 0 0 6.6 13.6V18a3 3 0 0 0 3 3h4.8a3 3 0 0 0 3-3v-4.4a5 5 0 0 0-1.2-3.2l-1.7-1.9a2 2 0 0 1-.5-1.3V4"/><path d="M8 15h8"/></svg>
+          </span>
+          <div class="brand-text">
+            <h1>پنل عطر</h1>
+            <span class="brand-sub">مدیریت ربات دایرکت</span>
+          </div>
+        </div>
+
+        <span id="bot-status" class="status-badge">…</span>
+
+        <nav class="tabs">
+          <button class="tab active" data-tab="keywords" aria-label="کلمات کلیدی">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4"/><path d="m10.5 12.5 8-8"/><path d="m16 4 3 3"/><path d="m19 7 1.5-1.5"/></svg></span>
+            <span class="tab-label">کلمات کلیدی</span>
+          </button>
+          <button class="tab" data-tab="conversations" aria-label="گفتگوها">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            <span class="tab-label">گفتگوها</span>
+          </button>
+          <button class="tab" data-tab="products" aria-label="محصولات">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+            <span class="tab-label">محصولات</span>
+          </button>
+          <button class="tab" data-tab="settings" aria-label="تنظیمات">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+            <span class="tab-label">تنظیمات</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button id="logout-btn" class="btn ghost full">خروج از پنل</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ناحیه محتوا -->
+    <div class="content-area">
+
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+          <button class="menu-btn" type="button" data-toggle-drawer aria-label="باز کردن منو">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+          </button>
+          <div class="topbar-title">
+            <h2>داشبورد مدیریت</h2>
+            <p class="hint">پاسخ‌های خودکار، گفتگوها و محصولات را از یک‌جا مدیریت کنید</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <button class="cmdk" type="button" data-cmdk aria-label="جستجو">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>جستجو</span>
+            <kbd>⌘K</kbd>
+          </button>
+          <span class="user-chip"><span class="user-avatar">فر</span><span>فروشگاه عطر</span></span>
+        </div>
+      </header>
+
+      <main>
+
+        <!-- تب کلمات کلیدی -->
+        <section id="tab-keywords" class="tab-panel active">
+          <div class="card">
+            <h2 id="keyword-form-title">افزودن کلمه کلیدی</h2>
+            <p class="hint">اگر پیام مشتری شامل این کلمه باشد، ربات «پاسخ» را ارسال می‌کند.</p>
+            <form id="keyword-form">
+              <div class="field">
+                <label for="keyword-input">کلمه یا عبارت</label>
+                <input id="keyword-input" type="text" placeholder="مثلاً: قیمت" required>
+              </div>
+              <div class="field">
+                <label for="keyword-response-input">پاسخ ربات</label>
+                <textarea id="keyword-response-input" rows="3" placeholder="مثلاً: قیمت اسانس‌ها از ۲۰۰ هزار تومان شروع می‌شه..." required></textarea>
+              </div>
+              <div class="form-actions">
+                <button type="submit" id="keyword-submit" class="btn primary">افزودن</button>
+                <button type="button" id="keyword-cancel" class="btn ghost hidden">انصراف</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card table-card">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>کلمه کلیدی</th>
+                    <th>پاسخ</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+                  </tr>
+                </thead>
+                <tbody id="keywords-body"></tbody>
+              </table>
+            </div>
+            <div id="keywords-empty" class="empty hidden">هنوز کلمه کلیدی ثبت نشده است</div>
+          </div>
+        </section>
+
+        <!-- تب گفتگوها -->
+        <section id="tab-conversations" class="tab-panel">
+          <div class="chat-layout">
+            <aside class="card conversation-list" id="conversation-list">
+              <div class="empty">در حال بارگذاری…</div>
+            </aside>
+            <section class="card chat-pane">
+              <button type="button" class="chat-back" data-chat-back aria-label="بازگشت به فهرست گفتگوها">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                <span>فهرست گفتگوها</span>
+              </button>
+              <div class="chat-header" id="chat-header">
+                <span class="hint">یک گفتگو را انتخاب کنید</span>
+              </div>
+              <div class="chat-messages" id="chat-messages"></div>
+              <form class="chat-send" id="chat-send-form">
+                <textarea id="chat-input" rows="2" placeholder="پاسخ دستی (به عنوان ادمین ارسال می‌شود)…"></textarea>
+                <button type="submit" class="btn primary">ارسال</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <!-- تب محصولات -->
+        <section id="tab-products" class="tab-panel">
+          <div class="card">
+            <h2 id="product-form-title">افزودن محصول</h2>
+            <form id="product-form">
+              <div class="grid-2">
+                <div class="field">
+                  <label for="product-name">نام محصول</label>
+                  <input id="product-name" type="text" placeholder="مثلاً: اسانس یاس" required>
+                </div>
+                <div class="field">
+                  <label for="product-price">قیمت (تومان)</label>
+                  <input id="product-price" type="number" min="0" placeholder="۲۵۰۰۰۰" required>
+                </div>
+                <div class="field">
+                  <label for="product-stock">موجودی</label>
+                  <input id="product-stock" type="number" min="0" placeholder="۱۰" required>
+                </div>
+              </div>
+              <div class="field">
+                <label for="product-description">توضیحات</label>
+                <textarea id="product-description" rows="2" placeholder="توضیح کوتاه محصول…"></textarea>
+              </div>
+              <div class="form-actions">
+                <button type="submit" id="product-submit" class="btn primary">افزودن</button>
+                <button type="button" id="product-cancel" class="btn ghost hidden">انصراف</button>
+              </div>
+            </form>
+          </div>
+          <div id="products-list" class="products-grid"></div>
+          <div id="products-empty" class="empty hidden">هنوز محصولی ثبت نشده است</div>
+        </section>
+
+        <!-- تب تنظیمات -->
+        <section id="tab-settings" class="tab-panel">
+          <div class="card">
+            <h2>وضعیت ربات</h2>
+            <div class="switch-row">
+              <div>
+                <strong>پاسخگویی خودکار</strong>
+                <p class="hint">وقتی خاموش باشد پیام‌ها فقط ذخیره می‌شوند و شما از تب گفتگوها دستی جواب می‌دهید.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="bot-enabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <p id="bot-status-text" class="hint"></p>
+          </div>
+
+          <div class="card">
+            <h2>پیام پیش‌فرض</h2>
+            <p class="hint">وقتی هیچ کلمه کلیدی با پیام مشتری مطابقت نکند، این متن ارسال می‌شود.</p>
+            <textarea id="fallback-message" rows="4"></textarea>
+            <div class="form-actions">
+              <button id="save-settings" class="btn primary">ذخیره تنظیمات</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>دروازه فالو</h2>
+            <div class="switch-row">
+              <div>
+                <strong>فقط پاسخ به فالوکننده‌ها</strong>
+                <p class="hint">اگر فعال باشد، کسی که پیج را فالو نکرده به‌جای پاسخ ربات، فقط این پیام را می‌گیرد (حداکثر هر ۱۵ دقیقه یک بار تکرار می‌شود). بعد از فالو کردن و نوشتن «فالو کردم»، پیام قبلی‌اش جواب می‌گیرد.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="follow-gate-enabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="field" style="margin-top: 0.8rem;">
+              <label for="follow-gate-message">متن پیام فالو</label>
+              <textarea id="follow-gate-message" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+              <button id="save-follow-gate" class="btn primary">ذخیره دروازه فالو</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- اسکریپت بصری (فقط UI): کشوی موبایل، جابه‌جایی چت، ⌘K — بدون دخالت در منطق panel.js -->
+  <script>
+    (function () {
+      var shell = document.querySelector(".app-shell");
+      if (!shell) return;
+
+      function closeDrawer() { shell.classList.remove("drawer-open"); }
+
+      document.querySelectorAll("[data-toggle-drawer]").forEach(function (b) {
+        b.addEventListener("click", function () { shell.classList.toggle("drawer-open"); });
+      });
+      document.querySelectorAll("[data-close-drawer]").forEach(function (b) {
+        b.addEventListener("click", closeDrawer);
+      });
+
+      // بستن کشو هنگام انتخاب تب (فقط افزودنی، منطق panel.js دست‌نخورده)
+      document.querySelectorAll(".tab").forEach(function (t) {
+        t.addEventListener("click", closeDrawer);
+      });
+
+      // جابه‌جایی موبایل: فهرست ← چت (فقط با افزودن/حذف کلاس بصری)
+      document.addEventListener("click", function (e) {
+        var item = e.target.closest && e.target.closest(".conversation-item");
+        if (item) shell.classList.add("show-chat");
+      });
+      document.querySelectorAll("[data-chat-back]").forEach(function (b) {
+        b.addEventListener("click", function () { shell.classList.remove("show-chat"); });
+      });
+
+      // ⌘K / Ctrl+K — نشانگر بصری (بدون فیلد جستجوی مرده)
+      var cmdk = document.querySelector("[data-cmdk]");
+      function pulseCmdk() {
+        if (!cmdk) return;
+        cmdk.style.borderColor = "rgba(99,102,241,.6)";
+        setTimeout(function () { cmdk.style.borderColor = ""; }, 500);
+      }
+      if (cmdk) cmdk.addEventListener("click", pulseCmdk);
+      document.addEventListener("keydown", function (e) {
+        if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+          e.preventDefault();
+          pulseCmdk();
+        }
+        if (e.key === "Escape") { closeDrawer(); }
+      });
+    })();
+  </script>
+
+  <script src="panel.js"></script>
+</body>
+</html>

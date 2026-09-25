@@ -1,17 +1,54 @@
 from typing import List
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth import require_auth
 from app.database import get_db
+from app.models.customer import Customer
 from app.models.message import Message
-from app.schemas.message import MessageCreate, MessageResponse
+from app.schemas.message import MessageCreate, MessageResponse, ConversationResponse
 
 
 router = APIRouter(
     prefix="/messages",
-    tags=["Messages"]
+    tags=["Messages"],
+    dependencies=[Depends(require_auth)]
 )
+
+conversations_router = APIRouter(
+    prefix="/conversations",
+    tags=["Conversations"],
+    dependencies=[Depends(require_auth)]
+)
+
+
+@conversations_router.get("/", response_model=List[ConversationResponse])
+def get_conversations(db: Session = Depends(get_db)):
+    """لیست گفتگوها برای صندوق پنل: هر مشتری + آخرین پیامش، مرتب از تازه‌ترین"""
+    conversations = []
+    for customer in db.query(Customer).all():
+        last_message = (
+            db.query(Message)
+            .filter(Message.customer_id == customer.id)
+            .order_by(Message.created_at.desc(), Message.id.desc())
+            .first()
+        )
+        conversations.append({
+            "customer": customer,
+            "last_message": last_message
+        })
+
+    # گفتگوهای دارای پیام از تازه‌ترین، بقیه در انتها
+    # (datetime.min جایگزین None تا مقایسه تاریخ‌ها خطا ندهد)
+    conversations.sort(
+        key=lambda c: (
+            c["last_message"].created_at if c["last_message"] else datetime.min
+        ),
+        reverse=True,
+    )
+    return conversations
 
 
 # Create Message
@@ -23,7 +60,8 @@ def create_message(
     new_message = Message(
         customer_id=message.customer_id,
         text=message.text,
-        sender=message.sender
+        sender=message.sender,
+        instagram_message_id=message.instagram_message_id
     )
 
     db.add(new_message)

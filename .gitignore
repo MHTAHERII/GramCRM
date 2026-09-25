@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+
+# Secrets & environment
+.env
+
+# IDE
+.idea/
+
+# instagrapi session files
+*.session
+session.json
+

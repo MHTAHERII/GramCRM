@@ -6,17 +6,18 @@ class ProductCreate(BaseModel):
     stock : int
     description : str
 
-class ProductResponce(ProductCreate):
+class ProductResponse(ProductCreate):
     id : int
     active : bool
 
     class Config:
         from_attributes = True #پیدنتیک میفهمه ک باید مقادیر رو از ویژگی های آبجکت بخونه
+
 class ProductUpdate(BaseModel):
-    name : str
-    price : int
-    stock : int
-    description : str
+    name : str | None = None
+    description : str | None = None
+    price : int | None = None
+    stock : int | None = None
 
 
 

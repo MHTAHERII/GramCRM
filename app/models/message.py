@@ -22,8 +22,18 @@ class Message(Base):
         nullable=False
     )
 
+    # فقط پیام‌های ورودی اینستاگرام این آیدی را دارند؛ پیام‌های خروجی ربات/ادمین NULL هستند
+    instagram_message_id = Column(
+        String(255),
+        nullable=True,
+        unique=True,
+        index=True
+    )
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow
     )
+
+
     customer = relationship("Customer", back_populates="messages")

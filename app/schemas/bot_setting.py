@@ -7,6 +7,9 @@ class BotSettingUpdate(BaseModel):
     fallback_message: str | None = None
     follow_gate_enabled: bool | None = None
     follow_gate_message: str | None = None
+    follow_gate_buttons: list[dict] | None = None
+    follow_gate_button_title: str | None = None
+    follow_gate_button_url: str | None = None
     comment_reply_enabled: bool | None = None
     comment_public_reply_enabled: bool | None = None
     comment_public_reply_text: str | None = None
@@ -24,6 +27,9 @@ class BotSettingResponse(BaseModel):
     fallback_message: str
     follow_gate_enabled: bool
     follow_gate_message: str | None
+    follow_gate_buttons: list[dict] | None = None
+    follow_gate_button_title: str | None = None
+    follow_gate_button_url: str | None = None
     comment_reply_enabled: bool
     comment_public_reply_enabled: bool
     comment_public_reply_text: str | None

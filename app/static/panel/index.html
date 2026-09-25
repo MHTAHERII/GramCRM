@@ -386,6 +386,22 @@
               <label for="follow-gate-message">متن پیام فالو</label>
               <textarea id="follow-gate-message" rows="3"></textarea>
             </div>
+
+            <div class="keyword-buttons-section" style="margin-top: 14px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                  🔘 دکمه‌های شیشه‌ای لینک‌دار دروازه فالو (اختیاری — حداکثر ۳ دکمه)
+                </span>
+                <button type="button" id="btn-add-follow-gate-button" class="btn small ghost" style="padding: 3px 10px; font-size: 0.78rem;">
+                  + افزودن دکمه جدید
+                </button>
+              </div>
+              <p class="hint" style="font-size: 0.76rem; margin-bottom: 12px; line-height: 1.5;">
+                می‌توانید دکمه‌های شیشه‌ای لینک‌دار دلخواه (مثلاً: مشاهده پیج و فالو کردن 📱، پشتیبانی یا ورود به سایت) همراه پیام فالو برای کاربر ارسال کنید.
+              </p>
+              <div id="follow-gate-buttons-container"></div>
+            </div>
+
             <div class="form-actions">
               <button id="save-follow-gate" class="btn primary">ذخیره دروازه فالو</button>
             </div>

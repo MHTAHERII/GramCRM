@@ -58,6 +58,15 @@ def run_schema_migrations() -> None:
             "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_public_reply_text TEXT;"
         ))
         conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_button_title VARCHAR(100);"
+        ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_button_url VARCHAR(500);"
+        ))
+        conn.execute(text(
+            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_buttons JSON;"
+        ))
+        conn.execute(text(
             "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_title VARCHAR(100);"
         ))
         conn.execute(text(

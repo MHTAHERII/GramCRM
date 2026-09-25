@@ -160,7 +160,8 @@ class ZernioService:
         buttons: list[dict] | None = None,
         button_title: str | None = None,
         button_url: str | None = None,
-        follow_gate_message: str | None = None
+        follow_gate_message: str | None = None,
+        follow_gate_buttons: list[dict] | None = None
     ) -> dict | None:
         """
         ساخت اتوماسیون جدید کامنت به دایرکت:
@@ -198,11 +199,21 @@ class ZernioService:
         if formatted_buttons:
             payload["buttons"] = formatted_buttons
 
-        # افزودن قفل فالو با دو دکمه «فالو کردم» و «مشاهده پیج»
+        # افزودن قفل فالو با دکمه‌های تعاملی یا دکمه‌های شیشه‌ای دلخواه
         if follow_gate_message:
-            payload["followGate"] = {
+            fg_payload = {
                 "message": follow_gate_message.strip()
             }
+            if follow_gate_buttons:
+                fg_btn_list = []
+                for b in follow_gate_buttons[:3]:
+                    t = b.get("title", "").strip() if isinstance(b, dict) else ""
+                    u = b.get("url", "").strip() if isinstance(b, dict) else ""
+                    if t and u:
+                        fg_btn_list.append({"type": "url", "title": t, "url": u})
+                if fg_btn_list:
+                    fg_payload["buttons"] = fg_btn_list
+            payload["followGate"] = fg_payload
 
         try:
             url = f"{ZERNIO_BASE_URL}/comment-automations"
@@ -241,8 +252,10 @@ class ZernioService:
         # ۱. استعلام تنظیمات دروازه فالو
         bot_settings = db.query(BotSetting).first()
         fg_msg = None
+        fg_buttons = None
         if bot_settings and bot_settings.follow_gate_enabled:
             fg_msg = bot_settings.follow_gate_message or "این محتوا مخصوص دنبال‌کننده‌هاست 💙 پیج رو فالو کن و «فالو کردم» رو بزن."
+            fg_buttons = bot_settings.follow_gate_buttons or []
 
         # ۲. دریافت اتوماسیون‌های فعلی در Zernio
         existing_automations = self.list_comment_automations()
@@ -265,7 +278,8 @@ class ZernioService:
                 buttons=kw.buttons,
                 button_title=kw.button_title,
                 button_url=kw.button_url,
-                follow_gate_message=fg_msg
+                follow_gate_message=fg_msg,
+                follow_gate_buttons=fg_buttons
             )
             if created:
                 synced_count += 1

@@ -788,6 +788,21 @@ async function loadSettings() {
   document.getElementById("follow-gate-enabled").checked = settings.follow_gate_enabled;
   document.getElementById("follow-gate-message").value = settings.follow_gate_message || "";
 
+  // پر کردن دکمه‌های شیشه‌ای دروازه فالو
+  const fgContainer = document.getElementById("follow-gate-buttons-container");
+  if (fgContainer) {
+    fgContainer.innerHTML = "";
+    const fgButtons = (settings.follow_gate_buttons && settings.follow_gate_buttons.length)
+      ? settings.follow_gate_buttons
+      : (settings.follow_gate_button_title && settings.follow_gate_button_url
+          ? [{ title: settings.follow_gate_button_title, url: settings.follow_gate_button_url }]
+          : []);
+    fgButtons.forEach(b => {
+      addFollowGateButtonRow(b.title, b.url);
+    });
+    checkFollowGateButtonCount();
+  }
+
   // فیلدهای توکن و اکانت Zernio
   document.getElementById("setting-zernio-api-key").value = settings.zernio_api_key || "";
   document.getElementById("setting-zernio-profile-id").value = settings.zernio_profile_id || "";
@@ -825,6 +840,63 @@ async function loadSettings() {
   await fetchSystemLogs();
   await fetchVersionInfo();
 }
+
+function createFollowGateButtonRow(title = "", url = "") {
+  const row = document.createElement("div");
+  row.className = "keyword-btn-row fg-btn-row";
+  row.innerHTML = `
+    <div class="field" style="margin-bottom: 0;">
+      <label style="font-size: 0.78rem;">متن دکمه (مثلاً: مشاهده پیج و فالو کردن 📱)</label>
+      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+    </div>
+    <div class="field" style="margin-bottom: 0;">
+      <label style="font-size: 0.78rem;">لینک اینترنتی (URL)</label>
+      <input type="url" class="btn-url-input" placeholder="https://instagram.com/..." value="${esc(url)}">
+    </div>
+    <div style="display: flex; align-items: flex-end;">
+      <button type="button" class="btn small ghost btn-remove-fg-row" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); height: 42px; width: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); flex-shrink: 0;" title="حذف این دکمه">✕</button>
+    </div>
+  `;
+  row.querySelector(".btn-remove-fg-row").addEventListener("click", () => {
+    row.remove();
+    checkFollowGateButtonCount();
+  });
+  return row;
+}
+
+function checkFollowGateButtonCount() {
+  const container = document.getElementById("follow-gate-buttons-container");
+  const addBtn = document.getElementById("btn-add-follow-gate-button");
+  if (!container || !addBtn) return;
+  const count = container.querySelectorAll(".fg-btn-row").length;
+  addBtn.style.display = count >= 3 ? "none" : "inline-flex";
+}
+
+function addFollowGateButtonRow(title = "", url = "") {
+  const container = document.getElementById("follow-gate-buttons-container");
+  if (!container) return;
+  if (container.querySelectorAll(".fg-btn-row").length >= 3) {
+    showToast("حداکثر ۳ دکمه می‌توانید اضافه کنید", "error");
+    return;
+  }
+  container.appendChild(createFollowGateButtonRow(title, url));
+  checkFollowGateButtonCount();
+}
+
+document.getElementById("btn-add-follow-gate-button")?.addEventListener("click", () => {
+  let defaultUrl = "";
+  let defaultTitle = "";
+  const container = document.getElementById("follow-gate-buttons-container");
+  if (container && container.querySelectorAll(".fg-btn-row").length === 0) {
+    const userEl = document.getElementById("zernio-connected-username");
+    const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
+    if (rawUsername) {
+      defaultTitle = "مشاهده پیج و فالو کردن 📱";
+      defaultUrl = `https://instagram.com/${rawUsername}`;
+    }
+  }
+  addFollowGateButtonRow(defaultTitle, defaultUrl);
+});
 
 function updateBotStatusText(enabled) {
   document.getElementById("bot-status-text").textContent = enabled
@@ -864,9 +936,23 @@ document.getElementById("save-settings").addEventListener("click", async () => {
 
 document.getElementById("save-follow-gate").addEventListener("click", async () => {
   const btn = document.getElementById("save-follow-gate");
+  const fgContainer = document.getElementById("follow-gate-buttons-container");
+  const rows = fgContainer ? fgContainer.querySelectorAll(".fg-btn-row") : [];
+  const buttons = [];
+  rows.forEach(r => {
+    const t = r.querySelector(".btn-title-input")?.value.trim();
+    const u = r.querySelector(".btn-url-input")?.value.trim();
+    if (t && u) {
+      buttons.push({ title: t, url: u });
+    }
+  });
+
   const body = JSON.stringify({
     follow_gate_enabled: document.getElementById("follow-gate-enabled").checked,
     follow_gate_message: document.getElementById("follow-gate-message").value,
+    follow_gate_buttons: buttons,
+    follow_gate_button_title: buttons.length ? buttons[0].title : null,
+    follow_gate_button_url: buttons.length ? buttons[0].url : null,
   });
   try {
     await api("/settings/", { method: "PUT", body });

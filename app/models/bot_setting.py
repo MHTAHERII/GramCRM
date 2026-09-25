@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON
 from datetime import datetime
 from app.database import Base
 
@@ -20,6 +20,11 @@ class BotSetting(Base):
 
     # متن پیام دروازه فالو
     follow_gate_message = Column(Text, nullable=True)
+
+    # دکمه‌های شیشه‌ای لینک‌دار دروازه فالو (اختیاری)
+    follow_gate_button_title = Column(String(100), nullable=True)
+    follow_gate_button_url = Column(String(500), nullable=True)
+    follow_gate_buttons = Column(JSON, nullable=True, default=list)
 
     # اتوماسیون کامنت به دایرکت (Comment to DM)
     comment_reply_enabled = Column(Boolean, default=True, nullable=False)

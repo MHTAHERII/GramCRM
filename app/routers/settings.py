@@ -31,6 +31,12 @@ def get_settings(db: Session = Depends(get_db)):
         fallback_message=setting.fallback_message,
         follow_gate_enabled=setting.follow_gate_enabled,
         follow_gate_message=setting.follow_gate_message,
+        follow_gate_buttons=setting.follow_gate_buttons or (
+            [{"title": setting.follow_gate_button_title, "url": setting.follow_gate_button_url}]
+            if (setting.follow_gate_button_title and setting.follow_gate_button_url) else []
+        ),
+        follow_gate_button_title=setting.follow_gate_button_title,
+        follow_gate_button_url=setting.follow_gate_button_url,
         comment_reply_enabled=setting.comment_reply_enabled,
         comment_public_reply_enabled=setting.comment_public_reply_enabled,
         comment_public_reply_text=setting.comment_public_reply_text,
@@ -58,6 +64,26 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
     if data.follow_gate_message is not None:
         stripped = data.follow_gate_message.strip()
         setting.follow_gate_message = stripped if stripped else DEFAULT_FOLLOW_GATE_MESSAGE
+
+    if data.follow_gate_buttons is not None:
+        btn_list = []
+        for b in data.follow_gate_buttons:
+            t = b.get("title", "").strip() if isinstance(b, dict) else ""
+            u = b.get("url", "").strip() if isinstance(b, dict) else ""
+            if t and u:
+                btn_list.append({"title": t, "url": u})
+        setting.follow_gate_buttons = btn_list
+        setting.follow_gate_button_title = btn_list[0]["title"] if btn_list else None
+        setting.follow_gate_button_url = btn_list[0]["url"] if btn_list else None
+    elif data.follow_gate_button_title is not None or data.follow_gate_button_url is not None:
+        if data.follow_gate_button_title is not None:
+            setting.follow_gate_button_title = data.follow_gate_button_title.strip() if data.follow_gate_button_title.strip() else None
+        if data.follow_gate_button_url is not None:
+            setting.follow_gate_button_url = data.follow_gate_button_url.strip() if data.follow_gate_button_url.strip() else None
+        if setting.follow_gate_button_title and setting.follow_gate_button_url:
+            setting.follow_gate_buttons = [{"title": setting.follow_gate_button_title, "url": setting.follow_gate_button_url}]
+        elif data.follow_gate_button_title == "" or data.follow_gate_button_url == "":
+            setting.follow_gate_buttons = []
     if data.comment_reply_enabled is not None:
         setting.comment_reply_enabled = data.comment_reply_enabled
     if data.comment_public_reply_enabled is not None:
@@ -116,6 +142,12 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         fallback_message=setting.fallback_message,
         follow_gate_enabled=setting.follow_gate_enabled,
         follow_gate_message=setting.follow_gate_message,
+        follow_gate_buttons=setting.follow_gate_buttons or (
+            [{"title": setting.follow_gate_button_title, "url": setting.follow_gate_button_url}]
+            if (setting.follow_gate_button_title and setting.follow_gate_button_url) else []
+        ),
+        follow_gate_button_title=setting.follow_gate_button_title,
+        follow_gate_button_url=setting.follow_gate_button_url,
         comment_reply_enabled=setting.comment_reply_enabled,
         comment_public_reply_enabled=setting.comment_public_reply_enabled,
         comment_public_reply_text=setting.comment_public_reply_text,

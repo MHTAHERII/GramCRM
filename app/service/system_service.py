@@ -220,6 +220,12 @@ def create_backup(db: Session) -> Dict[str, Any]:
             "fallback_message": settings.fallback_message,
             "follow_gate_enabled": settings.follow_gate_enabled,
             "follow_gate_message": settings.follow_gate_message,
+            "follow_gate_buttons": settings.follow_gate_buttons or (
+                [{"title": settings.follow_gate_button_title, "url": settings.follow_gate_button_url}]
+                if (settings.follow_gate_button_title and settings.follow_gate_button_url) else []
+            ),
+            "follow_gate_button_title": settings.follow_gate_button_title,
+            "follow_gate_button_url": settings.follow_gate_button_url,
             "comment_reply_enabled": settings.comment_reply_enabled,
             "comment_public_reply_enabled": settings.comment_public_reply_enabled,
             "comment_public_reply_text": settings.comment_public_reply_text,
@@ -280,6 +286,16 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
             if "fallback_message" in s_data and s_data["fallback_message"]: setting.fallback_message = s_data["fallback_message"]
             if "follow_gate_enabled" in s_data: setting.follow_gate_enabled = s_data["follow_gate_enabled"]
             if "follow_gate_message" in s_data: setting.follow_gate_message = s_data["follow_gate_message"]
+            if "follow_gate_buttons" in s_data and isinstance(s_data["follow_gate_buttons"], list):
+                setting.follow_gate_buttons = s_data["follow_gate_buttons"]
+                if setting.follow_gate_buttons:
+                    setting.follow_gate_button_title = setting.follow_gate_buttons[0].get("title")
+                    setting.follow_gate_button_url = setting.follow_gate_buttons[0].get("url")
+            elif "follow_gate_button_title" in s_data or "follow_gate_button_url" in s_data:
+                setting.follow_gate_button_title = s_data.get("follow_gate_button_title")
+                setting.follow_gate_button_url = s_data.get("follow_gate_button_url")
+                if setting.follow_gate_button_title and setting.follow_gate_button_url:
+                    setting.follow_gate_buttons = [{"title": setting.follow_gate_button_title, "url": setting.follow_gate_button_url}]
             if "comment_reply_enabled" in s_data: setting.comment_reply_enabled = s_data["comment_reply_enabled"]
             if "comment_public_reply_enabled" in s_data: setting.comment_public_reply_enabled = s_data["comment_public_reply_enabled"]
             if "comment_public_reply_text" in s_data: setting.comment_public_reply_text = s_data["comment_public_reply_text"]

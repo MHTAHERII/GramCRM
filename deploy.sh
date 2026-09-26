@@ -33,9 +33,10 @@ echo "=== 5. Setting up Python Virtual Environment ==="
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/pip install psycopg2-binary requests uvicorn[standard] fastapi sqlalchemy pydantic python-dotenv itsdangerous psutil python-multipart
+./venv/bin/pip install psycopg2-binary requests uvicorn[standard] fastapi sqlalchemy pydantic python-dotenv itsdangerous psutil python-multipart websockets
 
 echo "=== 6. Creating Production Environment Config (.env) ==="
+if [ ! -f .env ]; then
 cat << 'EOF' > .env
 DATABASE_URL=postgresql://botuser:perfume_secret_73752@localhost:5432/perfume_bot
 IG_POLL_INTERVAL=5
@@ -51,6 +52,10 @@ ZERNIO_ACCOUNT_ID=6ab54a588d284ffb213d4274
 # Meta Webhook Tokens
 META_VERIFY_TOKEN=perfume_bot_verify_token_2026
 EOF
+    echo ".env created successfully."
+else
+    echo "Existing .env found. Keeping your current configuration."
+fi
 
 # Determine cloned directory
 if [ -d "/root/GramCRM" ]; then
@@ -89,13 +94,21 @@ server {
     listen [::]:80 default_server;
     server_name _;
 
-    client_max_body_size 20M;
+    client_max_body_size 25M;
 
-    location / {
+    location /ws {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

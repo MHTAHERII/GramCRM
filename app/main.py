@@ -35,67 +35,68 @@ def run_schema_migrations() -> None:
     تغییرات اسکیمایی که create_all روی جدول‌های موجود اعمال نمی‌کند.
     هر دستور idempotent است و اگر قبلاً اجرا شده باشد خطایی نمی‌دهد.
     """
-    with engine.begin() as conn:
-        conn.execute(text(
-            "ALTER TABLE messages ALTER COLUMN instagram_message_id DROP NOT NULL;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE messages ALTER COLUMN instagram_message_id TYPE VARCHAR(255);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_enabled BOOLEAN NOT NULL DEFAULT FALSE;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_message TEXT;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_reply_enabled BOOLEAN NOT NULL DEFAULT TRUE;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_public_reply_enabled BOOLEAN NOT NULL DEFAULT FALSE;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_public_reply_text TEXT;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_button_title VARCHAR(100);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_button_url VARCHAR(500);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_buttons JSON;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_title VARCHAR(100);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_url VARCHAR(500);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS buttons JSON;"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100) DEFAULT 'admin';"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_password VARCHAR(100);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_api_key VARCHAR(255);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_profile_id VARCHAR(100);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_account_id VARCHAR(100);"
-        ))
-        conn.execute(text(
-            "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS instagram_username VARCHAR(100);"
-        ))
-        conn.execute(text(
-            "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
-        ))
+    if engine.dialect.name == "postgresql":
+        with engine.begin() as conn:
+            conn.execute(text(
+                "ALTER TABLE messages ALTER COLUMN instagram_message_id DROP NOT NULL;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE messages ALTER COLUMN instagram_message_id TYPE VARCHAR(255);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_enabled BOOLEAN NOT NULL DEFAULT FALSE;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_message TEXT;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_reply_enabled BOOLEAN NOT NULL DEFAULT TRUE;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_public_reply_enabled BOOLEAN NOT NULL DEFAULT FALSE;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS comment_public_reply_text TEXT;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_button_title VARCHAR(100);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_button_url VARCHAR(500);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS follow_gate_buttons JSON;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_title VARCHAR(100);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS button_url VARCHAR(500);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS buttons JSON;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100) DEFAULT 'admin';"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_password VARCHAR(100);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_api_key VARCHAR(255);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_profile_id VARCHAR(100);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS zernio_account_id VARCHAR(100);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS instagram_username VARCHAR(100);"
+            ))
+            conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
+            ))
 
 
 @asynccontextmanager

@@ -208,7 +208,7 @@ def auto_discover_zernio(payload: dict | None = None, db: Session = Depends(get_
     }
 
 
-@router.post("/test-connection", summary="بررسی وضعیت اتصال به اینستاگرام و Zernio")
+@router.api_route("/test-connection", methods=["GET", "POST"], summary="بررسی وضعیت اتصال به اینستاگرام و Zernio")
 def test_connection(db: Session = Depends(get_db)):
     """تست زنده توکن و شناسه‌ها جهت اطمینان از صحت ارتباط با اینستاگرام"""
     setting = get_bot_settings(db)

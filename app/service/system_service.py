@@ -257,10 +257,9 @@ def create_backup(db: Session) -> Dict[str, Any]:
         ],
         "customers": [
             {
-                "instagram_user_id": c.instagram_user_id,
+                "instagram_id": c.instagram_id,
                 "username": c.username,
-                "full_name": c.full_name,
-                "notes": c.notes
+                "name": c.name
             }
             for c in customers
         ]
@@ -357,20 +356,22 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
         # ۴. بازیابی مشتریان
         if "customers" in backup_data and isinstance(backup_data["customers"], list):
             for c_item in backup_data["customers"]:
-                ig_id = str(c_item.get("instagram_user_id", "")).strip()
+                ig_id = str(c_item.get("instagram_id") or c_item.get("instagram_user_id") or "").strip()
                 if not ig_id:
                     continue
-                c_exist = db.query(Customer).filter(Customer.instagram_user_id == ig_id).first()
+                c_name = c_item.get("name") or c_item.get("full_name")
+                c_username = c_item.get("username")
+                c_exist = db.query(Customer).filter(Customer.instagram_id == ig_id).first()
                 if c_exist:
-                    c_exist.username = c_item.get("username")
-                    c_exist.full_name = c_item.get("full_name")
-                    c_exist.notes = c_item.get("notes")
+                    if c_username:
+                        c_exist.username = c_username
+                    if c_name:
+                        c_exist.name = c_name
                 else:
                     new_c = Customer(
-                        instagram_user_id=ig_id,
-                        username=c_item.get("username"),
-                        full_name=c_item.get("full_name"),
-                        notes=c_item.get("notes")
+                        instagram_id=ig_id,
+                        username=c_username,
+                        name=c_name
                     )
                     db.add(new_c)
                 restored_counts["customers"] += 1

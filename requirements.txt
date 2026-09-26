@@ -9,3 +9,4 @@ itsdangerous
 psutil
 python-multipart
 websockets
+requests

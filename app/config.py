@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=BASE_DIR / '.env', override=True)
 class Settings:
-    DATABASE_URL: str = os.getenv(
+    # Railway uses "postgres://" but SQLAlchemy requires "postgresql://"
+    _raw_db_url: str = os.getenv(
         "DATABASE_URL",
         "postgresql://postgres:73752@localhost:5432/perfume_bot"
     )
+    DATABASE_URL: str = _raw_db_url.replace("postgres://", "postgresql://", 1) if _raw_db_url.startswith("postgres://") else _raw_db_url
     IG_USERNAME: str = os.getenv("IG_USERNAME", "")
     IG_PASSWORD: str = os.getenv("IG_PASSWORD", "")
     IG_SESSION_FILE: str = str(BASE_DIR / os.getenv("IG_SESSION_FILE", "session.json"))

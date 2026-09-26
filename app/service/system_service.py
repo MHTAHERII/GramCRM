@@ -504,6 +504,9 @@ def execute_system_update() -> Dict[str, Any]:
     """
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
+    # Railway Cloud: فقط git pull نیاز است چون Railway خودکار ری‌استارت می‌کند
+    is_railway = os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_PROJECT_ID")
+
     if os.name == "nt":
         # محیط ویندوز (توسعه لوکال)
         try:
@@ -527,11 +530,24 @@ def execute_system_update() -> Dict[str, Any]:
                 "restarting": False
             }
     else:
-        # محیط لینوکس (سرور عملیاتی با systemd)
+        # محیط لینوکس (VPS با systemd یا Railway Cloud)
         log_file = "/tmp/gramcrm_update.log"
         script_file = "/tmp/gramcrm_updater.sh"
 
-        script_content = f"""#!/bin/bash
+        if is_railway:
+            # روی Railway: git pull + pip install کافی است، ری‌استارت از طریق Railway صورت می‌گیرد
+            script_content = f"""#!/bin/bash
+sleep 1
+cd "{base_dir}" >> {log_file} 2>&1
+echo "=== GramCRM Update on Railway at $(date) ===" >> {log_file} 2>&1
+git fetch --all >> {log_file} 2>&1
+git reset --hard origin/main >> {log_file} 2>&1
+pip install -r requirements.txt >> {log_file} 2>&1 || true
+echo "=== Update done. Reload via Railway dashboard or push a new commit. ===" >> {log_file} 2>&1
+"""
+        else:
+            # VPS با systemd
+            script_content = f"""#!/bin/bash
 sleep 1
 cd "{base_dir}" >> {log_file} 2>&1
 echo "=== شروع به‌روزرسانی GramCRM در $(date) ===" >> {log_file} 2>&1
@@ -550,7 +566,6 @@ systemctl restart gramcrm >> {log_file} 2>&1 || true
                 f.write(script_content)
             os.chmod(script_file, 0o755)
 
-            # اجرای کاملاً مستقل از پروسس فعلی
             subprocess.Popen(
                 ["bash", script_file],
                 cwd=base_dir,
@@ -559,10 +574,11 @@ systemctl restart gramcrm >> {log_file} 2>&1 || true
                 start_new_session=True
             )
 
+            msg = "روی Railway: کد به‌روز شد. برای اعمال تغییرات، یک commit جدید push کنید یا از داشبورد Railway ری‌استارت بزنید." if is_railway else "فرآیند به‌روزرسانی آغاز شد. کدها از گیت‌هاب دریافت شده و پنل ظرف ۱۰ ثانیه آینده به‌صورت خودکار ریستارت خواهد شد."
             return {
                 "success": True,
-                "message": "فرآیند به‌روزرسانی آغاز شد. کدها از گیت‌هاب دریافت شده و پنل ظرف ۱۰ ثانیه آینده به‌صورت خودکار ریستارت خواهد شد.",
-                "restarting": True
+                "message": msg,
+                "restarting": not bool(is_railway)
             }
         except Exception as e:
             return {

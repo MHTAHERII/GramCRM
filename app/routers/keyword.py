@@ -50,11 +50,12 @@ def create_keyword(
     if keyword.buttons:
         for b in keyword.buttons[:3]:
             t = b.title.strip()
-            u = b.url.strip()
-            if t and u:
-                btn_list.append({"title": t, "url": u})
+            u = (b.url or "").strip()
+            b_type = getattr(b, "type", "url") or "url"
+            if t and (u or b_type == "postback"):
+                btn_list.append({"title": t, "url": u, "type": b_type})
     elif keyword.button_title and keyword.button_url:
-        btn_list.append({"title": keyword.button_title.strip(), "url": keyword.button_url.strip()})
+        btn_list.append({"title": keyword.button_title.strip(), "url": keyword.button_url.strip(), "type": "url"})
 
     new_keyword = Keyword(
         keyword=keyword.keyword.strip(),
@@ -112,9 +113,10 @@ def update_keyword(
         btn_list = []
         for b in keyword_data.buttons[:3]:
             t = b.title.strip()
-            u = b.url.strip()
-            if t and u:
-                btn_list.append({"title": t, "url": u})
+            u = (b.url or "").strip()
+            b_type = getattr(b, "type", "url") or "url"
+            if t and (u or b_type == "postback"):
+                btn_list.append({"title": t, "url": u, "type": b_type})
         keyword.buttons = btn_list if btn_list else None
         keyword.button_title = btn_list[0]["title"] if btn_list else None
         keyword.button_url = btn_list[0]["url"] if btn_list else None

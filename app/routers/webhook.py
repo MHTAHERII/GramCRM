@@ -66,6 +66,10 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
 
                 mid = message_data.get("mid")
                 text = message_data.get("text")
+                if not text and event.get("postback"):
+                    text = event.get("postback", {}).get("payload") or event.get("postback", {}).get("title")
+                if not text and message_data.get("quick_reply"):
+                    text = message_data.get("quick_reply", {}).get("payload")
 
                 if sender_id and text:
                     logger.info(f"Processing inbound DM from {sender_id}: '{text[:30]}...'")

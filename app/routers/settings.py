@@ -68,10 +68,11 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
     if data.follow_gate_buttons is not None:
         btn_list = []
         for b in data.follow_gate_buttons:
-            t = b.get("title", "").strip() if isinstance(b, dict) else ""
-            u = b.get("url", "").strip() if isinstance(b, dict) else ""
-            if t and u:
-                btn_list.append({"title": t, "url": u})
+            t = b.get("title", "").strip() if isinstance(b, dict) else getattr(b, "title", "").strip()
+            u = b.get("url", "").strip() if isinstance(b, dict) else getattr(b, "url", "").strip()
+            b_type = b.get("type", "url") if isinstance(b, dict) else getattr(b, "type", "url")
+            if t and (u or b_type == "postback"):
+                btn_list.append({"title": t, "url": u, "type": b_type})
         setting.follow_gate_buttons = btn_list
         setting.follow_gate_button_title = btn_list[0]["title"] if btn_list else None
         setting.follow_gate_button_url = btn_list[0]["url"] if btn_list else None

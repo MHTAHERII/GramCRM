@@ -350,11 +350,13 @@ async function loadKeywords() {
           <div>${esc(k.response)}</div>
           ${btns.length ? `
             <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px;">
-              ${btns.map(b => `
-                <a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:0.75rem;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;text-decoration:none;">
-                  🔘 ${esc(b.title)}
-                </a>
-              `).join("")}
+              ${btns.map(b => {
+                const isPb = b.type === "postback" || (!b.url && b.title) || (b.url && b.url.includes("ig.me/m/"));
+                if (isPb) {
+                  return `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:0.75rem;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);border-radius:6px;" title="ارسال خودکار پیام">💬 ${esc(b.title)}</span>`;
+                }
+                return `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:0.75rem;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;text-decoration:none;" title="باز کردن لینک">🔗 ${esc(b.title)}</a>`;
+              }).join("")}
             </div>
           ` : ""}
         </td>
@@ -409,7 +411,12 @@ function startEditKeyword(id) {
     const btns = (k.buttons && k.buttons.length)
       ? k.buttons
       : (k.button_title && k.button_url ? [{ title: k.button_title, url: k.button_url }] : []);
-    btns.forEach(b => addKeywordButtonRow(b.title, b.url, b.type || (b.url ? "url" : "postback")));
+    btns.forEach(b => {
+      const isPb = b.type === "postback" || (!b.url && b.title) || (b.url && b.url.includes("ig.me/m/"));
+      const bType = isPb ? "postback" : "url";
+      const bUrl = isPb ? "" : (b.url || "");
+      addKeywordButtonRow(b.title, bUrl, bType);
+    });
   }
 
   document.getElementById("keyword-submit").textContent = "ذخیره تغییرات";
@@ -435,8 +442,6 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
   const container = document.getElementById("keyword-buttons-container");
   const rows = container ? container.querySelectorAll(".keyword-btn-row") : [];
   const buttons = [];
-  const userEl = document.getElementById("zernio-connected-username");
-  const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
 
   rows.forEach(r => {
     const bType = r.querySelector(".btn-type-select")?.value || "url";
@@ -444,11 +449,10 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
     let u = r.querySelector(".btn-url-input")?.value.trim();
     if (t) {
       if (bType === "postback") {
-        const deepLink = rawUsername ? `https://ig.me/m/${rawUsername}?text=${encodeURIComponent(t)}` : "";
         buttons.push({
           type: "postback",
           title: t,
-          url: u || deepLink || "https://instagram.com"
+          url: ""
         });
       } else if (u) {
         buttons.push({
@@ -840,7 +844,10 @@ async function loadSettings() {
           ? [{ title: settings.follow_gate_button_title, url: settings.follow_gate_button_url }]
           : []);
     fgButtons.forEach(b => {
-      addFollowGateButtonRow(b.title, b.url);
+      const isPb = b.type === "postback" || (!b.url && b.title) || (b.url && b.url.includes("ig.me/m/")) || (b.title && b.title.includes("فالو کردم"));
+      const bType = isPb ? "postback" : "url";
+      const bUrl = isPb ? "" : (b.url || "");
+      addFollowGateButtonRow(b.title, bUrl, bType);
     });
     checkFollowGateButtonCount();
   }
@@ -1015,8 +1022,6 @@ document.getElementById("save-follow-gate").addEventListener("click", async () =
   const fgContainer = document.getElementById("follow-gate-buttons-container");
   const rows = fgContainer ? fgContainer.querySelectorAll(".fg-btn-row") : [];
   const buttons = [];
-  const userEl = document.getElementById("zernio-connected-username");
-  const rawUsername = userEl ? userEl.textContent.replace("@", "").trim() : "";
 
   rows.forEach(r => {
     const bType = r.querySelector(".btn-type-select")?.value || "url";
@@ -1024,11 +1029,10 @@ document.getElementById("save-follow-gate").addEventListener("click", async () =
     let u = r.querySelector(".btn-url-input")?.value.trim();
     if (t) {
       if (bType === "postback") {
-        const deepLink = rawUsername ? `https://ig.me/m/${rawUsername}?text=${encodeURIComponent(t)}` : "";
         buttons.push({
           type: "postback",
           title: t,
-          url: u || deepLink || "https://instagram.com"
+          url: ""
         });
       } else if (u) {
         buttons.push({

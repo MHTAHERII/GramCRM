@@ -4,7 +4,8 @@ from datetime import datetime
 
 class KeywordButton(BaseModel):
     title: str
-    url: str
+    url: str | None = None
+    type: str = "url"
 
 
 class KeywordBase(BaseModel):

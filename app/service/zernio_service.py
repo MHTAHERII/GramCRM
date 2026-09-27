@@ -195,12 +195,15 @@ class ZernioService:
                     u = getattr(b, "url", "").strip()
                 if not t:
                     continue
-                if b_type == "postback":
+                if b_type == "postback" or "ig.me/m/" in u:
                     formatted_buttons.append({"type": "postback", "title": t, "payload": t})
                 elif u:
                     formatted_buttons.append({"type": "url", "title": t, "url": u})
         elif button_title and button_url:
-            formatted_buttons.append({"type": "url", "title": button_title.strip(), "url": button_url.strip()})
+            if "ig.me/m/" in button_url:
+                formatted_buttons.append({"type": "postback", "title": button_title.strip(), "payload": button_title.strip()})
+            else:
+                formatted_buttons.append({"type": "url", "title": button_title.strip(), "url": button_url.strip()})
 
         if formatted_buttons:
             payload["buttons"] = formatted_buttons
@@ -218,7 +221,7 @@ class ZernioService:
                     u = b.get("url", "").strip() if isinstance(b, dict) else getattr(b, "url", "").strip()
                     if not t:
                         continue
-                    if b_type == "postback" or "فالو کردم" in t:
+                    if b_type == "postback" or "ig.me/m/" in u or "فالو کردم" in t:
                         fg_btn_list.append({"type": "postback", "title": t, "payload": t})
                     elif u:
                         fg_btn_list.append({"type": "url", "title": t, "url": u})

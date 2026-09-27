@@ -197,8 +197,14 @@ def process_incoming_message(
             if previous and previous.text:
                 logger.info(f"مشتری {customer.id} فالو کرد؛ پردازش مجدد پیام قبلی: '{previous.text[:30]}...'")
                 text = previous.text
+            else:
+                logger.info(f"مشتری {customer.id} اعلام فالو کرد ولی پیام قبلی در دایرکت ندارد (پاسخ توسط اتوماسیون اینستاگرام ارسال می‌شود)؛ جلوگیری از ارسال پیام پیش‌فرض.")
+                return None
 
     # ۷. استخراج پاسخ از موتور کلیدواژه‌ها
+    if _claims_followed(text):
+        return None
+
     reply_text = find_keyword_response(text, db, fallback=True)
     if not reply_text:
         return None

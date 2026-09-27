@@ -1,8 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-healthcheckPath = "/webhook/zernio"
-healthcheckTimeout = 30
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10

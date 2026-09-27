@@ -208,26 +208,25 @@ class ZernioService:
         if formatted_buttons:
             payload["buttons"] = formatted_buttons
 
-        # افزودن قفل فالو با دکمه‌های تعاملی یا دکمه‌های شیشه‌ای دلخواه
+        # افزودن قفل فالو طبق استاندارد رسمی Zernio
         if follow_gate_message:
-            fg_payload = {
-                "message": follow_gate_message.strip()
+            payload["audience"] = {
+                "followerStatus": "follower",
+                "whenUnknown": "verify"
             }
+            btn_label = "فالو کردم ✅"
             if follow_gate_buttons:
-                fg_btn_list = []
-                for b in follow_gate_buttons[:3]:
-                    b_type = b.get("type", "url") if isinstance(b, dict) else getattr(b, "type", "url")
+                for b in follow_gate_buttons:
                     t = b.get("title", "").strip() if isinstance(b, dict) else getattr(b, "title", "").strip()
-                    u = b.get("url", "").strip() if isinstance(b, dict) else getattr(b, "url", "").strip()
-                    if not t:
-                        continue
-                    if b_type == "postback" or "ig.me/m/" in u or "فالو کردم" in t:
-                        fg_btn_list.append({"type": "postback", "title": t, "payload": t})
-                    elif u:
-                        fg_btn_list.append({"type": "url", "title": t, "url": u})
-                if fg_btn_list:
-                    fg_payload["buttons"] = fg_btn_list
-            payload["followGate"] = fg_payload
+                    if t:
+                        btn_label = t
+                        break
+
+            payload["followGate"] = {
+                "message": follow_gate_message.strip(),
+                "buttonLabel": btn_label,
+                "notFollowingMessage": "هنوز پیج رو فالو نکردید! لطفاً ابتدا پیج را فالو کنید و سپس دکمه را لمس کنید 🌸"
+            }
 
         try:
             url = f"{ZERNIO_BASE_URL}/comment-automations"

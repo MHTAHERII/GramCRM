@@ -130,6 +130,10 @@ ufw --force enable || true
 SERVER_IPV4=$(curl -4 -s --max-time 4 https://api.ipify.org || curl -4 -s --max-time 4 https://ifconfig.me || hostname -I | awk '{print $1}')
 SERVER_IPV6=$(curl -6 -s --max-time 4 https://api64.ipify.org || curl -6 -s --max-time 4 https://ifconfig.me || true)
 
+INITIAL_ADMIN_USER="admin"
+INITIAL_ADMIN_PASS=$(grep -E '^ADMIN_PASSWORD=' "${APP_DIR}/.env" 2>/dev/null | cut -d '=' -f2- | tr -d '\r')
+[ -z "$INITIAL_ADMIN_PASS" ] && INITIAL_ADMIN_PASS="admin123"
+
 echo ""
 echo "=========================================================="
 echo "  🎉 GramCRM INSTALLED & RUNNING 24/7! 🚀"
@@ -142,4 +146,11 @@ if [ -n "$SERVER_IPV6" ] && [ "$SERVER_IPV6" != "$SERVER_IPV4" ]; then
 echo "  🌐 IPv6 Panel:    http://[${SERVER_IPV6}]/panel"
 echo "  🔗 IPv6 Webhook:  http://[${SERVER_IPV6}]/webhook/zernio"
 fi
+echo "----------------------------------------------------------"
+echo "  🔑 Default Credentials (اطلاعات ورود اولیه به پنل):"
+echo "     👤 Username:   ${INITIAL_ADMIN_USER}"
+echo "     🔒 Password:   ${INITIAL_ADMIN_PASS}"
+echo "----------------------------------------------------------"
+echo "  💡 نکته: پس از اولین ورود، می‌توانید نام کاربری و رمز را"
+echo "     از تب تنظیمات (Settings) در پنل تغییر دهید."
 echo "=========================================================="

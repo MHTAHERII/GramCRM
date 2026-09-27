@@ -18,7 +18,7 @@ class Settings:
     IG_PASSWORD: str = os.getenv("IG_PASSWORD", "")
     IG_SESSION_FILE: str = str(BASE_DIR / os.getenv("IG_SESSION_FILE", "session.json"))
     IG_PROXY: str = os.getenv("IG_PROXY", "")
-    IG_POLL_INTERVAL: int = int(os.getenv("IG_POLL_INTERVAL", "15"))
+    IG_POLL_INTERVAL: int = max(8, int(os.getenv("IG_POLL_INTERVAL", "10")))
     ENABLE_IG_WORKER: bool = os.getenv("ENABLE_IG_WORKER", "true").lower() in ("true", "1", "yes")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "admin123")
     ADMIN_SESSION_SECRET: str = os.getenv("ADMIN_SESSION_SECRET", "perfume-panel-secret-change-me")

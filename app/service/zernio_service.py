@@ -277,12 +277,14 @@ class ZernioService:
         # ۳. خواندن کلیدواژه‌های فعال از دیتابیس
         active_keywords = db.query(Keyword).filter(Keyword.active == True).all()
 
+        import time
         synced_count = 0
         for kw in active_keywords:
             auto_name = f"KW_{kw.id}_{kw.keyword}"
             # اگر قبلاً بوده، حذف کن تا با کانفیگ جدید ایجاد شود
             if auto_name in existing_by_name:
                 self.delete_comment_automation(existing_by_name[auto_name]["id"])
+                time.sleep(0.3)
 
             created = self.create_comment_automation(
                 name=auto_name,
@@ -296,6 +298,7 @@ class ZernioService:
             )
             if created:
                 synced_count += 1
+            time.sleep(0.3)
 
         logger.info(f"Successfully synced {synced_count} keywords with buttons & follow gate to Zernio.")
         return {

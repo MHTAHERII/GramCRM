@@ -20,6 +20,9 @@ class UnifiedInstagramService:
         self._last_processed: dict[str, str] = {}
         # کش پرسرعت مکالمات (ارسال فوری بدون تاخیر شبکه)
         self._conv_cache: dict[str, str] = {}
+        self._conv_updated_times: dict[str, str] = {}
+        self._follower_cache: dict[str, bool] = {}
+        self._rate_limit_until: float = 0.0
         self.session = requests.Session()
 
     @property
@@ -51,15 +54,15 @@ class UnifiedInstagramService:
 
     def fetch_unread_messages(self, amount: int = 10) -> list[dict]:
         """
-        دریافت پیام‌های جدید دایرکت از طریق Zernio Inbox API.
-
-        منطق بهبود‌یافته:
-        ۱. فقط مکالماتی که unreadCount > 0 دارند بررسی می‌شوند
-        ۲. همه پیام‌های incoming خوانده‌نشده (نه فقط آخرین) استخراج می‌شوند
-        ۳. فیلتر ۲۴ ساعته متا برای جلوگیری از خطای "outside allowed window"
-        ۴. تشخیص تکراری با _last_processed و ترتیب زمانی پیام‌ها
+        دریافت پیام‌های جدید دایرکت از طریق Zernio Inbox API با مدیریت هوشمند محدودیت نرخ (Rate-limit 429).
         """
         if not self.ensure_authenticated():
+            return []
+
+        import time
+        if time.time() < self._rate_limit_until:
+            wait_rem = int(self._rate_limit_until - time.time())
+            logger.debug(f"Rate limited: waiting {wait_rem}s before next fetch...")
             return []
 
         results = []
@@ -67,6 +70,16 @@ class UnifiedInstagramService:
             conv_url = f"{self.base_url}/inbox/conversations"
             params = {"accountId": self.account_id}
             r = self.session.get(conv_url, headers=self.headers, params=params, timeout=10)
+            if r.status_code == 429:
+                retry_after = 60
+                try:
+                    retry_after = int(r.json().get("details", {}).get("retryAfterSeconds", 60))
+                except Exception:
+                    pass
+                self._rate_limit_until = time.time() + retry_after
+                logger.warning(f"Zernio Rate Limit (429) hit! Pausing polling for {retry_after}s.")
+                return []
+
             if r.status_code != 200:
                 logger.error(f"Failed to fetch conversations ({r.status_code}): {r.text}")
                 return []
@@ -80,6 +93,7 @@ class UnifiedInstagramService:
                 conv_id = conv.get("id")
                 participant = conv.get("participantUsername") or conv.get("participantName") or "unknown"
                 part_id = conv.get("participantId")
+                updated_str = conv.get("updatedTime")
 
                 # ثبت در کش مکالمات جهت پاسخ‌گویی بدون تاخیر از پنل
                 if conv_id:
@@ -88,23 +102,40 @@ class UnifiedInstagramService:
                     if participant and participant != "unknown":
                         self._conv_cache[str(participant).lower()] = conv_id
 
+                # کش کردن وضعیت فالوور از دیتای Zernio
+                if part_id and "instagramProfile" in conv and isinstance(conv["instagramProfile"], dict):
+                    if "isFollower" in conv["instagramProfile"]:
+                        self._follower_cache[str(part_id)] = bool(conv["instagramProfile"]["isFollower"])
+
+                # بهینه‌سازی بسیار مهم: اگر مکالمه تغییر نکرده، هیچ درخواست HTTP اضافی ارسال نکن!
+                if conv_id and updated_str:
+                    if self._conv_updated_times.get(str(conv_id)) == updated_str:
+                        continue
+
                 # ۱. فیلتر ۲۴ ساعته — خارج از پنجره مجاز متا
-                updated_str = conv.get("updatedTime")
                 if updated_str:
                     try:
                         updated_dt = datetime.fromisoformat(updated_str.replace("Z", "+00:00"))
                         if (now - updated_dt) > timedelta(hours=23):
                             logger.debug(f"Skip conversation {participant}: outside 24h window")
+                            if conv_id: self._conv_updated_times[str(conv_id)] = updated_str
                             continue
                     except Exception:
                         pass
 
-                # ۲. دریافت پیام‌های مکالمه
+                # ۲. دریافت پیام‌های مکالمه (تنها در صورتی که پیام جدیدی آمده باشد)
                 msg_url = f"{self.base_url}/inbox/conversations/{conv_id}/messages"
                 m_res = self.session.get(msg_url, headers=self.headers, params=params, timeout=10)
+                if m_res.status_code == 429:
+                    self._rate_limit_until = time.time() + 60
+                    logger.warning("Zernio Rate Limit (429) hit on messages endpoint! Pausing polling for 60s.")
+                    break
                 if m_res.status_code != 200:
                     logger.warning(f"Failed to fetch messages for {participant} ({m_res.status_code})")
                     continue
+
+                if conv_id and updated_str:
+                    self._conv_updated_times[str(conv_id)] = updated_str
 
                 messages = m_res.json().get("messages", [])
                 if not messages:
@@ -274,7 +305,9 @@ class UnifiedInstagramService:
             return None
 
     def follows_page(self, user_id: str) -> bool:
-        """Zernio API نمی‌تواند وضعیت فالو را بررسی کند — همیشه True"""
+        """بررسی وضعیت فالوور از روی کش پروفایل‌های دریافتی زِرنیو"""
+        if str(user_id) in self._follower_cache:
+            return self._follower_cache[str(user_id)]
         return True
 
 

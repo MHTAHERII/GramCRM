@@ -438,6 +438,13 @@ def get_version_info() -> Dict[str, Any]:
     except Exception as e:
         logging.getLogger("system_service").warning(f"Could not read local git info: {e}")
 
+    # فال‌بک برای محیط‌های ابری کانتینری مثل Railway که متغیرهای گیت را مستقیم تزریق می‌کنند
+    if local_commit == "نامشخص" and os.environ.get("RAILWAY_GIT_COMMIT_SHA"):
+        local_commit = os.environ.get("RAILWAY_GIT_COMMIT_SHA")[:7]
+        local_message = os.environ.get("RAILWAY_GIT_COMMIT_MESSAGE", "")
+        if os.environ.get("RAILWAY_GIT_REPO_OWNER") and os.environ.get("RAILWAY_GIT_REPO_NAME"):
+            repo_name = f"{os.environ.get('RAILWAY_GIT_REPO_OWNER')}/{os.environ.get('RAILWAY_GIT_REPO_NAME')}"
+
     # ۳. استعلام آخرین کامیت از GitHub API
     remote_commit = "نامشخص"
     remote_date = ""

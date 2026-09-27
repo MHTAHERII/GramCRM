@@ -104,7 +104,11 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         new_key = data.zernio_api_key.strip() if data.zernio_api_key.strip() else None
         if new_key != setting.zernio_api_key:
             api_key_changed = True
-        setting.zernio_api_key = new_key
+            setting.zernio_api_key = new_key
+            # هنگام تغییر کلید، شناسه‌های اکانت قبلی را پاک می‌کنیم تا با پیج جدید تداخل نکند
+            setting.zernio_account_id = None
+            setting.zernio_profile_id = None
+            setting.instagram_username = None
 
     if data.zernio_profile_id is not None:
         setting.zernio_profile_id = data.zernio_profile_id.strip() if data.zernio_profile_id.strip() else None
@@ -113,17 +117,14 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
     if data.instagram_username is not None:
         setting.instagram_username = data.instagram_username.strip() if data.instagram_username.strip() else None
 
-    # کشف و پر کردن خودکار شناسه‌های Account و Profile از روی توکن، در صورتی که کاربر آن‌ها را وارد نکرده باشد
+    # کشف و پر کردن خودکار شناسه‌های Account و Profile از روی توکن جدید
     if setting.zernio_api_key and (not setting.zernio_account_id or not setting.zernio_profile_id or api_key_changed):
         try:
             disc = zernio_service.discover_account_and_profile(setting.zernio_api_key)
-            if disc:
-                if not setting.zernio_account_id or api_key_changed:
-                    setting.zernio_account_id = disc.get("account_id") or setting.zernio_account_id
-                if not setting.zernio_profile_id or api_key_changed:
-                    setting.zernio_profile_id = disc.get("profile_id") or setting.zernio_profile_id
-                if disc.get("username"):
-                    setting.instagram_username = disc.get("username")
+            if disc and disc.get("account_id"):
+                setting.zernio_account_id = disc["account_id"]
+                setting.zernio_profile_id = disc.get("profile_id")
+                setting.instagram_username = disc.get("username")
         except Exception as e:
             import logging
             logging.getLogger("settings_router").warning(f"Failed to auto-discover credentials: {e}")
@@ -212,36 +213,70 @@ def auto_discover_zernio(payload: dict | None = None, db: Session = Depends(get_
 def test_connection(db: Session = Depends(get_db)):
     """تست زنده توکن و شناسه‌ها جهت اطمینان از صحت ارتباط با اینستاگرام"""
     setting = get_bot_settings(db)
+    token = (setting.zernio_api_key or "").strip()
 
-    # اگر شناسه‌ها موجود نبودند ولی توکن بود، کشف خودکار انجام بده
-    if setting.zernio_api_key and (not setting.zernio_account_id or not setting.zernio_profile_id):
-        disc = zernio_service.discover_account_and_profile(setting.zernio_api_key)
-        if disc:
-            setting.zernio_account_id = disc.get("account_id") or setting.zernio_account_id
-            setting.zernio_profile_id = disc.get("profile_id") or setting.zernio_profile_id
-            setting.instagram_username = disc.get("username") or setting.instagram_username
-            db.commit()
-            db.refresh(setting)
-            from app.service.bot_settings import apply_credentials_to_services
-            apply_credentials_to_services(setting)
-
-    if not zernio_service.is_configured():
+    if not token:
         return {
             "success": False,
-            "message": "کلید API (توکن زرنیو) تنظیم نشده است. لطفاً توکن خود را در کادر بالا وارد کنید."
+            "message": "کلید API (توکن زرنیو) تنظیم نشده است. لطفاً توکن خود را در کادر بالا وارد کرده و دکمه ذخیره تنظیمات را بزنید."
         }
+
+    # استعلام زنده مستقیم از Zernio با توکن جاری
+    disc = zernio_service.discover_account_and_profile(token)
+    if not disc or not disc.get("account_id"):
+        # بررسی دقیق علت عدم اتصال در Zernio
+        import requests
+        try:
+            r = requests.get("https://zernio.com/api/v1/accounts", headers={"Authorization": f"Bearer {token}"}, timeout=8)
+            if r.status_code == 401:
+                return {
+                    "success": False,
+                    "message": "توکن زرنیو نامعتبر است یا منقضی شده (خطای 401 Unauthorized)."
+                }
+            elif r.status_code == 200:
+                accounts = r.json().get("accounts", [])
+                if not accounts:
+                    # پاک کردن شناسه‌های پیج قبلی از دیتابیس
+                    setting.zernio_account_id = None
+                    setting.zernio_profile_id = None
+                    setting.instagram_username = None
+                    db.commit()
+                    return {
+                        "success": False,
+                        "message": "توکن معتبر است، اما هنوز هیچ پیج اینستاگرامی در داشبورد Zernio به این اکانت متصل (Connect) نشده است! لطفاً ابتدا در سایت Zernio.com وارد شده و پیج اینستاگرام را متصل کنید."
+                    }
+        except Exception:
+            pass
+
+        return {
+            "success": False,
+            "message": "هیچ اکانت اینستاگرامی متصل به این کلید در Zernio یافت نشد."
+        }
+
+    # بروزرسانی قطعی شناسه‌ها به پیج متصل به این توکن
+    setting.zernio_account_id = disc["account_id"]
+    if disc.get("profile_id"):
+        setting.zernio_profile_id = disc["profile_id"]
+    if disc.get("username"):
+        setting.instagram_username = disc["username"]
+    db.commit()
+    db.refresh(setting)
+
+    from app.service.bot_settings import apply_credentials_to_services
+    apply_credentials_to_services(setting)
+
+    automations_count = 0
     try:
         automations = zernio_service.list_comment_automations()
-        return {
-            "success": True,
-            "message": "اتصال به اینستاگرام و Zernio با موفقیت برقرار است! ✅",
-            "username": setting.instagram_username,
-            "account_id": setting.zernio_account_id,
-            "profile_id": setting.zernio_profile_id,
-            "automations_count": len(automations)
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "message": f"خطا در برقراری ارتباط: {str(e)}"
-        }
+        automations_count = len(automations)
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "message": f"اتصال به اینستاگرام و Zernio با موفقیت برقرار است! ✅ (پیج: @{setting.instagram_username} | تعداد سناریوها: {automations_count})",
+        "username": setting.instagram_username,
+        "account_id": setting.zernio_account_id,
+        "profile_id": setting.zernio_profile_id,
+        "automations_count": automations_count
+    }

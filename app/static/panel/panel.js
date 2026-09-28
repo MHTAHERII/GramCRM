@@ -333,38 +333,88 @@ document.getElementById("keyword-refresh-diagnostics")?.addEventListener("click"
 
 document.getElementById("keyword-preview-btn")?.addEventListener("click", async () => {
   const result = document.getElementById("keyword-preview-result");
-  const text = document.getElementById("keyword-preview-text").value.trim();
-  const keyword = document.getElementById("keyword-input").value.trim();
-  const response = document.getElementById("keyword-response-input").value.trim();
-  const draftActive = editingKeywordId == null
-    ? true : (keywordsCache.find(item => item.id === editingKeywordId)?.active ?? true);
-  if (!text || !keyword || !response) {
-    result.textContent = "متن نمونه، کلیدواژه و متن دایرکت را وارد کنید.";
-    result.classList.remove("hidden");
+  const previewInput = document.getElementById("keyword-preview-text");
+  const keywordInput = document.getElementById("keyword-input");
+  const responseInput = document.getElementById("keyword-response-input");
+  const commentReplyInput = document.getElementById("keyword-comment-reply-input");
+
+  const keyword = keywordInput ? keywordInput.value.trim() : "";
+  const response = responseInput ? responseInput.value.trim() : "";
+  let text = previewInput ? previewInput.value.trim() : "";
+
+  if (!keyword) {
+    showToast("لطفاً ابتدا کلمه یا عبارت کلیدی را در فرم بالا وارد کنید ⚠️", "error");
+    keywordInput?.focus();
     return;
   }
-  result.textContent = "در حال بررسی…";
+  if (!response) {
+    showToast("لطفاً ابتدا متن دایرکت را در فرم بالا وارد کنید ⚠️", "error");
+    responseInput?.focus();
+    return;
+  }
+
+  // اگر کادر متن نمونه خالی بود، خودکار از کلمه کلیدی یا نمونه هوشمند پر کن
+  if (!text) {
+    text = (commentReplyInput && commentReplyInput.value.trim()) ? `قیمت ${keyword} چنده؟` : keyword;
+    if (previewInput) previewInput.value = text;
+    showToast(`متن نمونه برای بررسی پر شد: «${text}»`, "info");
+  }
+
+  result.innerHTML = '<div style="padding: 10px; color: var(--text-muted); text-align: center;">⏳ در حال بررسی تطابق کامنت…</div>';
   result.classList.remove("hidden");
+
   try {
+    const draftActive = editingKeywordId == null
+      ? true : (keywordsCache.find(item => item.id === editingKeywordId)?.active ?? true);
+    const commentReplyVal = commentReplyInput ? commentReplyInput.value.trim() : "";
+
     const data = await api("/keywords/preview", {
       method: "POST",
-      body: JSON.stringify({ text, keyword, response,
-        comment_reply: document.getElementById("keyword-comment-reply-input").value.trim(),
-        editing_id: editingKeywordId, draft_active: draftActive }),
+      body: JSON.stringify({
+        text,
+        keyword,
+        response,
+        comment_reply: commentReplyVal,
+        editing_id: editingKeywordId,
+        draft_active: draftActive
+      }),
     });
-    const cards = data.matches.map(match => `
-      <div class="keyword-preview-entry">
-        <strong>${esc(match.keyword)}${match.is_draft ? " (فرم فعلی)" : ""}</strong>
-        <div class="keyword-preview-copy">نوع تطابق: ${match.match_mode === "contains" ? "شامل کلیدواژه" : "دقیق"}</div>
-        <div class="keyword-preview-copy">ریپلای عمومی: ${esc(match.comment_reply || "ندارد")}</div>
-        <div class="keyword-preview-copy">دایرکت: ${esc(match.dm_message)}</div>
+
+    const hasMatch = data.matches && data.matches.length > 0;
+    if (hasMatch) {
+      const match = data.matches[0];
+      showToast(`✅ تطابق موفق! کامنت با کلیدواژه «${match.keyword}» منطبق است`, "success");
+    } else {
+      showToast("⚠️ این کامنت با کلیدواژه تطابق ندارد و پاسخی فعال نمی‌شود", "error");
+    }
+
+    const cards = (data.matches || []).map(match => `
+      <div class="keyword-preview-entry" style="border-right: 4px solid #10b981; padding: 12px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+          <strong style="font-size: 0.95rem; color: #10b981;">🎯 کلیدواژه: «${esc(match.keyword)}»${match.is_draft ? " (فرم فعلی)" : ""}</strong>
+          <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid rgba(99,102,241,0.3);">
+            نوع تطابق: ${match.match_mode === "contains" ? "شامل کلیدواژه (Contains)" : "دقیق (Exact)"}
+          </span>
+        </div>
+        <div class="keyword-preview-copy" style="margin-top: 5px;">
+          💬 <strong>ریپلای عمومی زیر کامنت:</strong> ${match.comment_reply ? `<span style="color: #38bdf8; font-weight: 500;">«${esc(match.comment_reply)}»</span>` : '<span style="color: var(--text-muted);">تعریف نشده (فقط دایرکت ارسال می‌شود)</span>'}
+        </div>
+        <div class="keyword-preview-copy" style="margin-top: 5px;">
+          📩 <strong>پیام ارسالی دایرکت:</strong> ${esc(match.dm_message)}
+        </div>
       </div>`).join("");
-    result.innerHTML = (cards || '<div class="keyword-preview-entry">هیچ کلیدواژهٔ فعالی با این کامنت تطابق ندارد.</div>')
-      + (data.draft_disabled ? '<div class="keyword-preview-entry">کلیدواژهٔ در حال ویرایش غیرفعال است؛ پس از فعال‌سازی اجرا می‌شود.</div>' : "")
-      + `<div class="keyword-preview-entry">دروازهٔ فالو: ${data.follow_gate_enabled ? "فعال؛ وضعیت فالو هنگام ارسال بررسی می‌شود." : "خاموش"}
-        ${data.follow_gate_enabled && data.follow_gate_message ? `<div class="keyword-preview-copy">${esc(data.follow_gate_message)}</div>` : ""}</div>`;
+
+    result.innerHTML = (cards || `<div class="keyword-preview-entry" style="color: #f87171; border-right: 4px solid #ef4444; padding: 12px;">❌ متن «${esc(text)}» با کلیدواژه مطابقت ندارد و ربات پاسخی ارسال نخواهد کرد.</div>`)
+      + (data.draft_disabled ? '<div class="keyword-preview-entry" style="color: #fbbf24; padding: 10px;">⚠️ کلیدواژهٔ در حال ویرایش غیرفعال است؛ پس از فعال‌سازی اجرا می‌شود.</div>' : "")
+      + `<div class="keyword-preview-entry" style="font-size: 0.82rem; margin-top: 6px; padding: 8px 12px; background: rgba(255,255,255,0.03);">
+          🔒 <strong>وضعیت دروازهٔ فالو:</strong> ${data.follow_gate_enabled ? '<span style="color: #10b981;">فعال (کاربران غیرفالوئر ابتدا پیام قفل فالو دریافت می‌کنند)</span>' : '<span style="color: var(--text-muted);">خاموش</span>'}
+          ${data.follow_gate_enabled && data.follow_gate_message ? `<div class="keyword-preview-copy" style="font-size: 0.78rem; margin-top: 3px;">متن قفل: ${esc(data.follow_gate_message)}</div>` : ""}
+        </div>`;
+    result.classList.remove("hidden");
   } catch (err) {
-    result.textContent = err.message;
+    result.textContent = "خطا در بررسی تطابق: " + err.message;
+    result.classList.remove("hidden");
+    showToast("خطا در بررسی تطابق: " + err.message, "error");
   }
 });
 
@@ -510,8 +560,8 @@ function startEditKeyword(id) {
   if (!k) return;
   editingKeywordId = id;
   document.getElementById("keyword-form-title").textContent = "ویرایش کلمه کلیدی";
-  document.getElementById("keyword-input").value = k.keyword;
-  document.getElementById("keyword-response-input").value = k.response;
+  document.getElementById("keyword-input").value = k.keyword || "";
+  document.getElementById("keyword-response-input").value = k.response || "";
   document.getElementById("keyword-comment-reply-input").value = k.comment_reply || "";
 
   // بازسازی ردیف‌های دکمه‌ها
@@ -531,13 +581,16 @@ function startEditKeyword(id) {
 
   document.getElementById("keyword-submit").textContent = "ذخیره تغییرات";
   document.getElementById("keyword-cancel").classList.remove("hidden");
+  document.getElementById("keyword-form").scrollIntoView({ behavior: "smooth", block: "center" });
   document.getElementById("keyword-input").focus();
+  showToast(`در حال ویرایش کلیدواژه «${k.keyword}»`, "info");
 }
 
 function resetKeywordForm() {
   editingKeywordId = null;
   document.getElementById("keyword-form").reset();
   document.getElementById("keyword-preview-result").classList.add("hidden");
+  document.getElementById("keyword-comment-reply-input").value = "";
   const container = document.getElementById("keyword-buttons-container");
   if (container) container.innerHTML = "";
   checkButtonCount();
@@ -575,10 +628,11 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
     }
   });
 
+  const commentReplyVal = document.getElementById("keyword-comment-reply-input").value.trim();
   const body = JSON.stringify({
     keyword: document.getElementById("keyword-input").value.trim(),
     response: document.getElementById("keyword-response-input").value.trim(),
-    comment_reply: document.getElementById("keyword-comment-reply-input").value.trim(),
+    comment_reply: commentReplyVal,
     buttons: buttons,
     button_title: buttons.length ? buttons[0].title : null,
     button_url: buttons.length ? buttons[0].url : null,
@@ -586,16 +640,23 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
 
   try {
     if (editingKeywordId) {
-      await api(`/keywords/${editingKeywordId}`, { method: "PUT", body });
-      showToast("کلمه کلیدی با موفقیت ویرایش و ذخیره شد", "success");
+      const updated = await api(`/keywords/${editingKeywordId}`, { method: "PUT", body });
+      const idx = keywordsCache.findIndex(item => item.id === editingKeywordId);
+      if (idx !== -1 && updated) {
+        keywordsCache[idx] = updated;
+      }
+      showToast("✅ کلمه کلیدی با موفقیت ویرایش و ذخیره شد", "success");
     } else {
-      await api("/keywords/", { method: "POST", body });
-      showToast("کلمه کلیدی جدید با موفقیت ذخیره شد", "success");
+      const created = await api("/keywords/", { method: "POST", body });
+      if (created) {
+        keywordsCache.unshift(created);
+      }
+      showToast("✅ کلمه کلیدی جدید با موفقیت ذخیره شد", "success");
     }
     resetKeywordForm();
-    loadKeywords();
+    await loadKeywords();
   } catch (err) {
-    showToast(err.message, "error");
+    showToast("خطا در ذخیره: " + err.message, "error");
   }
 });
 

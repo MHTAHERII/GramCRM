@@ -35,24 +35,13 @@ def find_keyword_response(text: str, db: Session, fallback: bool = False) -> str
     if not keywords:
         return _fallback_reply(db) if fallback else None
 
-    # اولویت اول: تطابق کامل
+    # فقط تطابق کامل و دقیق (Exact Match)
     for item in keywords:
         clean_kw = normalize_text(item.keyword)
         if clean_kw and clean_kw == clean_text:
             return item.response
 
-    # اولویت دوم: تطابق جزئی (سورت نزولی بر اساس طول کلیدواژه)
-    sorted_keywords = sorted(
-        keywords,
-        key=lambda k: len(normalize_text(k.keyword)),
-        reverse=True
-    )
-    for item in sorted_keywords:
-        clean_kw = normalize_text(item.keyword)
-        if clean_kw and clean_kw in clean_text:
-            return item.response
-
-    # اگر کلیدواژه‌ای پیدا نشد
+    # اگر کلیدواژه‌ای دقیقاً پیدا نشد
     return _fallback_reply(db) if fallback else None
 
 

@@ -177,6 +177,7 @@ class ZernioService:
             "accountId": self.account_id,
             "name": name,
             "keywords": [kw.strip() for kw in keywords if kw.strip()],
+            "matchMode": "exact",
             "dmMessage": dm_message.strip(),
             "alsoMatchInDms": True
         }

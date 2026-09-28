@@ -239,15 +239,20 @@
         <section id="tab-keywords" class="tab-panel">
           <div class="card">
             <h2 id="keyword-form-title">افزودن کلمه کلیدی</h2>
-            <p class="hint">اگر پیام مشتری شامل این کلمه باشد، ربات «پاسخ» را ارسال می‌کند.</p>
+            <p class="hint">دایرکت فقط با تطابق دقیق پاسخ می‌گیرد. برای کامنت، اگر پاسخ عمومی را پر کنید، وجود کلیدواژه در هر جای متن کافی است.</p>
             <form id="keyword-form">
               <div class="field">
                 <label for="keyword-input">کلمه یا عبارت</label>
                 <input id="keyword-input" type="text" placeholder="مثلاً: قیمت" required>
               </div>
               <div class="field">
-                <label for="keyword-response-input">پاسخ ربات</label>
+                <label for="keyword-response-input">متن دایرکت برای این کلیدواژه</label>
                 <textarea id="keyword-response-input" rows="3" placeholder="مثلاً: قیمت اسانس‌ها از ۲۰۰ هزار تومان شروع می‌شه..." required></textarea>
+              </div>
+              <div class="field">
+                <label for="keyword-comment-reply-input">ریپلای عمومی به کامنت (اختیاری)</label>
+                <textarea id="keyword-comment-reply-input" rows="2" placeholder="مثلاً: اطلاعات برات دایرکت شد 🌸"></textarea>
+                <p class="hint">مثلاً برای کلیدواژه 7، کامنت «قیمت 7 چنده؟» همین پاسخ را زیر کامنت دریافت می‌کند. تنظیمات دروازهٔ فالو برای دایرکت طبق وضعیت فعلی پنل اعمال می‌شود.</p>
               </div>
               <div class="keyword-buttons-section" style="margin-top: 14px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -277,6 +282,7 @@
                   <tr>
                     <th>کلمه کلیدی</th>
                     <th>پاسخ</th>
+                    <th>ریپلای کامنت</th>
                     <th>وضعیت</th>
                     <th>عملیات</th>
                   </tr>

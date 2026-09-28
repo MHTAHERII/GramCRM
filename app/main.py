@@ -78,6 +78,9 @@ def run_schema_migrations() -> None:
                 "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS buttons JSON;"
             ))
             conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS comment_reply TEXT;"
+            ))
+            conn.execute(text(
                 "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100) DEFAULT 'admin';"
             ))
             conn.execute(text(

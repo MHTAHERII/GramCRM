@@ -60,6 +60,7 @@ def create_keyword(
     new_keyword = Keyword(
         keyword=keyword.keyword.strip(),
         response=keyword.response.strip(),
+        comment_reply=(keyword.comment_reply or "").strip() or None,
         buttons=btn_list if btn_list else None,
         button_title=btn_list[0]["title"] if btn_list else None,
         button_url=btn_list[0]["url"] if btn_list else None
@@ -108,6 +109,9 @@ def update_keyword(
 
     if keyword_data.response is not None:
         keyword.response = keyword_data.response.strip()
+
+    if keyword_data.comment_reply is not None:
+        keyword.comment_reply = keyword_data.comment_reply.strip() or None
 
     if keyword_data.buttons is not None:
         btn_list = []

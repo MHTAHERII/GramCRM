@@ -11,6 +11,7 @@ class KeywordButton(BaseModel):
 class KeywordBase(BaseModel):
     keyword: str
     response: str
+    comment_reply: str | None = None
     button_title: str | None = None
     button_url: str | None = None
     buttons: list[KeywordButton] | None = None
@@ -31,6 +32,7 @@ class KeywordCreate(KeywordBase):
 class KeywordUpdate(BaseModel):
     keyword: str | None = None
     response: str | None = None
+    comment_reply: str | None = None
     button_title: str | None = None
     button_url: str | None = None
     buttons: list[KeywordButton] | None = None

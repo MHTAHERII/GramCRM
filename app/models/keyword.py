@@ -21,6 +21,9 @@ class Keyword(Base):
         nullable=False
     )
 
+    # پاسخ عمومی زیر کامنت‌های منطبق (در صورت تنظیم توسط ادمین)
+    comment_reply = Column(Text, nullable=True)
+
     active = Column(
         Boolean,
         default=True

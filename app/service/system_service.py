@@ -239,6 +239,7 @@ def create_backup(db: Session) -> Dict[str, Any]:
             {
                 "keyword": kw.keyword,
                 "response": kw.response,
+                "comment_reply": kw.comment_reply,
                 "button_title": kw.button_title,
                 "button_url": kw.button_url,
                 "buttons": kw.buttons,
@@ -317,6 +318,8 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
                 existing = db.query(Keyword).filter(Keyword.keyword == word).first()
                 if existing:
                     existing.response = resp
+                    if "comment_reply" in kw_item:
+                        existing.comment_reply = kw_item["comment_reply"]
                     existing.button_title = kw_item.get("button_title")
                     existing.button_url = kw_item.get("button_url")
                     existing.buttons = kw_item.get("buttons")
@@ -325,6 +328,7 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
                     new_kw = Keyword(
                         keyword=word,
                         response=resp,
+                        comment_reply=kw_item.get("comment_reply"),
                         button_title=kw_item.get("button_title"),
                         button_url=kw_item.get("button_url"),
                         buttons=kw_item.get("buttons"),
@@ -585,4 +589,3 @@ systemctl restart gramcrm >> {log_file} 2>&1 || true
                 "message": f"خطا در اجرای اسکریپت به‌روزرسانی: {str(e)}",
                 "restarting": False
             }
-

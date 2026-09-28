@@ -360,6 +360,7 @@ async function loadKeywords() {
             </div>
           ` : ""}
         </td>
+        <td class="kw-response">${k.comment_reply ? esc(k.comment_reply) : "—"}</td>
         <td>
           <label class="switch" title="روشن/خاموش">
             <input type="checkbox" ${k.active ? "checked" : ""} onchange="toggleKeyword(${k.id})">
@@ -403,6 +404,7 @@ function startEditKeyword(id) {
   document.getElementById("keyword-form-title").textContent = "ویرایش کلمه کلیدی";
   document.getElementById("keyword-input").value = k.keyword;
   document.getElementById("keyword-response-input").value = k.response;
+  document.getElementById("keyword-comment-reply-input").value = k.comment_reply || "";
 
   // بازسازی ردیف‌های دکمه‌ها
   const container = document.getElementById("keyword-buttons-container");
@@ -467,6 +469,7 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
   const body = JSON.stringify({
     keyword: document.getElementById("keyword-input").value.trim(),
     response: document.getElementById("keyword-response-input").value.trim(),
+    comment_reply: document.getElementById("keyword-comment-reply-input").value.trim(),
     buttons: buttons,
     button_title: buttons.length ? buttons[0].title : null,
     button_url: buttons.length ? buttons[0].url : null,

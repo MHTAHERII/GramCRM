@@ -9,6 +9,15 @@ logger = logging.getLogger("zernio_service")
 ZERNIO_BASE_URL = "https://zernio.com/api/v1"
 
 
+def comment_keyword_variants(keyword: str) -> list[str]:
+    """پشتیبانی از شکل انگلیسی، فارسی و عربی رقم‌ها در کامنت."""
+    ascii_digits = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+    canonical = keyword.translate(ascii_digits)
+    variants = [keyword, canonical, canonical.translate(str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")),
+                canonical.translate(str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩"))]
+    return list(dict.fromkeys(variants))
+
+
 class ZernioService:
     def __init__(self):
         self.api_key = settings.ZERNIO_API_KEY
@@ -161,7 +170,8 @@ class ZernioService:
         button_title: str | None = None,
         button_url: str | None = None,
         follow_gate_message: str | None = None,
-        follow_gate_buttons: list[dict] | None = None
+        follow_gate_buttons: list[dict] | None = None,
+        comment_reply: str | None = None
     ) -> dict | None:
         """
         ساخت اتوماسیون جدید کامنت به دایرکت:
@@ -172,15 +182,20 @@ class ZernioService:
             logger.warning("Zernio is not configured.")
             return None
 
+        public_reply = (comment_reply or "").strip()
         payload = {
             "profileId": self.profile_id,
             "accountId": self.account_id,
             "name": name,
             "keywords": [kw.strip() for kw in keywords if kw.strip()],
-            "matchMode": "exact",
+            "matchMode": "contains" if public_reply else "exact",
             "dmMessage": dm_message.strip(),
-            "alsoMatchInDms": True
+            # تطابق جزئی مخصوص کامنت است؛ تطابق دایرکت در موتور داخلی دقیق می‌ماند.
+            "alsoMatchInDms": not bool(public_reply)
         }
+
+        if public_reply:
+            payload["commentReply"] = public_reply
 
         # افزودن دکمه‌های لینک‌دار یا تعاملی (حداکثر ۳ دکمه طبق استاندارد اینستاگرام)
         formatted_buttons = []
@@ -289,8 +304,9 @@ class ZernioService:
 
             created = self.create_comment_automation(
                 name=auto_name,
-                keywords=[kw.keyword],
+                keywords=comment_keyword_variants(kw.keyword) if kw.comment_reply else [kw.keyword],
                 dm_message=kw.response,
+                comment_reply=kw.comment_reply,
                 buttons=kw.buttons,
                 button_title=kw.button_title,
                 button_url=kw.button_url,

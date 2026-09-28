@@ -1,6 +1,8 @@
 from typing import List
+import requests
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.auth import require_auth
@@ -12,12 +14,22 @@ from app.schemas.keyword import (
     KeywordResponse
 )
 from app.service.zernio_service import zernio_service
+from app.service.keyword_diagnostics import keyword_delivery_statuses, preview_comment
 
 router = APIRouter(
     prefix="/keywords",
     tags=["Keywords"],
     dependencies=[Depends(require_auth)]
 )
+
+
+class KeywordPreviewRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    keyword: str = Field(min_length=1, max_length=100)
+    response: str = Field(min_length=1)
+    comment_reply: str | None = None
+    editing_id: int | None = None
+    draft_active: bool = True
 
 
 def _sync_zernio_bg():
@@ -79,6 +91,20 @@ def get_keywords(
     db: Session = Depends(get_db)
 ):
     return db.query(Keyword).all()
+
+
+@router.post("/preview", summary="پیش‌نمایش محلی تطابق کامنت بدون ارسال پیام")
+def preview_keyword(data: KeywordPreviewRequest, db: Session = Depends(get_db)):
+    return preview_comment(db, data.text, data.keyword, data.response,
+                           data.comment_reply, data.editing_id, data.draft_active)
+
+
+@router.get("/diagnostics", summary="وضعیت واقعی دایرکت و ریپلای کامنت در زرنیو")
+def get_keyword_diagnostics(db: Session = Depends(get_db)):
+    try:
+        return keyword_delivery_statuses(db)
+    except (requests.RequestException, ValueError, TypeError):
+        raise HTTPException(status_code=502, detail="استعلام وضعیت اتوماسیون‌ها از زرنیو ناموفق بود")
 
 
 @router.post("/sync-zernio", summary="همگام‌سازی کلیدواژه‌ها با اتوماسیون کامنت به دایرکت Zernio")

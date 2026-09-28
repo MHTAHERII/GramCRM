@@ -2,6 +2,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import requests
 from fastapi import BackgroundTasks
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -107,6 +108,75 @@ class CommentReplyTests(unittest.TestCase):
         self.assertEqual(payload["matchMode"], "exact")
         self.assertNotIn("commentReply", payload)
         self.assertTrue(payload["alsoMatchInDms"])
+
+    def test_update_existing_automation_preserves_id_and_clears_old_options(self):
+        service = ZernioService()
+        service.api_key, service.account_id, service.profile_id = "key", "account", "profile"
+        response = SimpleNamespace(status_code=200, json=lambda: {"id": "old-id"})
+        with patch("app.service.zernio_service.requests.patch", return_value=response) as update, \
+             patch("app.service.zernio_service.requests.post") as create, \
+             patch("app.service.zernio_service.requests.delete") as delete:
+            result = service.create_comment_automation(
+                name="KW_1_7", keywords=["7"], dm_message="new DM", automation_id="old-id"
+            )
+        self.assertEqual(result["id"], "old-id")
+        self.assertTrue(update.call_args.args[0].endswith("/comment-automations/old-id"))
+        payload = update.call_args.kwargs["json"]
+        self.assertEqual(payload["commentReply"], "")
+        self.assertEqual(payload["buttons"], [])
+        self.assertEqual(payload["audience"], {"followerStatus": "any", "whenUnknown": "send"})
+        self.assertTrue(payload["isActive"])
+        self.assertNotIn("profileId", payload)
+        self.assertNotIn("accountId", payload)
+        create.assert_not_called()
+        delete.assert_not_called()
+
+    def test_sync_renames_in_place_and_pauses_disabled_and_deleted_rules(self):
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(engine)
+        try:
+            with Session(engine) as db:
+                current = Keyword(keyword="new", response="DM", active=True)
+                disabled = Keyword(keyword="paused", response="DM", active=False)
+                db.add_all([current, disabled])
+                db.commit()
+                service = ZernioService()
+                service.api_key, service.account_id, service.profile_id = "key", "account", "profile"
+                remote = [
+                    {"id": "same-id", "name": f"KW_{current.id}_old", "accountId": "account"},
+                    {"id": "paused-id", "name": f"KW_{disabled.id}_paused", "accountId": "account"},
+                    {"id": "deleted-id", "name": "KW_999_deleted", "accountId": "account"},
+                ]
+                with patch.object(service, "list_comment_automations", return_value=remote), \
+                     patch.object(service, "create_comment_automation", return_value={"id": "same-id"}) as create, \
+                     patch.object(service, "set_comment_automation_active", return_value=True) as activate, \
+                     patch.object(service, "delete_comment_automation") as delete, \
+                     patch("time.sleep"):
+                    service.sync_all_keywords(db)
+                self.assertEqual(create.call_args.kwargs["automation_id"], "same-id")
+                self.assertEqual(create.call_args.kwargs["name"], f"KW_{current.id}_new")
+                self.assertEqual({call.args for call in activate.call_args_list},
+                                 {("paused-id", False), ("deleted-id", False)})
+                delete.assert_not_called()
+        finally:
+            engine.dispose()
+
+    def test_sync_does_not_create_duplicates_when_listing_remote_rules_fails(self):
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(engine)
+        try:
+            with Session(engine) as db:
+                db.add(Keyword(keyword="7", response="DM", active=True))
+                db.commit()
+                service = ZernioService()
+                service.api_key, service.account_id, service.profile_id = "key", "account", "profile"
+                with patch("app.service.zernio_service.requests.get", side_effect=requests.Timeout), \
+                     patch("app.service.zernio_service.requests.post") as create:
+                    with self.assertRaises(requests.Timeout):
+                        service.sync_all_keywords(db)
+                create.assert_not_called()
+        finally:
+            engine.dispose()
 
 
 if __name__ == "__main__":

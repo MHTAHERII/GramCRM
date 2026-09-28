@@ -268,6 +268,15 @@
                 </p>
                 <div id="keyword-buttons-container"></div>
               </div>
+              <div class="keyword-preview">
+                <label for="keyword-preview-text">تست متن کامنت قبل از ذخیره</label>
+                <div class="keyword-preview-controls">
+                  <input id="keyword-preview-text" type="text" placeholder="مثلاً: قیمت ۷ چنده؟">
+                  <button type="button" id="keyword-preview-btn" class="btn ghost">بررسی تطابق</button>
+                </div>
+                <p class="hint">متن‌های فعلی فرم و سایر کلیدواژه‌های فعال بررسی می‌شوند؛ هیچ پیامی ارسال نمی‌شود.</p>
+                <div id="keyword-preview-result" class="keyword-preview-result hidden" aria-live="polite"></div>
+              </div>
               <div class="form-actions">
                 <button type="submit" id="keyword-submit" class="btn primary">افزودن</button>
                 <button type="button" id="keyword-cancel" class="btn ghost hidden">انصراف</button>
@@ -276,6 +285,14 @@
           </div>
 
           <div class="card table-card">
+            <div class="keyword-status-heading">
+              <div>
+                <h2>وضعیت ارسال کلیدواژه‌ها</h2>
+                <p class="hint">نتیجهٔ آخرین کامنت ثبت‌شده در زرنیو؛ برای دادهٔ تازه، دکمه را بزنید.</p>
+              </div>
+              <button type="button" id="keyword-refresh-diagnostics" class="btn small ghost">بازخوانی وضعیت</button>
+            </div>
+            <div id="keyword-diagnostic-alert" class="keyword-diagnostic-alert hidden" aria-live="polite"></div>
             <div class="table-wrap">
               <table class="data-table">
                 <thead>
@@ -284,6 +301,7 @@
                     <th>پاسخ</th>
                     <th>ریپلای کامنت</th>
                     <th>وضعیت</th>
+                    <th>ارسال واقعی</th>
                     <th>عملیات</th>
                   </tr>
                 </thead>

@@ -1,5 +1,6 @@
 import logging
 import requests
+from urllib.parse import quote
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.keyword import Keyword
@@ -150,16 +151,10 @@ class ZernioService:
         """دریافت تمام اتوماسیون‌های کامنت به دایرکت ثبت‌شده در Zernio"""
         if not self.is_configured():
             return []
-        try:
-            url = f"{ZERNIO_BASE_URL}/comment-automations"
-            res = requests.get(url, headers=self.headers, params={"profileId": self.profile_id}, timeout=10)
-            if res.status_code == 200:
-                return res.json().get("automations", [])
-            logger.error(f"Zernio list automations failed ({res.status_code}): {res.text}")
-            return []
-        except Exception as e:
-            logger.error(f"Error calling Zernio list_comment_automations: {e}")
-            return []
+        url = f"{ZERNIO_BASE_URL}/comment-automations"
+        res = requests.get(url, headers=self.headers, params={"profileId": self.profile_id}, timeout=10)
+        res.raise_for_status()
+        return res.json().get("automations", [])
 
     def create_comment_automation(
         self,
@@ -171,7 +166,8 @@ class ZernioService:
         button_url: str | None = None,
         follow_gate_message: str | None = None,
         follow_gate_buttons: list[dict] | None = None,
-        comment_reply: str | None = None
+        comment_reply: str | None = None,
+        automation_id: str | None = None
     ) -> dict | None:
         """
         ساخت اتوماسیون جدید کامنت به دایرکت:
@@ -196,6 +192,8 @@ class ZernioService:
 
         if public_reply:
             payload["commentReply"] = public_reply
+        elif automation_id:
+            payload["commentReply"] = ""
 
         # افزودن دکمه‌های لینک‌دار یا تعاملی (حداکثر ۳ دکمه طبق استاندارد اینستاگرام)
         formatted_buttons = []
@@ -223,6 +221,8 @@ class ZernioService:
 
         if formatted_buttons:
             payload["buttons"] = formatted_buttons
+        elif automation_id:
+            payload["buttons"] = []
 
         # افزودن قفل فالو طبق استاندارد رسمی Zernio
         if follow_gate_message:
@@ -243,18 +243,39 @@ class ZernioService:
                 "buttonLabel": btn_label,
                 "notFollowingMessage": "هنوز پیج رو فالو نکردید! لطفاً ابتدا پیج را فالو کنید و سپس دکمه را لمس کنید 🌸"
             }
+        elif automation_id:
+            payload["audience"] = {"followerStatus": "any", "whenUnknown": "send"}
 
         try:
-            url = f"{ZERNIO_BASE_URL}/comment-automations"
-            res = requests.post(url, headers=self.headers, json=payload, timeout=10)
+            if automation_id:
+                url = f"{ZERNIO_BASE_URL}/comment-automations/{quote(str(automation_id), safe='')}"
+                payload.pop("profileId")
+                payload.pop("accountId")
+                payload["isActive"] = True
+                res = requests.patch(url, headers=self.headers, json=payload, timeout=10)
+            else:
+                url = f"{ZERNIO_BASE_URL}/comment-automations"
+                res = requests.post(url, headers=self.headers, json=payload, timeout=10)
             if res.status_code in [200, 201]:
-                logger.info(f"Comment automation '{name}' created on Zernio successfully.")
+                logger.info(f"Comment automation '{name}' saved on Zernio successfully.")
                 return res.json()
-            logger.error(f"Failed to create Zernio comment automation ({res.status_code}): {res.text}")
+            logger.error(f"Failed to save Zernio comment automation ({res.status_code}): {res.text}")
             return None
         except Exception as e:
-            logger.error(f"Error creating Zernio comment automation: {e}")
+            logger.error(f"Error saving Zernio comment automation: {e}")
             return None
+
+    def set_comment_automation_active(self, automation_id: str, active: bool) -> bool:
+        """Pause or resume a managed rule without deleting its delivery history."""
+        try:
+            url = f"{ZERNIO_BASE_URL}/comment-automations/{quote(str(automation_id), safe='')}"
+            res = requests.patch(url, headers=self.headers, json={"isActive": active}, timeout=10)
+            if res.status_code == 200:
+                return True
+            logger.error("Failed to change automation active status (%s): %s", res.status_code, res.text)
+        except requests.RequestException as e:
+            logger.error("Failed to change automation active status: %s", e)
+        return False
 
     def delete_comment_automation(self, automation_id: str) -> bool:
         """حذف یک اتوماسیون از Zernio"""
@@ -288,19 +309,27 @@ class ZernioService:
 
         # ۲. دریافت اتوماسیون‌های فعلی در Zernio
         existing_automations = self.list_comment_automations()
-        existing_by_name = {auto.get("name"): auto for auto in existing_automations}
+        existing_by_name = {
+            auto.get("name"): auto for auto in existing_automations
+            if auto.get("accountId") in (None, self.account_id)
+        }
 
         # ۳. خواندن کلیدواژه‌های فعال از دیتابیس
-        active_keywords = db.query(Keyword).filter(Keyword.active == True).all()
+        all_keywords = db.query(Keyword).all()
+        active_keywords = [kw for kw in all_keywords if kw.active]
 
         import time
         synced_count = 0
         for kw in active_keywords:
             auto_name = f"KW_{kw.id}_{kw.keyword}"
-            # اگر قبلاً بوده، حذف کن تا با کانفیگ جدید ایجاد شود
-            if auto_name in existing_by_name:
-                self.delete_comment_automation(existing_by_name[auto_name]["id"])
-                time.sleep(0.3)
+            existing = existing_by_name.get(auto_name) or next(
+                (auto for name, auto in existing_by_name.items()
+                 if isinstance(name, str) and name.startswith(f"KW_{kw.id}_")), None
+            )
+            existing_id = (existing.get("id") or existing.get("_id")) if existing else None
+            if existing and not existing_id:
+                logger.warning("Automation %s has no id; skipping to avoid a duplicate", auto_name)
+                continue
 
             created = self.create_comment_automation(
                 name=auto_name,
@@ -311,11 +340,36 @@ class ZernioService:
                 button_title=kw.button_title,
                 button_url=kw.button_url,
                 follow_gate_message=fg_msg,
-                follow_gate_buttons=fg_buttons
+                follow_gate_buttons=fg_buttons,
+                automation_id=existing_id
             )
             if created:
                 synced_count += 1
             time.sleep(0.3)
+
+        for kw in all_keywords:
+            if kw.active:
+                continue
+            existing = existing_by_name.get(f"KW_{kw.id}_{kw.keyword}") or next(
+                (auto for name, auto in existing_by_name.items()
+                 if isinstance(name, str) and name.startswith(f"KW_{kw.id}_")), None
+            )
+            if existing and existing.get("isActive", True):
+                existing_id = existing.get("id") or existing.get("_id")
+                if existing_id:
+                    self.set_comment_automation_active(existing_id, False)
+
+        # A deleted local rule must stop firing remotely, while its logs remain available.
+        local_ids = {kw.id for kw in all_keywords}
+        for name, auto in existing_by_name.items():
+            if not isinstance(name, str) or not name.startswith("KW_"):
+                continue
+            parts = name.split("_", 2)
+            if len(parts) != 3 or not parts[1].isdigit() or int(parts[1]) in local_ids:
+                continue
+            auto_id = auto.get("id") or auto.get("_id")
+            if auto_id and auto.get("isActive", True):
+                self.set_comment_automation_active(auto_id, False)
 
         logger.info(f"Successfully synced {synced_count} keywords with buttons & follow gate to Zernio.")
         return {

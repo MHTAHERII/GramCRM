@@ -262,6 +262,111 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 let editingKeywordId = null;
 let keywordsCache = [];
+let keywordDiagnostics = new Map();
+
+function deliveryLabel(status) {
+  const labels = { sent: "ارسال شد", failed: "خطا", pending: "در صف", gated: "منتظر تأیید فالو", skipped: "ارسال نشد" };
+  return labels[status] || "نامشخص";
+}
+
+function renderKeywordDelivery(result, keyword) {
+  if (!result) return '<span class="muted">در حال استعلام…</span>';
+  const states = {
+    synced: '<span class="ok">● متصل به زرنیو</span>',
+    not_synced: '<span class="bad">● در زرنیو پیدا نشد</span>',
+    disabled: '<span class="muted">● غیرفعال</span>',
+    disabled_remote: '<span class="bad">● محلی خاموش، در زرنیو فعال</span>',
+    remote_inactive: '<span class="bad">● در زرنیو غیرفعال</span>',
+    config_mismatch: '<span class="bad">● تنظیمات زرنیو با پنل متفاوت است</span>',
+  };
+  const lines = [states[result.state] || '<span class="muted">نامشخص</span>'];
+  if (result.state === "not_synced" || result.state === "disabled") return lines.join("<br>");
+  const s = result.stats || {};
+  lines.push(`<span class="muted">دایرکت: ${fmtNumber(s.dms_sent || 0)} موفق، ${fmtNumber(s.dms_failed || 0)} خطا</span>`);
+  if (result.logs_error) {
+    lines.push('<span class="bad">لاگ‌های ارسال در دسترس نیست</span>');
+  } else if (result.last_comment) {
+    const event = result.last_comment;
+    const dmClass = event.dm_status === "sent" ? "ok" : event.dm_status === "failed" ? "bad" : "pending";
+    lines.push(`<span class="${dmClass}" title="${esc(event.dm_error || "")}">آخرین دایرکت: ${esc(deliveryLabel(event.dm_status))}</span>`);
+    if (keyword.comment_reply) {
+      const replyClass = event.reply_status === "sent" ? "ok" : event.reply_status === "failed" ? "bad" : "pending";
+      lines.push(`<span class="${replyClass}" title="${esc(event.reply_error || "")}">آخرین ریپلای: ${esc(deliveryLabel(event.reply_status))}</span>`);
+    }
+    if (event.dm_error) lines.push(`<span class="bad">${esc(event.dm_error)}</span>`);
+    if (event.reply_error) lines.push(`<span class="bad">${esc(event.reply_error)}</span>`);
+    if (event.created_at) lines.push(`<span class="muted">${esc(fmtTime(event.created_at))}</span>`);
+  } else {
+    lines.push('<span class="muted">در ۱۰ رویداد اخیر کامنتی ثبت نشده</span>');
+  }
+  return lines.join("<br>");
+}
+
+async function loadKeywordDiagnostics() {
+  const button = document.getElementById("keyword-refresh-diagnostics");
+  if (button) button.disabled = true;
+  try {
+    const data = await api("/keywords/diagnostics");
+    const alert = document.getElementById("keyword-diagnostic-alert");
+    const orphans = data.orphan_automations || [];
+    alert.classList.toggle("hidden", !orphans.length);
+    alert.textContent = orphans.length ? `⚠️ ${fmtNumber(orphans.length)} سناریوی قدیمی هنوز در زرنیو فعال است: ${orphans.join("، ")}` : "";
+    keywordDiagnostics = new Map((data.keywords || []).map(row => [row.keyword_id, row]));
+    document.querySelectorAll("[data-keyword-diagnostic]").forEach(cell => {
+      const keyword = keywordsCache.find(item => item.id === Number(cell.dataset.keywordDiagnostic));
+      if (!keyword) return;
+      cell.innerHTML = data.available
+        ? renderKeywordDelivery(keywordDiagnostics.get(keyword.id), keyword)
+        : `<span class="muted">${esc(data.message || "زرنیو تنظیم نشده")}</span>`;
+    });
+  } catch (err) {
+    document.getElementById("keyword-diagnostic-alert").classList.add("hidden");
+    document.querySelectorAll("[data-keyword-diagnostic]").forEach(cell => {
+      cell.textContent = err.message;
+    });
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+document.getElementById("keyword-refresh-diagnostics")?.addEventListener("click", loadKeywordDiagnostics);
+
+document.getElementById("keyword-preview-btn")?.addEventListener("click", async () => {
+  const result = document.getElementById("keyword-preview-result");
+  const text = document.getElementById("keyword-preview-text").value.trim();
+  const keyword = document.getElementById("keyword-input").value.trim();
+  const response = document.getElementById("keyword-response-input").value.trim();
+  const draftActive = editingKeywordId == null
+    ? true : (keywordsCache.find(item => item.id === editingKeywordId)?.active ?? true);
+  if (!text || !keyword || !response) {
+    result.textContent = "متن نمونه، کلیدواژه و متن دایرکت را وارد کنید.";
+    result.classList.remove("hidden");
+    return;
+  }
+  result.textContent = "در حال بررسی…";
+  result.classList.remove("hidden");
+  try {
+    const data = await api("/keywords/preview", {
+      method: "POST",
+      body: JSON.stringify({ text, keyword, response,
+        comment_reply: document.getElementById("keyword-comment-reply-input").value.trim(),
+        editing_id: editingKeywordId, draft_active: draftActive }),
+    });
+    const cards = data.matches.map(match => `
+      <div class="keyword-preview-entry">
+        <strong>${esc(match.keyword)}${match.is_draft ? " (فرم فعلی)" : ""}</strong>
+        <div class="keyword-preview-copy">نوع تطابق: ${match.match_mode === "contains" ? "شامل کلیدواژه" : "دقیق"}</div>
+        <div class="keyword-preview-copy">ریپلای عمومی: ${esc(match.comment_reply || "ندارد")}</div>
+        <div class="keyword-preview-copy">دایرکت: ${esc(match.dm_message)}</div>
+      </div>`).join("");
+    result.innerHTML = (cards || '<div class="keyword-preview-entry">هیچ کلیدواژهٔ فعالی با این کامنت تطابق ندارد.</div>')
+      + (data.draft_disabled ? '<div class="keyword-preview-entry">کلیدواژهٔ در حال ویرایش غیرفعال است؛ پس از فعال‌سازی اجرا می‌شود.</div>' : "")
+      + `<div class="keyword-preview-entry">دروازهٔ فالو: ${data.follow_gate_enabled ? "فعال؛ وضعیت فالو هنگام ارسال بررسی می‌شود." : "خاموش"}
+        ${data.follow_gate_enabled && data.follow_gate_message ? `<div class="keyword-preview-copy">${esc(data.follow_gate_message)}</div>` : ""}</div>`;
+  } catch (err) {
+    result.textContent = err.message;
+  }
+});
 
 function createButtonRow(title = "", url = "", type = "url") {
   if (!type) type = url ? "url" : "postback";
@@ -367,6 +472,7 @@ async function loadKeywords() {
             <span class="slider"></span>
           </label>
         </td>
+        <td class="keyword-delivery" data-keyword-diagnostic="${k.id}"><span class="muted">در حال استعلام…</span></td>
         <td class="actions">
           <button class="btn small ghost" onclick="startEditKeyword(${k.id})">ویرایش</button>
           <button class="btn small ghost" onclick="deleteKeyword(${k.id})">حذف</button>
@@ -374,12 +480,14 @@ async function loadKeywords() {
       </tr>
     `;
   }).join("");
+  await loadKeywordDiagnostics();
 }
 
 async function toggleKeyword(id) {
   try {
     await api(`/keywords/${id}/toggle`, { method: "PATCH" });
     showToast("وضعیت کلمه کلیدی با موفقیت تغییر کرد", "success");
+    loadKeywords();
   } catch (err) {
     showToast(err.message, "error");
     loadKeywords();
@@ -429,6 +537,7 @@ function startEditKeyword(id) {
 function resetKeywordForm() {
   editingKeywordId = null;
   document.getElementById("keyword-form").reset();
+  document.getElementById("keyword-preview-result").classList.add("hidden");
   const container = document.getElementById("keyword-buttons-container");
   if (container) container.innerHTML = "";
   checkButtonCount();

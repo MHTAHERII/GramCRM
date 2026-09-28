@@ -49,7 +49,7 @@ class CommentReplyTests(unittest.TestCase):
         self.assertEqual(payload["matchMode"], "contains")
         self.assertEqual(payload["commentReply"], "اطلاعات ارسال شد")
         self.assertFalse(payload["alsoMatchInDms"])
-        self.assertEqual(payload["audience"], {"followerStatus": "follower", "whenUnknown": "verify"})
+        self.assertEqual(payload["audience"], {"followerStatus": "any", "whenUnknown": "verify"})
         self.assertEqual(payload["followGate"]["message"], "اول فالو را تأیید کن")
         self.assertEqual(payload["dmMessage"], "جزئیات در دایرکت")
 

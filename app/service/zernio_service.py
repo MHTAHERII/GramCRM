@@ -236,7 +236,7 @@ class ZernioService:
         # افزودن قفل فالو طبق استاندارد رسمی Zernio
         if follow_gate_message:
             payload["audience"] = {
-                "followerStatus": "follower",
+                "followerStatus": "any",
                 "whenUnknown": "verify"
             }
             btn_label = "فالو کردم ✅"

@@ -15,7 +15,7 @@ SESSION_KEY = "authenticated"
 
 
 class LoginRequest(BaseModel):
-    username: str | None = None
+    username: str
     password: str
 
 
@@ -31,10 +31,8 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     expected_username = bot_settings.admin_username or "admin"
     expected_password = bot_settings.admin_password or settings.ADMIN_PASSWORD
 
-    # اگر کاربر نام کاربری ارسال کرده باشد، با یوزرنیم ذخیره‌شده تطبیق داده می‌شود
-    if body.username and body.username.strip():
-        if body.username.strip() != expected_username:
-            raise HTTPException(status_code=401, detail="نام کاربری یا رمز عبور اشتباه است")
+    if not secrets.compare_digest(body.username.strip(), expected_username):
+        raise HTTPException(status_code=401, detail="نام کاربری یا رمز عبور اشتباه است")
 
     # مقایسه زمان-ثابت برای جلوگیری از حمله timing
     if not secrets.compare_digest(body.password, expected_password):

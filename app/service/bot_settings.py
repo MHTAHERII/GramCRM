@@ -34,14 +34,17 @@ def apply_credentials_to_services(setting: BotSetting):
         profile_id = setting.zernio_profile_id or settings.ZERNIO_PROFILE_ID
         account_id = setting.zernio_account_id or settings.ZERNIO_ACCOUNT_ID
 
-        if api_key:
-            zernio_service.api_key = api_key
-            instagram_client.api_key = api_key
-        if profile_id:
-            zernio_service.profile_id = profile_id
-        if account_id:
-            zernio_service.account_id = account_id
-            instagram_client.account_id = account_id
+        if instagram_client.api_key != api_key or instagram_client.account_id != account_id:
+            instagram_client._conv_cache.clear()
+            instagram_client._conv_updated_times.clear()
+            instagram_client._follower_cache.clear()
+            instagram_client._last_processed.clear()
+
+        zernio_service.api_key = api_key
+        instagram_client.api_key = api_key
+        zernio_service.profile_id = profile_id
+        zernio_service.account_id = account_id
+        instagram_client.account_id = account_id
 
         # در صورت داشتن توکن اما نبود شناسه‌ها، اتصال خودکار را امتحان کن
         if api_key and (not profile_id or not account_id):
@@ -128,4 +131,3 @@ def get_bot_settings(db: Session) -> BotSetting:
 
     apply_credentials_to_services(setting)
     return setting
-

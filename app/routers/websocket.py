@@ -12,6 +12,9 @@ async def websocket_endpoint(websocket: WebSocket):
     """
     اندپوینت ارتباط زنده وب‌سوکت برای ارسال بلادرنگ رویدادها، پیام‌ها و لاگ‌ها به پنل
     """
+    if not websocket.session.get(SESSION_KEY):
+        await websocket.close(code=1008)
+        return
     await ws_manager.connect(websocket)
     try:
         while True:

@@ -152,6 +152,7 @@ def send_manual_message(
 
     if not sent:
         logger.warning(f"ارسال دستی به مشتری {customer.id} در اینستاگرام ناموفق بود.")
+        raise HTTPException(status_code=502, detail="ارسال پیام به اینستاگرام ناموفق بود؛ دوباره تلاش کنید")
 
     outbound = Message(
         customer_id=customer.id,

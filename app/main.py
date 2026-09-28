@@ -9,7 +9,8 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
+from app.models.bot_setting import BotSetting
 from app.routers.product import router as product_router
 from app.routers.customer import router as customer_router
 from app.routers.message import router as message_router, conversations_router
@@ -113,6 +114,13 @@ async def lifespan(app: FastAPI):
         logger.info("Schema migrations applied.")
     except Exception as e:
         logger.error(f"Schema migration failed: {e}")
+
+    # تنظیمات ذخیره‌شده در دیتابیس باید قبل از شروع ورکر روی کلاینت‌های API اعمال شوند.
+    with SessionLocal() as db:
+        saved_settings = db.query(BotSetting).filter(BotSetting.id == 1).first()
+        if saved_settings:
+            from app.service.bot_settings import apply_credentials_to_services
+            apply_credentials_to_services(saved_settings)
 
     # راه‌اندازی ورکر اینستاگرام
     stop_event = asyncio.Event()

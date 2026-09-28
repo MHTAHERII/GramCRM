@@ -38,19 +38,19 @@ python3 -m venv venv
 echo "=== 6. Creating Production Environment Config (.env) ==="
 if [ ! -f .env ]; then
 cat << 'EOF' > .env
-DATABASE_URL=postgresql://botuser:perfume_secret_73752@localhost:5432/perfume_bot
+DATABASE_URL=postgresql://botuser:perfume_secret_change_me@localhost:5432/perfume_bot
 IG_POLL_INTERVAL=5
-ADMIN_PASSWORD=admin123
-ADMIN_SESSION_SECRET=perfume-super-secret-key-2026-production
+ADMIN_PASSWORD=change_this_password_immediately
+ADMIN_SESSION_SECRET=change_this_session_secret_to_random_string
 
 # Zernio API & Platform
 ENABLE_IG_WORKER=true
-ZERNIO_API_KEY=sk_c1ab016dc6831fe85b1ab845842361059c4d2cf007385d2107696d557174256c
-ZERNIO_PROFILE_ID=6ab54273f7f577b65b90aaca
-ZERNIO_ACCOUNT_ID=6ab54a588d284ffb213d4274
+ZERNIO_API_KEY=YOUR_ZERNIO_API_KEY
+ZERNIO_PROFILE_ID=YOUR_ZERNIO_PROFILE_ID
+ZERNIO_ACCOUNT_ID=YOUR_ZERNIO_ACCOUNT_ID
 
 # Meta Webhook Tokens
-META_VERIFY_TOKEN=perfume_bot_verify_token_2026
+META_VERIFY_TOKEN=YOUR_VERIFY_TOKEN
 EOF
     echo ".env created successfully."
 else

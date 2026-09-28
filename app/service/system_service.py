@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import time
 import urllib.request
+import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
@@ -399,6 +400,41 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
         raise e
 
 
+def _read_github_head(repo_name: str) -> tuple[str, str, str]:
+    """Read the public main branch; the Atom feed has a separate limit from the API."""
+    headers = {"User-Agent": "GramCRM-Updater/1.0"}
+    try:
+        req = urllib.request.Request(
+            f"https://api.github.com/repos/{repo_name}/commits/main",
+            headers={**headers, "Accept": "application/vnd.github.v3+json"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        sha = data["sha"]
+        commit = data.get("commit", {})
+        return sha, (commit.get("author") or {}).get("date", "")[:10], commit.get("message", "").split("\n")[0]
+    except Exception as api_error:
+        try:
+            req = urllib.request.Request(
+                f"https://github.com/{repo_name}/commits/main.atom", headers=headers,
+            )
+            with urllib.request.urlopen(req, timeout=7) as resp:
+                root = ET.fromstring(resp.read())
+            namespace = {"atom": "http://www.w3.org/2005/Atom"}
+            entry = root.find("atom:entry", namespace)
+            if entry is None:
+                raise ValueError("GitHub feed has no commits")
+            entry_id = entry.findtext("atom:id", default="", namespaces=namespace)
+            sha = entry_id.rsplit("/", 1)[-1]
+            if not re.fullmatch(r"[0-9a-f]{40}", sha):
+                raise ValueError("GitHub feed has an invalid commit id")
+            date = entry.findtext("atom:updated", default="", namespaces=namespace)[:10]
+            message = entry.findtext("atom:title", default="", namespaces=namespace).strip()
+            return sha, date, message
+        except Exception as feed_error:
+            raise RuntimeError(f"GitHub API: {api_error}; GitHub feed: {feed_error}") from feed_error
+
+
 def get_version_info() -> Dict[str, Any]:
     """
     استعلام نسخه فعلی کدها در سرور و مقایسه با آخرین کامیت مخزن گیت‌هاب (مشابه 3X-UI)
@@ -407,23 +443,25 @@ def get_version_info() -> Dict[str, Any]:
 
     # ۱. استخراج مشخصات مخزن گیت‌هاب
     repo_name = "MHTAHERII/GramCRM"
-    try:
-        remote_url = subprocess.check_output(
-            ["git", "remote", "get-url", "origin"],
-            cwd=base_dir,
-            stderr=subprocess.DEVNULL
-        ).decode("utf-8").strip()
-        match = re.search(r"github\.com[:/](.+?)(?:\.git)?$", remote_url)
-        if match:
-            repo_name = match.group(1)
-    except Exception:
-        pass
+    if shutil.which("git"):
+        try:
+            remote_url = subprocess.check_output(
+                ["git", "remote", "get-url", "origin"], cwd=base_dir,
+                stderr=subprocess.DEVNULL,
+            ).decode("utf-8").strip()
+            match = re.search(r"github\.com[:/](.+?)(?:\.git)?$", remote_url)
+            if match:
+                repo_name = match.group(1)
+        except (OSError, subprocess.CalledProcessError):
+            pass
 
     # ۲. استعلام کامیت و تاریخ لوکال
     local_commit = "نامشخص"
     local_date = ""
     local_message = ""
     try:
+        if not shutil.which("git"):
+            raise FileNotFoundError("git")
         local_commit = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
             cwd=base_dir,
@@ -439,8 +477,8 @@ def get_version_info() -> Dict[str, Any]:
             cwd=base_dir,
             stderr=subprocess.DEVNULL
         ).decode("utf-8").strip()
-    except Exception as e:
-        logging.getLogger("system_service").warning(f"Could not read local git info: {e}")
+    except (OSError, subprocess.CalledProcessError):
+        pass
 
     # فال‌بک برای محیط‌های ابری کانتینری مثل Railway که متغیرهای گیت را مستقیم تزریق می‌کنند
     if local_commit == "نامشخص" and os.environ.get("RAILWAY_GIT_COMMIT_SHA"):
@@ -457,38 +495,19 @@ def get_version_info() -> Dict[str, Any]:
     check_error = None
 
     try:
-        api_url = f"https://api.github.com/repos/{repo_name}/commits/main"
-        req = urllib.request.Request(
-            api_url,
-            headers={
-                "User-Agent": "GramCRM-Updater/1.0",
-                "Accept": "application/vnd.github.v3+json"
-            }
-        )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            remote_full_sha = data.get("sha", "")
-            remote_commit = remote_full_sha[:7] if remote_full_sha else "نامشخص"
-
-            commit_obj = data.get("commit", {})
-            full_msg = commit_obj.get("message", "")
-            remote_message = full_msg.split("\n")[0] if full_msg else ""
-
-            author_obj = commit_obj.get("author", {})
-            date_raw = author_obj.get("date", "")
-            remote_date = date_raw[:10] if date_raw else ""
-
-            if local_commit != "نامشخص" and remote_commit != "نامشخص":
-                if local_commit != remote_commit and not remote_full_sha.startswith(local_commit):
-                    has_update = True
-
+        remote_full_sha, remote_date, remote_message = _read_github_head(repo_name)
+        remote_commit = remote_full_sha[:7]
+        if local_commit != "نامشخص":
+            has_update = not remote_full_sha.startswith(local_commit)
     except Exception as e:
-        check_error = "امکان اتصال به گیت‌هاب وجود ندارد یا سقف درخواست موقت است."
-        logging.getLogger("system_service").warning(f"GitHub API check failed: {e}")
+        check_error = "بررسی نسخهٔ گیت‌هاب از هر دو مسیر ناموفق بود؛ دوباره تلاش کنید."
+        logging.getLogger("system_service").warning("GitHub version check failed: %s", e)
 
     # وضعیت نهایی
     if check_error:
         status_text = check_error
+    elif local_commit == "نامشخص":
+        status_text = "نسخهٔ نصب‌شده قابل تشخیص نیست؛ امکان مقایسه وجود ندارد."
     elif has_update:
         status_text = "نسخه جدید در دسترس است! می‌توانید سیستم را به‌روزرسانی کنید."
     else:
@@ -504,7 +523,8 @@ def get_version_info() -> Dict[str, Any]:
         "remote_message": remote_message,
         "has_update": has_update,
         "status": status_text,
-        "error": check_error
+        "error": check_error,
+        "comparison_available": not check_error and local_commit != "نامشخص"
     }
 
 
@@ -523,6 +543,13 @@ def execute_system_update() -> Dict[str, Any]:
             "restarting": False
         }
 
+    if not shutil.which("git"):
+        return {
+            "success": False,
+            "message": "ابزار git روی این سرور نصب نیست؛ به‌روزرسانی از داخل پنل ممکن نیست.",
+            "restarting": False,
+        }
+
     if os.name == "nt":
         # محیط ویندوز (توسعه لوکال)
         try:
@@ -534,8 +561,9 @@ def execute_system_update() -> Dict[str, Any]:
                 timeout=25
             )
             return {
-                "success": True,
-                "message": "دستور git pull در ویندوز با موفقیت انجام شد.",
+                "success": res.returncode == 0,
+                "message": ("دستور git pull در ویندوز با موفقیت انجام شد." if res.returncode == 0
+                            else "دستور git pull ناموفق بود."),
                 "output": (res.stdout or res.stderr).strip(),
                 "restarting": False
             }

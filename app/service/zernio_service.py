@@ -8,6 +8,15 @@ from app.models.keyword import Keyword
 logger = logging.getLogger("zernio_service")
 
 ZERNIO_BASE_URL = "https://zernio.com/api/v1"
+MAX_BUTTON_LABEL_LENGTH = 20
+
+
+def zernio_button_label(title: str) -> str:
+    """Keep already-saved labels usable with Zernio's 20-character limit."""
+    label = title.strip()
+    if len(label) > MAX_BUTTON_LABEL_LENGTH:
+        logger.warning("Zernio button label exceeds 20 characters; shortening it for delivery")
+    return label[:MAX_BUTTON_LABEL_LENGTH]
 
 
 def comment_keyword_variants(keyword: str) -> list[str]:
@@ -210,14 +219,14 @@ class ZernioService:
                 if not t:
                     continue
                 if b_type == "postback" or "ig.me/m/" in u:
-                    formatted_buttons.append({"type": "postback", "title": t, "payload": t})
+                    formatted_buttons.append({"type": "postback", "title": zernio_button_label(t), "payload": t})
                 elif u:
-                    formatted_buttons.append({"type": "url", "title": t, "url": u})
+                    formatted_buttons.append({"type": "url", "title": zernio_button_label(t), "url": u})
         elif button_title and button_url:
             if "ig.me/m/" in button_url:
-                formatted_buttons.append({"type": "postback", "title": button_title.strip(), "payload": button_title.strip()})
+                formatted_buttons.append({"type": "postback", "title": zernio_button_label(button_title), "payload": button_title.strip()})
             else:
-                formatted_buttons.append({"type": "url", "title": button_title.strip(), "url": button_url.strip()})
+                formatted_buttons.append({"type": "url", "title": zernio_button_label(button_title), "url": button_url.strip()})
 
         if formatted_buttons:
             payload["buttons"] = formatted_buttons
@@ -235,7 +244,7 @@ class ZernioService:
                 for b in follow_gate_buttons:
                     t = b.get("title", "").strip() if isinstance(b, dict) else getattr(b, "title", "").strip()
                     if t:
-                        btn_label = t
+                        btn_label = zernio_button_label(t)
                         break
 
             payload["followGate"] = {

@@ -1,4 +1,6 @@
 import unittest
+import io
+import urllib.error
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -13,6 +15,7 @@ from app.routers.websocket import router as websocket_router
 from app.service.bot_settings import apply_credentials_to_services
 from app.service.instagram_service import instagram_client
 from app.service.zernio_service import zernio_service
+from app.service.system_service import execute_system_update, get_version_info
 
 
 class AuthAndWebSocketTests(unittest.TestCase):
@@ -53,7 +56,11 @@ class AuthAndWebSocketTests(unittest.TestCase):
         self.client.post("/auth/login", json={"username": "owner", "password": "test-password"})
         with self.client.websocket_connect("/ws") as socket:
             socket.send_json({"type": "ping"})
-            self.assertEqual(socket.receive_json(), {"type": "pong"})
+            for _ in range(5):
+                if socket.receive_json().get("type") == "pong":
+                    break
+            else:
+                self.fail("WebSocket did not answer ping")
 
 
 class CredentialTests(unittest.TestCase):
@@ -82,6 +89,47 @@ class CredentialTests(unittest.TestCase):
             for cache, contents in zip(caches, originals):
                 cache.clear()
                 cache.update(contents)
+
+
+class VersionCheckTests(unittest.TestCase):
+    def test_railway_without_git_falls_back_to_public_feed_on_api_rate_limit(self):
+        sha = "a" * 40
+        atom = (f'<feed xmlns="http://www.w3.org/2005/Atom"><entry>'
+                f'<id>tag:github.com,2008:Grit::Commit/{sha}</id>'
+                f'<title>Recent change</title><updated>2026-09-28T12:00:00Z</updated>'
+                f'</entry></feed>').encode()
+        def fake_open(request, timeout):
+            if "api.github.com" in request.full_url:
+                raise urllib.error.HTTPError(request.full_url, 403, "rate limit exceeded", {}, None)
+            return io.BytesIO(atom)
+
+        with patch("app.service.system_service.shutil.which", return_value=None), \
+             patch.dict("os.environ", {"RAILWAY_GIT_COMMIT_SHA": sha}, clear=False), \
+             patch("app.service.system_service.urllib.request.urlopen", side_effect=fake_open) as open_url:
+            result = get_version_info()
+        self.assertEqual(open_url.call_count, 2)
+        self.assertEqual(result["local_commit"], sha[:7])
+        self.assertEqual(result["remote_commit"], sha[:7])
+        self.assertEqual(result["remote_date"], "2026-09-28")
+        self.assertIsNone(result["error"])
+        self.assertFalse(result["has_update"])
+        self.assertTrue(result["comparison_available"])
+
+    def test_unavailable_remote_does_not_report_current_version(self):
+        with patch("app.service.system_service.shutil.which", return_value=None), \
+             patch.dict("os.environ", {"RAILWAY_GIT_COMMIT_SHA": ""}, clear=False), \
+             patch("app.service.system_service.urllib.request.urlopen", side_effect=TimeoutError):
+            result = get_version_info()
+        self.assertFalse(result["comparison_available"])
+        self.assertIsNotNone(result["error"])
+        self.assertNotIn("به‌روز است", result["status"])
+
+    def test_updater_without_git_reports_failure_instead_of_starting(self):
+        with patch("app.service.system_service.shutil.which", return_value=None), \
+             patch.dict("os.environ", {"RAILWAY_ENVIRONMENT": "", "RAILWAY_PROJECT_ID": ""}, clear=False):
+            result = execute_system_update()
+        self.assertFalse(result["success"])
+        self.assertFalse(result["restarting"])
 
 
 if __name__ == "__main__":

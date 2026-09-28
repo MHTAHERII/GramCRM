@@ -382,7 +382,7 @@ function createButtonRow(title = "", url = "", type = "url") {
     </div>
     <div class="field" style="margin-bottom: 0;">
       <label style="font-size: 0.78rem;">متن دکمه (مثلاً: ثبت سفارش 🛍️)</label>
-      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+      <input type="text" class="btn-title-input" maxlength="20" placeholder="عنوان دکمه (حداکثر ۲۰ کاراکتر)" value="${esc(title)}">
     </div>
     <div class="field btn-target-field" style="margin-bottom: 0;">
       <label class="btn-target-label" style="font-size: 0.78rem;">${type === "postback" ? "رفتار دکمه" : "لینک اینترنتی (URL)"}</label>
@@ -1019,7 +1019,7 @@ function createFollowGateButtonRow(title = "", url = "", type = "url") {
     </div>
     <div class="field" style="margin-bottom: 0;">
       <label style="font-size: 0.78rem;">متن دکمه (مثلاً: فالو کردم ✅)</label>
-      <input type="text" class="btn-title-input" placeholder="عنوان دکمه" value="${esc(title)}">
+      <input type="text" class="btn-title-input" maxlength="20" placeholder="عنوان دکمه (حداکثر ۲۰ کاراکتر)" value="${esc(title)}">
     </div>
     <div class="field btn-target-field" style="margin-bottom: 0;">
       <label class="btn-target-label" style="font-size: 0.78rem;">${type === "postback" ? "رفتار دکمه" : "لینک اینترنتی (URL)"}</label>
@@ -1525,7 +1525,9 @@ async function fetchVersionInfo() {
     if (data.remote_message && commitBox && commitMsg) {
       commitMsg.textContent = data.remote_message;
       commitBox.style.display = "block";
-    }
+    } else if (commitBox) commitBox.style.display = "none";
+
+    if (runBtn) runBtn.disabled = !data.has_update || !!data.error || data.comparison_available === false;
 
     if (data.has_update) {
       statusBadge.textContent = "نسخه جدید موجود است 🚀";
@@ -1542,12 +1544,13 @@ async function fetchVersionInfo() {
         alertEl.textContent = "یک نسخه جدیدتر در گیت‌هاب یافت شد. جهت اعمال، روی دکمه به‌روزرسانی کلیک کنید.";
         alertEl.style.color = "#fbbf24";
       }
-    } else if (data.error) {
+    } else if (data.error || data.comparison_available === false) {
       statusBadge.textContent = "خطا در بررسی";
       statusBadge.style.background = "rgba(239, 68, 68, 0.15)";
       statusBadge.style.color = "#f87171";
       statusBadge.style.border = "1px solid rgba(239, 68, 68, 0.3)";
-      if (statusSub) statusSub.textContent = data.error;
+      if (statusSub) statusSub.textContent = data.status;
+      if (alertEl) alertEl.textContent = data.status;
     } else {
       statusBadge.textContent = "سیستم به‌روز است ✓";
       statusBadge.style.background = "rgba(16, 185, 129, 0.15)";
@@ -1560,6 +1563,7 @@ async function fetchVersionInfo() {
       }
     }
   } catch (err) {
+    if (runBtn) runBtn.disabled = true;
     statusBadge.textContent = "خطا";
     statusBadge.style.background = "rgba(239, 68, 68, 0.15)";
     statusBadge.style.color = "#f87171";
@@ -1600,10 +1604,17 @@ document.getElementById("btn-run-update")?.addEventListener("click", async () =>
       throw new Error(res.message || "خطا در فرآیند به‌روزرسانی");
     }
 
-    showToast("دستور به‌روزرسانی با موفقیت صادر شد 🚀", "success");
+    showToast(res.message || "فرآیند به‌روزرسانی آغاز شد", "success");
     if (alertEl) {
       alertEl.textContent = res.message;
       alertEl.style.color = "#10b981";
+    }
+
+    if (!res.restarting) {
+      indicator?.classList.add("hidden");
+      if (checkBtn) checkBtn.disabled = false;
+      await fetchVersionInfo();
+      return;
     }
 
     // شمارش معکوس جهت رفرش صفحه پس از ریستارت سرویس

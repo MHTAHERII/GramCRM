@@ -131,6 +131,23 @@ class CommentReplyTests(unittest.TestCase):
         create.assert_not_called()
         delete.assert_not_called()
 
+    def test_long_saved_button_labels_are_shortened_for_zernio(self):
+        service = ZernioService()
+        service.api_key, service.account_id, service.profile_id = "key", "account", "profile"
+        response = SimpleNamespace(status_code=201, json=lambda: {"id": "a"})
+        long_label = "این عنوان دکمه خیلی طولانی است"
+        with patch("app.service.zernio_service.requests.post", return_value=response) as create:
+            service.create_comment_automation(
+                name="KW_1_7", keywords=["7"], dm_message="DM",
+                buttons=[{"type": "postback", "title": long_label}],
+                follow_gate_message="فالو کنید",
+                follow_gate_buttons=[{"title": long_label, "type": "postback"}],
+            )
+        payload = create.call_args.kwargs["json"]
+        self.assertEqual(payload["buttons"][0]["title"], long_label[:20])
+        self.assertEqual(payload["buttons"][0]["payload"], long_label)
+        self.assertEqual(payload["followGate"]["buttonLabel"], long_label[:20])
+
     def test_sync_renames_in_place_and_pauses_disabled_and_deleted_rules(self):
         engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(engine)

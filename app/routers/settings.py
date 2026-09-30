@@ -12,6 +12,7 @@ router = APIRouter(prefix="/settings", tags=["Settings"], dependencies=[Depends(
 
 def _sync_zernio_bg():
     """همگام‌سازی کلیدواژه‌ها و تنظیمات با Zernio در پس‌زمینه"""
+    db = None
     try:
         db = SessionLocal()
         zernio_service.sync_all_keywords(db)
@@ -19,7 +20,8 @@ def _sync_zernio_bg():
         import logging
         logging.getLogger("settings_router").error(f"Failed to auto-sync to Zernio: {e}")
     finally:
-        db.close()
+        if db is not None:
+            db.close()
 
 
 @router.get("/", response_model=BotSettingResponse)

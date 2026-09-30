@@ -16,6 +16,8 @@ from app.service.bot_settings import apply_credentials_to_services
 from app.service.instagram_service import instagram_client
 from app.service.zernio_service import zernio_service
 from app.service.system_service import execute_system_update, get_version_info
+from app.routers import keyword as keyword_router_module
+from app.routers import settings as settings_router_module
 
 
 class AuthAndWebSocketTests(unittest.TestCase):
@@ -130,6 +132,16 @@ class VersionCheckTests(unittest.TestCase):
             result = execute_system_update()
         self.assertFalse(result["success"])
         self.assertFalse(result["restarting"])
+
+
+class BackgroundSyncTests(unittest.TestCase):
+    def test_keyword_sync_does_not_mask_session_creation_error(self):
+        with patch.object(keyword_router_module, "SessionLocal", side_effect=RuntimeError("db unavailable")):
+            keyword_router_module._sync_zernio_bg()
+
+    def test_settings_sync_does_not_mask_session_creation_error(self):
+        with patch.object(settings_router_module, "SessionLocal", side_effect=RuntimeError("db unavailable")):
+            settings_router_module._sync_zernio_bg()
 
 
 if __name__ == "__main__":

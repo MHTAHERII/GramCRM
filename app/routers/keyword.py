@@ -34,6 +34,7 @@ class KeywordPreviewRequest(BaseModel):
 
 def _sync_zernio_bg():
     """همگام‌سازی کلیدواژه‌ها با Zernio در پس‌زمینه بدون معطل کردن کاربر"""
+    db = None
     try:
         db = SessionLocal()
         zernio_service.sync_all_keywords(db)
@@ -41,7 +42,8 @@ def _sync_zernio_bg():
         import logging
         logging.getLogger("keyword_router").error(f"Failed to auto-sync to Zernio: {e}")
     finally:
-        db.close()
+        if db is not None:
+            db.close()
 
 
 @router.post("/", response_model=KeywordResponse)

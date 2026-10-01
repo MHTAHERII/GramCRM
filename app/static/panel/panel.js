@@ -563,6 +563,8 @@ function startEditKeyword(id) {
   document.getElementById("keyword-input").value = k.keyword || "";
   document.getElementById("keyword-response-input").value = k.response || "";
   document.getElementById("keyword-comment-reply-input").value = k.comment_reply || "";
+  document.getElementById("keyword-response-input").dispatchEvent(new Event("input"));
+  document.getElementById("keyword-comment-reply-input").dispatchEvent(new Event("input"));
 
   // بازسازی ردیف‌های دکمه‌ها
   const container = document.getElementById("keyword-buttons-container");
@@ -591,6 +593,8 @@ function resetKeywordForm() {
   document.getElementById("keyword-form").reset();
   document.getElementById("keyword-preview-result").classList.add("hidden");
   document.getElementById("keyword-comment-reply-input").value = "";
+  document.getElementById("keyword-response-input").dispatchEvent(new Event("input"));
+  document.getElementById("keyword-comment-reply-input").dispatchEvent(new Event("input"));
   const container = document.getElementById("keyword-buttons-container");
   if (container) container.innerHTML = "";
   checkButtonCount();
@@ -1006,6 +1010,7 @@ async function loadSettings() {
   document.getElementById("fallback-message").value = settings.fallback_message || "";
   document.getElementById("follow-gate-enabled").checked = settings.follow_gate_enabled;
   document.getElementById("follow-gate-message").value = settings.follow_gate_message || "";
+  document.getElementById("follow-gate-message").dispatchEvent(new Event("input"));
 
   // پر کردن دکمه‌های شیشه‌ای دروازه فالو
   const fgContainer = document.getElementById("follow-gate-buttons-container");
@@ -1837,9 +1842,45 @@ setInterval(async () => {
   }
 }, 30_000);
 
+/* ---------------- شمارنده کاراکتر پیام‌های دایرکت (حداکثر ۶۴۰ کاراکتر) ---------------- */
+
+function setupCharCounter(inputId, counterId, max = 640) {
+  const el = document.getElementById(inputId);
+  const counter = document.getElementById(counterId);
+  if (!el || !counter) return;
+
+  const update = () => {
+    const len = el.value.length;
+    counter.textContent = `${len} / ${max}`;
+    if (len > max) {
+      counter.style.color = "#f43f5e";
+      counter.style.fontWeight = "bold";
+    } else if (len >= max * 0.9) {
+      counter.style.color = "#f59e0b";
+      counter.style.fontWeight = "600";
+    } else {
+      counter.style.color = "";
+      counter.style.fontWeight = "";
+    }
+  };
+
+  el.addEventListener("input", update);
+  el.addEventListener("change", update);
+  el.addEventListener("paste", () => setTimeout(update, 10));
+  update();
+}
+
+function initCharCounters() {
+  setupCharCounter("keyword-response-input", "keyword-response-counter", 640);
+  setupCharCounter("keyword-comment-reply-input", "keyword-comment-reply-counter", 640);
+  setupCharCounter("follow-gate-message", "follow-gate-counter", 640);
+  setupCharCounter("chat-input", "chat-input-counter", 640);
+}
+
 /* ---------------- راه‌اندازی ---------------- */
 
 async function init() {
+  initCharCounters();
   try {
     const settings = await api("/settings/");
     updateBotBadge(settings.bot_enabled);

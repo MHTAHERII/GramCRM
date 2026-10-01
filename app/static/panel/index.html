@@ -254,13 +254,19 @@
                 <input id="keyword-input" type="text" placeholder="مثلاً: قیمت" required>
               </div>
               <div class="field">
-                <label for="keyword-response-input">متن دایرکت برای این کلیدواژه</label>
-                <textarea id="keyword-response-input" rows="3" placeholder="مثلاً: قیمت اسانس‌ها از ۲۰۰ هزار تومان شروع می‌شه..." required></textarea>
+                <label for="keyword-response-input" style="display:flex;justify-content:space-between;align-items:center;">
+                  <span>متن دایرکت برای این کلیدواژه</span>
+                  <span id="keyword-response-counter" class="hint" style="font-size:0.75rem;direction:ltr;">0 / 640</span>
+                </label>
+                <textarea id="keyword-response-input" rows="3" maxlength="640" placeholder="مثلاً: قیمت اسانس‌ها از ۲۰۰ هزار تومان شروع می‌شه..." required></textarea>
               </div>
               <div class="field">
-                <label for="keyword-comment-reply-input">ریپلای عمومی به کامنت (اختیاری)</label>
-                <textarea id="keyword-comment-reply-input" rows="2" placeholder="مثلاً: اطلاعات برات دایرکت شد 🌸"></textarea>
-                <p class="hint">مثلاً برای کلیدواژه 7، کامنت «قیمت 7 چنده؟» همین پاسخ را زیر کامنت دریافت می‌کند. تنظیمات دروازهٔ فالو برای دایرکت طبق وضعیت فعلی پنل اعمال می‌شود.</p>
+                <label for="keyword-comment-reply-input" style="display:flex;justify-content:space-between;align-items:center;">
+                  <span>ریپلای عمومی به کامنت (اختیاری)</span>
+                  <span id="keyword-comment-reply-counter" class="hint" style="font-size:0.75rem;direction:ltr;">0 / 640</span>
+                </label>
+                <textarea id="keyword-comment-reply-input" rows="2" maxlength="640" placeholder="مثلاً: اطلاعات برات دایرکت شد 🌸"></textarea>
+                <p class="hint">مثلاً برای کلیدواژه 7، کامنت «قیمت 7 چنده؟» همین پاسخ را زیر کامنت دریافت می‌کند. حداکثر ۶۴۰ کاراکتر طبق استاندارد اینستاگرام.</p>
               </div>
               <div class="keyword-buttons-section" style="margin-top: 14px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -336,8 +342,11 @@
               </div>
               <div class="chat-messages" id="chat-messages"></div>
               <form class="chat-send" id="chat-send-form">
-                <textarea id="chat-input" rows="2" placeholder="پاسخ دستی (به عنوان ادمین ارسال می‌شود)…"></textarea>
-                <button type="submit" class="btn primary">ارسال</button>
+                <div style="display:flex;flex-direction:column;flex:1;gap:4px;">
+                  <textarea id="chat-input" rows="2" maxlength="640" placeholder="پاسخ دستی (به عنوان ادمین ارسال می‌شود)…"></textarea>
+                  <span id="chat-input-counter" class="hint" style="font-size:0.72rem;direction:ltr;align-self:flex-end;">0 / 640</span>
+                </div>
+                <button type="submit" class="btn primary" style="align-self:flex-start;">ارسال</button>
               </form>
             </section>
           </div>
@@ -415,8 +424,11 @@
               </label>
             </div>
             <div class="field" style="margin-top: 0.8rem;">
-              <label for="follow-gate-message">متن پیام فالو</label>
-              <textarea id="follow-gate-message" rows="3"></textarea>
+              <label for="follow-gate-message" style="display:flex;justify-content:space-between;align-items:center;">
+                <span>متن پیام فالو</span>
+                <span id="follow-gate-counter" class="hint" style="font-size:0.75rem;direction:ltr;">0 / 640</span>
+              </label>
+              <textarea id="follow-gate-message" rows="3" maxlength="640"></textarea>
             </div>
 
             <div class="keyword-buttons-section" style="margin-top: 14px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 10px;">
@@ -680,6 +692,6 @@
     })();
   </script>
 
-  <script src="panel.js?v=2.3.0"></script>
+  <script src="panel.js?v=2.3.1"></script>
 </body>
 </html>

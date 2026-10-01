@@ -1,18 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
 class BotSettingUpdate(BaseModel):
     bot_enabled: bool | None = None
-    fallback_message: str | None = None
+    fallback_message: str | None = Field(default=None, max_length=640)
     follow_gate_enabled: bool | None = None
-    follow_gate_message: str | None = None
+    follow_gate_message: str | None = Field(default=None, max_length=640)
     follow_gate_buttons: list[dict] | None = None
     follow_gate_button_title: str | None = None
     follow_gate_button_url: str | None = None
     comment_reply_enabled: bool | None = None
     comment_public_reply_enabled: bool | None = None
-    comment_public_reply_text: str | None = None
+    comment_public_reply_text: str | None = Field(default=None, max_length=640)
     admin_username: str | None = None
     admin_password: str | None = None
     zernio_api_key: str | None = None

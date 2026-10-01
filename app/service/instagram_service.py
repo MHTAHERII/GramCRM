@@ -212,10 +212,11 @@ class UnifiedInstagramService:
             logger.error("send_direct_message requires thread_id or user_id.")
             return False
 
+        msg_text = text[:640] if len(text) > 640 else text
         url = f"{self.base_url}/inbox/conversations/{conv_id}/messages"
         payload = {
             "accountId": self.account_id,
-            "message": text
+            "message": msg_text
         }
 
         try:

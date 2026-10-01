@@ -29,8 +29,8 @@ class KeywordPreviewRequest(BaseModel):
     product_id: int | None = None
     text: str = Field(min_length=1, max_length=2000)
     keyword: str = Field(min_length=1, max_length=100)
-    response: str = Field(min_length=1)
-    comment_reply: str | None = None
+    response: str = Field(min_length=1, max_length=640)
+    comment_reply: str | None = Field(default=None, max_length=640)
     editing_id: int | None = None
     draft_active: bool = True
 

@@ -189,13 +189,21 @@ class ZernioService:
             return None
 
         public_reply = (comment_reply or "").strip()
+        dm_msg = dm_message.strip()
+        if len(dm_msg) > 640:
+            logger.warning(f"dm_message exceeds 640 characters ({len(dm_msg)}); trimming to 640 for Zernio.")
+            dm_msg = dm_msg[:640]
+        if len(public_reply) > 640:
+            logger.warning(f"comment_reply exceeds 640 characters ({len(public_reply)}); trimming to 640 for Zernio.")
+            public_reply = public_reply[:640]
+
         payload = {
             "profileId": self.profile_id,
             "accountId": self.account_id,
             "name": name,
             "keywords": [kw.strip() for kw in keywords if kw.strip()],
             "matchMode": "contains" if public_reply else "exact",
-            "dmMessage": dm_message.strip(),
+            "dmMessage": dm_msg,
             # تطابق جزئی مخصوص کامنت است؛ تطابق دایرکت در موتور داخلی دقیق می‌ماند.
             "alsoMatchInDms": False
         }
@@ -249,7 +257,7 @@ class ZernioService:
                         break
 
             payload["followGate"] = {
-                "message": follow_gate_message.strip(),
+                "message": follow_gate_message.strip()[:640],
                 "buttonLabel": btn_label,
                 "notFollowingMessage": "هنوز پیج رو فالو نکردید! لطفاً ابتدا پیج را فالو کنید و سپس دکمه را لمس کنید 🌸"
             }

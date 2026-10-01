@@ -107,7 +107,8 @@ class CommentReplyTests(unittest.TestCase):
         payload = post.call_args.kwargs["json"]
         self.assertEqual(payload["matchMode"], "exact")
         self.assertNotIn("commentReply", payload)
-        self.assertTrue(payload["alsoMatchInDms"])
+        # alsoMatchInDms is always False; DM matching is handled by the internal engine
+        self.assertFalse(payload["alsoMatchInDms"])
 
     def test_update_existing_automation_preserves_id_and_clears_old_options(self):
         service = ZernioService()

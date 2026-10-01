@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
 
@@ -20,6 +21,8 @@ class Keyword(Base):
         Text,
         nullable=False
     )
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=True, index=True)
+    product = relationship("Product")
 
     # پاسخ عمومی زیر کامنت‌های منطبق (در صورت تنظیم توسط ادمین)
     comment_reply = Column(Text, nullable=True)

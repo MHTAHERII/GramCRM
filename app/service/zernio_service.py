@@ -4,6 +4,7 @@ from urllib.parse import quote
 from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.keyword import Keyword
+from app.service.product_response import keyword_response
 
 logger = logging.getLogger("zernio_service")
 
@@ -196,7 +197,7 @@ class ZernioService:
             "matchMode": "contains" if public_reply else "exact",
             "dmMessage": dm_message.strip(),
             # تطابق جزئی مخصوص کامنت است؛ تطابق دایرکت در موتور داخلی دقیق می‌ماند.
-            "alsoMatchInDms": not bool(public_reply)
+            "alsoMatchInDms": False
         }
 
         if public_reply:
@@ -343,7 +344,7 @@ class ZernioService:
             created = self.create_comment_automation(
                 name=auto_name,
                 keywords=comment_keyword_variants(kw.keyword) if kw.comment_reply else [kw.keyword],
-                dm_message=kw.response,
+                dm_message=keyword_response(kw),
                 comment_reply=kw.comment_reply,
                 buttons=kw.buttons,
                 button_title=kw.button_title,

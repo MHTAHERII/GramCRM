@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from datetime import datetime
 from app.database import Base
 from sqlalchemy.orm import relationship
@@ -13,6 +13,7 @@ class Customer(Base):
     username = Column(String(100), nullable=True)
 
     name = Column(String(150), nullable=True)
+    bot_paused = Column(Boolean, nullable=False, default=False, server_default="false")
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

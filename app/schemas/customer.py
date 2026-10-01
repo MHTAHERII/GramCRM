@@ -7,6 +7,7 @@ class CustomerCreate(BaseModel):#اطلاعاتی ک از کاربر میاد
     name:str | None=None
 
 class CustomerResponse(CustomerCreate):# اطلاعاتی ک api برمیگردونه
+    bot_paused: bool = False
     id: int
     created_at : datetime
 
@@ -14,6 +15,7 @@ class CustomerResponse(CustomerCreate):# اطلاعاتی ک api برمیگرد�
         from_attributes = True
 
 class CustomerUpdate(BaseModel):
+    bot_paused: bool | None = None
     username: str | None = None
     name: str | None = None
 

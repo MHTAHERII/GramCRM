@@ -2,6 +2,7 @@ import re
 from sqlalchemy.orm import Session
 from app.models.keyword import Keyword
 from app.service.bot_settings import get_bot_settings
+from app.service.product_response import keyword_response
 
 
 def normalize_text(text: str) -> str:
@@ -39,7 +40,7 @@ def find_keyword_response(text: str, db: Session, fallback: bool = False) -> str
     for item in keywords:
         clean_kw = normalize_text(item.keyword)
         if clean_kw and clean_kw == clean_text:
-            return item.response
+            return keyword_response(item)
 
     # اگر کلیدواژه‌ای دقیقاً پیدا نشد
     return _fallback_reply(db) if fallback else None

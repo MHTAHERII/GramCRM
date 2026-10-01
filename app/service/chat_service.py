@@ -119,6 +119,9 @@ def process_incoming_message(
     # اطلاع‌رسانی بلادرنگ به پنل از طریق وب‌سوکت
     _broadcast_msg(inbound_message, customer)
 
+    if customer.bot_paused:
+        return None
+
     # ۴. پیام قدیمی (قبل از استارت ربات) فقط در سوابق می‌ماند تا جواب دیرهنگام و بی‌دلیل ارسال نشود
     if not is_new:
         logger.info(f"پیام قدیمی مشتری {customer.id} فقط ذخیره شد؛ پاسخ خودکار ارسال نشد.")

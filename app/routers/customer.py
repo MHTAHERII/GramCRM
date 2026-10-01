@@ -7,6 +7,7 @@ from app.auth import require_auth
 from app.database import get_db
 from app.models.customer import Customer
 from app.models.message import Message
+from app.models.order import Order
 from app.schemas.customer import CustomerCreate, CustomerResponse, ManualSendRequest
 from app.schemas.message import MessageResponse
 from fastapi import HTTPException
@@ -90,6 +91,8 @@ def update_customer(
 
     if customer_data.name is not None:
         customer.name = customer_data.name
+    if customer_data.bot_paused is not None:
+        customer.bot_paused = customer_data.bot_paused
 
     db.commit()
     db.refresh(customer)
@@ -107,6 +110,8 @@ def delete_customer(
             status_code=404,
             detail="Customer not found"
         )
+    if db.query(Order).filter(Order.customer_id == customer_id).first():
+        raise HTTPException(409, "مشتری سفارش ثبت‌شده دارد و قابل حذف نیست")
     db.delete(customer)
     db.commit()
     return {"message": "customer deleted"}

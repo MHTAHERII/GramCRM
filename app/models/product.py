@@ -11,3 +11,4 @@ class Product(Base):#این کلاس قراره به جدول دیتابیس ت�
     price = Column(Integer, nullable=False)
     stock = Column(Integer, nullable=False)
     active = Column(Boolean, default=True)
+    unit = Column(String(30), nullable=False, default="عدد", server_default="عدد")

@@ -6,12 +6,13 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import engine, Base, SessionLocal
 from app.models.bot_setting import BotSetting
 from app.routers.product import router as product_router
+from app.routers.order import router as order_router
 from app.routers.customer import router as customer_router
 from app.routers.message import router as message_router, conversations_router
 from app.routers.keyword import router as keyword_router
@@ -36,6 +37,17 @@ def run_schema_migrations() -> None:
     تغییرات اسکیمایی که create_all روی جدول‌های موجود اعمال نمی‌کند.
     هر دستور idempotent است و اگر قبلاً اجرا شده باشد خطایی نمی‌دهد.
     """
+    additions = {
+        "products": {"unit": "VARCHAR(30) NOT NULL DEFAULT 'عدد'"},
+        "customers": {"bot_paused": "BOOLEAN NOT NULL DEFAULT FALSE"},
+        "keywords": {"product_id": "INTEGER REFERENCES products(id)"},
+    }
+    with engine.begin() as conn:
+        for table_name, columns in additions.items():
+            existing = {column["name"] for column in inspect(conn).get_columns(table_name)}
+            for column_name, definition in columns.items():
+                if column_name not in existing:
+                    conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}"))
     if engine.dialect.name == "postgresql":
         with engine.begin() as conn:
             conn.execute(text(
@@ -163,6 +175,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(product_router)
+app.include_router(order_router)
 app.include_router(customer_router)
 app.include_router(message_router)
 app.include_router(conversations_router)

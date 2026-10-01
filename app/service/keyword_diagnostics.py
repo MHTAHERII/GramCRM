@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.models.bot_setting import BotSetting
 from app.models.keyword import Keyword
 from app.service.reply_engine import normalize_text
+from app.service.product_response import keyword_response
 from app.service.zernio_service import ZERNIO_BASE_URL, comment_keyword_variants, zernio_service
 
 
@@ -17,7 +18,7 @@ def preview_comment(db: Session, text: str, keyword: str, response: str,
                     draft_active: bool = True) -> dict:
     """Simulate active account-wide comment rules, including the unsaved form."""
     rules = [
-        (item.id, item.keyword, item.response, item.comment_reply, False)
+        (item.id, item.keyword, keyword_response(item), item.comment_reply, False)
         for item in db.query(Keyword).filter(Keyword.active.is_(True)).all()
         if item.id != editing_id
     ]
@@ -77,7 +78,8 @@ def _configuration_differs(kw: Keyword, auto: dict) -> bool:
     return (
         ("matchMode" in auto and auto["matchMode"] != expected_mode)
         or ("keywords" in auto and set(auto["keywords"] or []) != set(expected_keywords))
-        or ("dmMessage" in auto and auto["dmMessage"] != kw.response)
+        or ("dmMessage" in auto and auto["dmMessage"] != keyword_response(kw))
+        or auto.get("alsoMatchInDms", False)
         or ("commentReply" in auto and (auto["commentReply"] or "") != (kw.comment_reply or ""))
     )
 

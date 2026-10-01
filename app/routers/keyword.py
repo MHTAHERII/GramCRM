@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.auth import require_auth
 from app.database import get_db, SessionLocal
 from app.models.keyword import Keyword
+from app.models.product import Product
+from app.service.product_response import render_product_response
 from app.schemas.keyword import (
     KeywordCreate,
     KeywordUpdate,
@@ -24,6 +26,7 @@ router = APIRouter(
 
 
 class KeywordPreviewRequest(BaseModel):
+    product_id: int | None = None
     text: str = Field(min_length=1, max_length=2000)
     keyword: str = Field(min_length=1, max_length=100)
     response: str = Field(min_length=1)
@@ -52,6 +55,8 @@ def create_keyword(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
+    if keyword.product_id is not None and not db.get(Product, keyword.product_id):
+        raise HTTPException(404, "محصول پیدا نشد")
     exists = (
         db.query(Keyword)
         .filter(Keyword.keyword == keyword.keyword.strip())
@@ -72,6 +77,7 @@ def create_keyword(
         btn_list.append({"title": keyword.button_title.strip(), "url": keyword.button_url.strip(), "type": "url"})
 
     new_keyword = Keyword(
+        product_id=keyword.product_id,
         keyword=keyword.keyword.strip(),
         response=keyword.response.strip(),
         comment_reply=(keyword.comment_reply or "").strip() or None,
@@ -97,7 +103,10 @@ def get_keywords(
 
 @router.post("/preview", summary="پیش‌نمایش محلی تطابق کامنت بدون ارسال پیام")
 def preview_keyword(data: KeywordPreviewRequest, db: Session = Depends(get_db)):
-    return preview_comment(db, data.text, data.keyword, data.response,
+    product = db.get(Product, data.product_id) if data.product_id is not None else None
+    if data.product_id is not None and product is None:
+        raise HTTPException(404, "محصول پیدا نشد")
+    return preview_comment(db, data.text, data.keyword, render_product_response(data.response, product),
                            data.comment_reply, data.editing_id, data.draft_active)
 
 
@@ -123,6 +132,11 @@ def update_keyword(
     db: Session = Depends(get_db)
 ):
     keyword = _get_keyword_or_404(db, keyword_id)
+
+    if "product_id" in keyword_data.model_fields_set:
+        if keyword_data.product_id is not None and not db.get(Product, keyword_data.product_id):
+            raise HTTPException(404, "محصول پیدا نشد")
+        keyword.product_id = keyword_data.product_id
 
     if keyword_data.keyword is not None:
         stripped = keyword_data.keyword.strip()

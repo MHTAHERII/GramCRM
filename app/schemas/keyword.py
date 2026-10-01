@@ -9,6 +9,7 @@ class KeywordButton(BaseModel):
 
 
 class KeywordBase(BaseModel):
+    product_id: int | None = None
     keyword: str
     response: str
     comment_reply: str | None = None
@@ -30,6 +31,7 @@ class KeywordCreate(KeywordBase):
 
 
 class KeywordUpdate(BaseModel):
+    product_id: int | None = None
     keyword: str | None = None
     response: str | None = None
     comment_reply: str | None = None

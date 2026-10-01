@@ -9,11 +9,11 @@
   <style>
     @page {
       size: A4;
-      margin: 14mm 16mm 14mm 16mm;
+      margin: 12mm 15mm 12mm 15mm;
       @bottom-center {
         content: counter(page);
         font-family: 'Vazirmatn', Tahoma, sans-serif;
-        font-size: 9pt;
+        font-size: 8.5pt;
         color: #64748b;
       }
     }
@@ -28,8 +28,8 @@
       font-family: 'Vazirmatn', Tahoma, 'Segoe UI', sans-serif;
       background-color: #ffffff;
       color: #0f172a;
-      line-height: 1.7;
-      font-size: 13.5px;
+      line-height: 1.65;
+      font-size: 13px;
       margin: 0;
       padding: 0;
     }
@@ -38,9 +38,9 @@
     .header-hero {
       background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1e1b4b 100%);
       color: #ffffff;
-      padding: 32px 30px;
-      border-radius: 18px;
-      margin-bottom: 24px;
+      padding: 28px 26px;
+      border-radius: 16px;
+      margin-bottom: 20px;
       position: relative;
       overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -54,17 +54,17 @@
       background: rgba(99, 102, 241, 0.25);
       border: 1px solid rgba(129, 140, 248, 0.4);
       color: #c7d2fe;
-      padding: 4px 12px;
+      padding: 3px 12px;
       border-radius: 9999px;
       font-size: 11px;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .hero-title {
-      font-size: 26px;
+      font-size: 25px;
       font-weight: 900;
-      margin: 0 0 8px 0;
+      margin: 0 0 6px 0;
       letter-spacing: -0.5px;
       color: #ffffff;
     }
@@ -76,7 +76,7 @@
     }
 
     .hero-subtitle {
-      font-size: 13px;
+      font-size: 12.5px;
       color: #94a3b8;
       margin: 0;
       line-height: 1.6;
@@ -86,44 +86,45 @@
     .card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 18px 20px;
-      margin-bottom: 18px;
+      border-radius: 13px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
       page-break-inside: avoid;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
 
     .card-title {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #1e293b;
       margin-top: 0;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       padding-bottom: 8px;
       border-bottom: 2px solid #f1f5f9;
     }
 
     .card-title-icon {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 8px;
       background: #e0e7ff;
       color: #4f46e5;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 800;
       flex-shrink: 0;
     }
 
     /* Step Badge */
     .step-item {
       display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 10px;
       align-items: flex-start;
     }
 
@@ -131,9 +132,9 @@
       background: #4f46e5;
       color: white;
       font-weight: 700;
-      font-size: 12px;
-      width: 24px;
-      height: 24px;
+      font-size: 11px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -144,7 +145,7 @@
 
     .step-content {
       flex: 1;
-      font-size: 13px;
+      font-size: 12.5px;
       color: #334155;
     }
 
@@ -156,8 +157,8 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 12px 0;
-      font-size: 12.5px;
+      margin: 10px 0;
+      font-size: 12px;
     }
 
     th {
@@ -165,12 +166,12 @@
       color: #475569;
       font-weight: 700;
       text-align: right;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid #e2e8f0;
     }
 
     td {
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid #e2e8f0;
       color: #334155;
     }
@@ -181,13 +182,13 @@
 
     /* Alerts */
     .alert {
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin: 12px 0;
-      font-size: 12.5px;
+      border-radius: 9px;
+      padding: 10px 12px;
+      margin: 10px 0;
+      font-size: 12px;
       display: flex;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
       page-break-inside: avoid;
     }
 
@@ -211,8 +212,8 @@
 
     .pill {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 6px;
+      padding: 1px 7px;
+      border-radius: 5px;
       font-size: 11px;
       font-weight: 600;
       font-family: monospace, Tahoma;
@@ -233,30 +234,36 @@
       border-color: #7dd3fc;
     }
 
+    .pill-purple {
+      background: #f3e8ff;
+      color: #7e22ce;
+      border-color: #d8b4fe;
+    }
+
     /* Key-Value Summary Grid */
     .info-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     .info-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 8px 10px;
     }
 
     .info-box-title {
       font-size: 11px;
       font-weight: 700;
       color: #64748b;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .info-box-val {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       color: #0f172a;
     }
@@ -269,8 +276,8 @@
       text-align: center;
       font-size: 11px;
       color: #94a3b8;
-      margin-top: 24px;
-      padding-top: 14px;
+      margin-top: 20px;
+      padding-top: 12px;
       border-top: 1px solid #e2e8f0;
     }
   </style>
@@ -280,11 +287,11 @@
   <!-- HERO HEADER -->
   <div class="header-hero">
     <div class="badge-official">
-      <span>⚡</span> نسخه رسمی - راهنمای کاربری و راه‌اندازی برای مشتریان
+      <span>⚡</span> نسخه رسمی جدید (v2.3) - راهنمای جامع کاربری و فروش GramCRM
     </div>
-    <h1 class="hero-title">راهنمای استفاده از <span>GramCRM</span></h1>
+    <h1 class="hero-title">راهنمای کاربری <span>GramCRM</span></h1>
     <p class="hero-subtitle">
-      سامانه نسل جدید اتوماسیون هوشمند فروش، مدیریت دایرکت و پاسخ‌گویی ۲۴ ساعته اینستاگرام مبتنی بر API رسمی متا و زرنیو
+      سامانه جامع مدیریت ارتباط با مشتری (CRM)، اتوماسیون هوشمند کامنت و دایرکت اینستاگرام، مدیریت انبار محصولات و ثبت سفارشات آنلاین
     </p>
   </div>
 
@@ -303,7 +310,7 @@
       <div class="step-content">
         مرورگر اینترنت خود را باز کرده و آدرس پنل را وارد کنید:
         <br>
-        <span class="pill">http://IP_SERVER/panel/</span> یا <span class="pill">https://crm.yourdomain.com/panel/</span>
+        <span class="pill">https://your-domain.up.railway.app/panel/</span>
       </div>
     </div>
 
@@ -311,7 +318,7 @@
       <div class="step-number">۲</div>
       <div class="step-content">
         اطلاعات ورود پیش‌فرض را وارد نمایید:
-        <div class="info-grid" style="margin-top: 8px;">
+        <div class="info-grid">
           <div class="info-box">
             <div class="info-box-title">نام کاربری پیش‌فرض</div>
             <div class="info-box-val"><span class="pill">admin</span></div>
@@ -336,10 +343,10 @@
   <div class="card">
     <div class="card-title">
       <div class="card-title-icon">۲</div>
-      <span>اتصال پیج اینستاگرام (اتصال هوشمند در ۱ مرحله)</span>
+      <span>اتصال پیج اینستاگرام (فقط در ۲ دقیقه با API زرنیو)</span>
     </div>
     <p style="margin-top: 0; color: #475569;">
-      سیستم GramCRM با استفاده از API رسمی ابری Zernio متصل می‌شود. تمامی شناسه‌ها (Account ID و Profile ID) به صورت کاملاً خودکار توسط ربات دریافت می‌گردند:
+      سیستم GramCRM با استفاده از API رسمی ابری Zernio متصل می‌شود. شناسه‌های پیج (Account ID و Profile ID) به‌صورت کاملاً خودکار و هوشمند توسط ربات دریافت می‌گردند:
     </p>
 
     <div class="step-item">
@@ -359,111 +366,115 @@
     <div class="step-item">
       <div class="step-number">۳</div>
       <div class="step-content">
-        در پنل GramCRM، از منو به تب <strong>⚙️ تنظیمات (Settings)</strong> بروید و در کادر <strong>Zernio API Key</strong> کلید را قرار دهید.
+        در پنل GramCRM، به تب <strong>⚙️ تنظیمات (Settings)</strong> بروید و در کادر <strong>Zernio API Key</strong> کلید را قرار دهید.
       </div>
     </div>
 
     <div class="step-item">
       <div class="step-number">۴</div>
       <div class="step-content">
-        روی دکمه <strong>💾 ذخیره تنظیمات</strong> کلیک کنید.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۵</div>
-      <div class="step-content">
-        روی دکمه <strong>⚡ تست زنده اتصال</strong> کلیک کنید. پیامی با کادر سبز ظاهر شده و فعال بودن اتصال و نام کاربری پیج شما را تأیید می‌کند.
+        روی دکمه <strong>💾 ذخیره تنظیمات</strong> و سپس <strong>⚡ تست زنده اتصال</strong> بزنید تا کادر سبز تایید نمایش داده شود.
       </div>
     </div>
 
     <div class="alert alert-tip">
       <span>✅</span>
       <div>
-        <strong>امنیت ۱۰۰٪ تضمین‌شده:</strong> بر خلاف ربات‌های قدیمی که نیازمند وارد کردن یوزرنیم و پسورد پیج در سرور بودند و بلاک می‌شدند، GramCRM فقط با توکن استاندارد Meta/Zernio کار می‌کند و حساب شما کاملاً امن است.
+        <strong>امنیت ۱۰۰٪ تضمین‌شده:</strong> بر خلاف ربات‌های قدیمی که نیازمند پسورد پیج در سرور بودند و باعث شادوبن می‌شدند، GramCRM فقط با توکن استاندارد Meta/Zernio کار می‌کند و حساب شما کاملاً امن و ضدبلاک است.
       </div>
     </div>
   </div>
 
   <div class="page-break"></div>
 
-  <!-- SECTION 3: KEYWORDS -->
+  <!-- SECTION 3: PRODUCTS & DYNAMIC TOKENS -->
   <div class="card">
     <div class="card-title">
       <div class="card-title-icon">۳</div>
-      <span>تعریف کلمات کلیدی و پاسخ‌های خودکار (Keywords)</span>
+      <span>کاتالوگ محصولات، واحد کالا و قالب‌های داینامیک پاسخ</span>
     </div>
     <p style="margin-top: 0; color: #475569;">
-      با این قابلیت، به محض ارسال یک کلمه یا عبارت توسط کاربر در دایرکت یا کامنت، ربات پاسخ مناسب را در کسری از ثانیه می‌فرستد.
+      در نسخه جدید، کاتالوگ محصولات با سیستم فروش یکپارچه شده است و پاسخ‌های ربات می‌توانند قیمت و موجودی زنده را در متن نمایش دهند:
     </p>
 
     <div class="step-item">
       <div class="step-number">۱</div>
       <div class="step-content">
-        به تب <strong>🔑 کلمات کلیدی</strong> رفته و روی <strong>➕ کلمه کلیدی جدید</strong> کلیک کنید.
+        <strong>افزودن محصول جدید:</strong> به تب <strong>🛍️ محصولات</strong> بروید و روی دکمه <strong>➕ افزودن محصول</strong> بزنید.
+        <br>
+        فیلدهای <strong>نام کالا</strong>، <strong>توضیحات</strong>، <strong>قیمت (تومان)</strong>، <strong>موجودی انبار</strong> و <strong>واحد سنجش کالا (unit)</strong> را وارد کنید.
       </div>
     </div>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        <strong>کلمه کلیدی:</strong> عبارت مورد نظر را بنویسید (مثلاً: <span class="pill">قیمت</span>، <span class="pill">سفارش</span>، <span class="pill">کاتالوگ</span>).
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۳</div>
-      <div class="step-content">
-        <strong>نوع تطابق (Match Type):</strong>
-        <ul>
-          <li><strong>دقیق (Exact):</strong> تنها زمانی عمل می‌کند که کاربر دقیقاً و به تنهایی همان کلمه کلیدی را تایپ یا کامنت کند (مثلاً فقط «قیمت» یا فقط «عطر»). این ویژگی مانع از ارسال پاسخ‌های ناخواسته به جملات طولانی و متفرقه می‌شود.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۴</div>
-      <div class="step-content">
-        <strong>متن پاسخ دایرکت:</strong> متنی که کاربر باید دریافت کند را بنویسید (پشتیبانی کامل از اموجی، تخفیف‌ها، قیمت، تلفن و لینک).
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۵</div>
-      <div class="step-content">
-        (اختیاری) تا <strong>۳ دکمه شیشه‌ای شیک</strong> به پیام خود اضافه کنید (توضیح در بخش بعدی).
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 4: GLASS BUTTONS -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۴</div>
-      <span>راهنمای دکمه‌های شیشه‌ای تعاملی (Interactive Buttons)</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      دکمه‌های شیشه‌ای زیر پیام‌های دایرکت جلوه‌ای مدرن و بسیار حرفه‌ای به پیج شما می‌دهند:
-    </p>
 
     <table>
       <thead>
         <tr>
-          <th>نوع دکمه</th>
-          <th>کارکرد</th>
-          <th>نمونه استفاده</th>
+          <th>واحد کالا (Unit)</th>
+          <th>کاربرد</th>
+          <th>نمونه</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><span class="pill pill-blue">🔗 باز کردن لینک (URL)</span></td>
-          <td>کاربر با کلیک روی دکمه، مستقیماً وارد سایت، درگاه پرداخت یا کانال می‌شود.</td>
-          <td>«خرید اینترنتی 🛍️» ➔ آدرس سایت فروشگاه</td>
+          <td><span class="pill">عدد</span> (پیش‌فرض)</td>
+          <td>کالاهای دانه‌ای و قطعه‌ای</td>
+          <td>ساعت، قاب گوشی، لباس، کتاب</td>
         </tr>
         <tr>
-          <td><span class="pill pill-green">💬 ارسال پیام در دایرکت</span></td>
-          <td>کاربر بدون نیاز به تایپ، با یک کلیک پیامی را در چت ارسال می‌کند (پاسخ سریع).</td>
-          <td>«مشاهده لیست محصولات 📦» ➔ ارسال «محصولات»</td>
+          <td><span class="pill">میل</span> یا <span class="pill">گرم</span></td>
+          <td>محصولات حجمی یا وزنی</td>
+          <td>عطر دست‌ریز ۵۰ میل، زعفران ۵ گرم</td>
+        </tr>
+        <tr>
+          <td><span class="pill">بسته</span> یا <span class="pill">باکس</span></td>
+          <td>فروش بسته‌ای یا عمده</td>
+          <td>باکس ادکلن ۱۲ تایی، پک مراقبت پوستی</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="step-item">
+      <div class="step-number">۲</div>
+      <div class="step-content">
+        <strong>قالب‌های هوشمند و متغیرهای داینامیک در متن پاسخ (Dynamic Tokens):</strong>
+        <br>
+        هنگام ساخت کلیدواژه، می‌توانید یک محصول را به آن متصل کنید و از متغیرهای زیر در متن پاسخ استفاده نمایید:
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>متغیر هوشمند</th>
+          <th>توضیح و عملکرد</th>
+          <th>خروجی در دایرکت مشتری</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill pill-blue">{product_name}</span></td>
+          <td>نام محصول متصل‌شده</td>
+          <td>عطر مگاماره ارتو پاریسی</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-green">{price}</span></td>
+          <td>قیمت فرمت‌شده با جداکننده هزارگان</td>
+          <td>۱,۸۵۰,۰۰۰ تومان</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-purple">{stock}</span></td>
+          <td>موجودی لحظه‌ای انبار</td>
+          <td>۱۴</td>
+        </tr>
+        <tr>
+          <td><span class="pill">{unit}</span></td>
+          <td>واحد سنجش تعریف‌شده</td>
+          <td>میل / عدد / بسته</td>
+        </tr>
+        <tr>
+          <td><span class="pill">{description}</span></td>
+          <td>متن توضیحات محصول</td>
+          <td>رایحه خنک و دریایی با ماندگاری ۲۴ ساعته</td>
         </tr>
       </tbody>
     </table>
@@ -471,133 +482,202 @@
     <div class="alert alert-info">
       <span>💡</span>
       <div>
-        <strong>تجربه کاربری عالی:</strong> مشتریان تنبل هستند! با قرار دادن دکمه «ارسال پیام در دایرکت»، کاربر بدون معطلی و با یک کلیک وارد مراحل بعدی خرید می‌شود.
+        <strong>آپدیت آنی و بدون نیاز به ویرایش کلیدواژه‌ها:</strong> اگر قیمت یا موجودی محصولی را در انبار تغییر دهید، متن پاسخ ربات در زرنیو و دایرکت به شکل خودکار و در همان ثانیه به‌روزرسانی می‌شود!
       </div>
     </div>
   </div>
 
-  <!-- SECTION 5: FOLLOW GATE -->
+  <!-- SECTION 4: ORDERS & RECEIPTS -->
   <div class="card">
     <div class="card-title">
-      <div class="card-title-icon">۵</div>
-      <span>دروازه فالو / قفل محتوا (Follow Gate Engine)</span>
+      <div class="card-title-icon">۴</div>
+      <span>مدیریت سفارشات، قفل موجودی انبار و رسید پرداخت</span>
     </div>
     <p style="margin-top: 0; color: #475569;">
-      یکی از قوی‌ترین ابزارهای جذب فالوور واقعی! اگر کاربری پیج شما را فالو نکرده باشد، ابتدا قفلی نمایش داده می‌شود:
+      سیستم سفارشات با قفل هم‌زمانی (Optimistic Concurrency) طراحی شده تا موجودی انبار هرگز دچار مغایرت یا فروش بیش از حد نشود:
     </p>
 
     <div class="step-item">
       <div class="step-number">۱</div>
       <div class="step-content">
-        در تب <strong>⚙️ تنظیمات</strong>، بخش <strong>دروازه فالو (Follow Gate)</strong> را فعال کنید.
+        <strong>چرخه ۴ مرحله‌ای وضعیت سفارش:</strong>
+        <br>
+        • <span class="pill">pending (در انتظار)</span>: سفارش ثبت شده و منتظر بررسی فیش واریزی توسط ادمین است.
+        <br>
+        • <span class="pill pill-green">confirmed (تایید شده)</span>: ادمین سفارش را تایید می‌کند؛ <strong>موجودی انبار کالا بلافاصله و به‌صورت اتمیک کسر می‌شود.</strong>
+        <br>
+        • <span class="pill pill-blue">shipped (ارسال شده)</span>: کالا به پست تحویل داده شده و <strong>کد پیگیری مرسوله (Tracking Code)</strong> در سیستم ثبت می‌گردد.
+        <br>
+        • <span class="pill pill-purple">cancelled (لغو شده)</span>: در صورتی که سفارش تاییدشده لغو شود، <strong>موجودی کسر شده به صورت خودکار به انبار بازمی‌گردد.</strong>
       </div>
     </div>
 
     <div class="step-item">
       <div class="step-number">۲</div>
       <div class="step-content">
-        <strong>متن پیام قفل:</strong> متنی جذاب بنویسید (مثلاً: «سلام دوست عزیز! برای دریافت کد تخفیف اختصاصی، ابتدا پیج ما را فالو کنید و سپس دکمه فالو کردم را لمس کنید.»)
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۳</div>
-      <div class="step-content">
-        <strong>تنظیم دکمه اول (لینک پیج):</strong> نوع دکمه را روی <span class="pill">🔗 باز کردن لینک</span> گذاشته، عنوان را «مشاهده و فالو پیج 👀» بنویسید و لینک پیج اینستاگرام خود را وارد کنید.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۴</div>
-      <div class="step-content">
-        <strong>تنظیم دکمه دوم (تأیید فوری):</strong> نوع دکمه را روی <span class="pill pill-green">💬 ارسال پیام در دایرکت</span> قرار دهید، عنوان را «فالو کردم ✅» بگذارید و مقدار ارسال را «فالو کردم» ثبت کنید.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۵</div>
-      <div class="step-content">
-        دکمه <strong>💾 ذخیره دروازه فالو</strong> را بزنید.
+        <strong>آپلود و دانلود تصویر رسید پرداخت (Receipt Management):</strong>
         <br>
-        <i>نتیجه: کاربر دکمه «فالو کردم ✅» را لمس می‌کند؛ ربات بلافاصله فالوور بودن او را تایید کرده و لینک یا هدیه اصلی را برای او می‌فرستد!</i>
+        ادمین یا ربات می‌تواند تصویر فیش واریزی بانکی (PNG یا JPG تا حجم ۵ مگابایت) را در سفارش ثبت کند. رسید در دیتابیس به صورت امن نگهداری می‌شود و با یک کلیک امکان دانلود یا نمایش فایل اصلی وجود دارد.
       </div>
     </div>
   </div>
 
   <div class="page-break"></div>
 
-  <!-- SECTION 6: INBOX & CRM -->
+  <!-- SECTION 5: KEYWORDS & COMMENT REPLIES -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-icon">۵</div>
+      <span>تعریف کلمات کلیدی، پاسخ دایرکت و ریپلای عمومی کامنت</span>
+    </div>
+    <p style="margin-top: 0; color: #475569;">
+      در تب <strong>🔑 کلمات کلیدی</strong>، می‌توانید تعامل هم‌زمان کامنت و دایرکت را پیاده‌سازی کنید:
+    </p>
+
+    <div class="step-item">
+      <div class="step-number">۱</div>
+      <div class="step-content">
+        <strong>کلمه کلیدی (Keyword):</strong> کلمه یا عددی که کاربر می‌فرستد (مثلاً <span class="pill">قیمت</span>، <span class="pill">سفارش</span> یا عدد <span class="pill">7</span>).
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-number">۲</div>
+      <div class="step-content">
+        <strong>پاسخ دایرکت (DM Message):</strong> متنی که در دایرکت به کاربر ارسال می‌شود (امکان انتخاب محصول متصل و استفاده از توکن‌های داینامیک).
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-number">۳</div>
+      <div class="step-content">
+        <strong>ریپلای عمومی به کامنت (Public Comment Reply):</strong>
+        <br>
+        متنی که ربات به عنوان پاسخ عمومی زیر همان کامنت ارسال می‌کند (مثلاً: <i>«اطلاعات کامل و قیمت براتون دایرکت شد 🌸»</i>).
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-number">۴</div>
+      <div class="step-content">
+        <strong>تست آنلاین پیش‌نمایش کامنت قبل از ذخیره:</strong>
+        <br>
+        دکمه «تست متن کامنت» در پنل به شما اجازه می‌دهد قبل از ذخیره، متن یک کامنت فرضی را بسنجید. اگر کادر تست خالی باشد، سیستم خودکار متن نمونه می‌گذارد و وضعیت تطابق و متن ریپلای را نشان می‌دهد.
+      </div>
+    </div>
+
+    <div class="alert alert-tip">
+      <span>🎯</span>
+      <div>
+        <strong>جداسازی هوشمند دایرکت و کامنت:</strong>
+        تطابق در کامنت‌ها به‌صورت هوشمند و منعطف انجام می‌شود تا هر کاربری کامنت گذاشت پیام بگیرد؛ اما در دایرکت تطابق دقیق توسط موتور داخلی انجام می‌شود تا هیچ پاسخ اشتباهی در گفتگوهای روزمره مشتری ارسال نشود.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: FOLLOW GATE & AUDIENCE -->
   <div class="card">
     <div class="card-title">
       <div class="card-title-icon">۶</div>
-      <span>صندوق گفتگوی زنده و ارتباط با مشتریان (Inbox / CRM)</span>
+      <span>دروازه فالو و پاسخ عمومی برای غیرفالورها (Follow Gate)</span>
     </div>
     <p style="margin-top: 0; color: #475569;">
-      تب <strong>💬 پیام‌ها (Messages)</strong> یک محیط چت کامل برای شما فراهم می‌کند:
+      یکی از قوی‌ترین ابزارهای رشد تضمینی فالوور! با این قابلیت، حتی غیرفالورها هم پاسخ کامنت عمومی می‌گیرند اما محتوای دایرکت قفل است تا فالو کنند:
     </p>
 
-    <ul>
-      <li><strong>به‌روزرسانی بلادرنگ (Real-Time):</strong> تمامی پیام‌های ورودی و خروجی با فناوری WebSocket و بدون نیاز به رفرش صفحه ظاهر می‌شوند.</li>
-      <li><strong>پاسخ دستی فوری:</strong> در هر مکالمه می‌توانید متنی تایپ کرده و ارسال کنید؛ پیام مستقیماً در دایرکت اینستاگرام مشتری تحویل داده می‌شود.</li>
-      <li><strong>تاریخچه مشتری:</strong> سابقه کلیه مکالمات قبلی، زمان آخرین پیام و پروفایل مشتری همیشه در دسترس شماست.</li>
-    </ul>
+    <div class="step-item">
+      <div class="step-number">۱</div>
+      <div class="step-content">
+        <strong>ارسال پاسخ عمومی به همه افراد (فالور و غیرفالور):</strong>
+        سیستم طوری برنامه‌ریزی شده که ریپلای عمومی زیر کامنت برای ۱۰۰٪ افراد (حتی غیرفالورها) ارسال می‌شود تا اکسپلور و تعامل پست بالا برود.
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-number">۲</div>
+      <div class="step-content">
+        <strong>قفل هوشمند محتوای دایرکت (Follow Gate):</strong>
+        اگر کاربر پیج را فالو نکرده باشد، ربات در دایرکت به او پیام می‌دهد:
+        <br>
+        <i>«سلام دوست عزیز! برای دریافت لینک دانلود و کاتالوگ، ابتدا پیج ما را فالو کنید و سپس دکمه "فالو کردم ✅" را بزنید.»</i>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-number">۳</div>
+      <div class="step-content">
+        <strong>دکمه‌های تعاملی شیشه‌ای:</strong>
+        <br>
+        • دکمه اول (<span class="pill pill-blue">🔗 لینک پیج</span>): هدایت مستقیم کاربر به پروفایل اینستاگرام شما جهت لمس دکمه Follow.
+        <br>
+        • دکمه دوم (<span class="pill pill-green">💬 پیام سریع</span>): با زدن دکمه «فالو کردم ✅»، پیام ارسال شده، ربات بلافاصله فالو بودن کاربر را تایید و محتوای اصلی را می‌فرستد.
+      </div>
+    </div>
   </div>
 
-  <!-- SECTION 7: BACKUP & UPDATES -->
+  <div class="page-break"></div>
+
+  <!-- SECTION 7: INBOX & CRM & BOT PAUSED -->
   <div class="card">
     <div class="card-title">
       <div class="card-title-icon">۷</div>
-      <span>پشتیبان‌گیری (Backup) و به‌روزرسانی ۱ کلیکی پنل</span>
+      <span>صندوق گفتگوی زنده، CRM و قابلیت توقف موقت ربات (Bot Paused)</span>
+    </div>
+    <p style="margin-top: 0; color: #475569;">
+      تب <strong>💬 پیام‌ها (Messages)</strong> یک محیط چت پیشرفته برای ارتباط مستقیم با مشتریان شماست:
+    </p>
+
+    <ul>
+      <li><strong>گفتگوی بلادرنگ با WebSocket:</strong> بدون نیاز به رفرش، به محض دریافت پیام جدید در اینستاگرام، صفحه چت در لحظه آپدیت می‌شود.</li>
+      <li><strong>پاسخ دستی به دایرکت مشتری:</strong> ادمین می‌تواند از داخل پنل پیام تایپ کند؛ پیام مستقیم به دایرکت کاربر در اینستاگرام ارسال و در پرونده مشتری ذخیره می‌گردد.</li>
+      <li>
+        <strong>توقف موقت ربات برای مشتری خاص (<span class="pill pill-purple">bot_paused</span>):</strong>
+        <br>
+        اگر می‌خواهید خودتان شخصاً با یک مشتری چت کنید و مایل نیستید ربات به کلمات او پاسخ خودکار بدهد، می‌توانید ربات را <strong>تنها برای همان یک مشتری متوقف (Pause) کنید</strong> بدون آن‌که پاسخ‌گویی ربات برای سایر مشتریان پیج مختل شود!
+      </li>
+    </ul>
+  </div>
+
+  <!-- SECTION 8: BACKUP & FAQ -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-icon">۸</div>
+      <span>پشتیبان‌گیری، امنیت و پرسش‌های متداول</span>
     </div>
 
     <div class="info-grid">
       <div class="info-box">
-        <div class="info-box-title">📥 دانلود فایل پشتیبان (JSON)</div>
-        <div class="info-box-val" style="font-size: 12px; font-weight: normal; color: #334155;">
-          در تب تنظیمات، با یک کلیک کل دیتابیس (پیام‌ها، مشتریان، کلمات کلیدی) را به صورت فایل امن دانلود کنید.
+        <div class="info-box-title">📥 دانلود فایل پشتیبان دیتابیس (JSON)</div>
+        <div class="info-box-val" style="font-size: 11.5px; font-weight: normal; color: #334155;">
+          در تب تنظیمات با یک کلیک کل اطلاعات مشتریان، محصولات، سفارشات و کلیدواژه‌ها را در کامپیوتر یا گوشی ذخیره کنید.
         </div>
       </div>
       <div class="info-box">
         <div class="info-box-title">🔄 به‌روزرسانی آنلاین سیستم</div>
-        <div class="info-box-val" style="font-size: 12px; font-weight: normal; color: #334155;">
-          با زدن دکمه «بررسی به‌روزرسانی»، سیستم بدون نیاز به محیط ترمینال و با یک کلیک به آخرین نسخه ارتقا می‌یابد.
+        <div class="info-box-val" style="font-size: 11.5px; font-weight: normal; color: #334155;">
+          با زدن دکمه «بررسی به‌روزرسانی»، سیستم بدون نیاز به ترمینال و با یک کلیک به آخرین نسخه ارتقا می‌یابد.
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- SECTION 8: FAQ & TROUBLESHOOTING -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۸</div>
-      <span>پرسش‌های متداول و نکات مهم</span>
-    </div>
-
-    <div style="margin-bottom: 12px;">
-      <strong style="color: #1e1b4b;">سؤال: آیا خطر مسدود شدن یا شادوبن پیج با این ربات وجود دارد؟</strong>
-      <p style="margin: 4px 0 0 0; color: #475569; font-size: 12.5px;">
-        <strong>پاسخ: خیر، به هیچ وجه!</strong> برخلاف ربات‌های سنتی که اکانت و پسورد شما را شبیه‌سازی می‌کردند و توسط اینستاگرام مسدود می‌شدند، GramCRM مستقیماً به API رسمی متا و زیرساخت ابری Zernio متصل است و استانداردهای اینستاگرام را رعایت می‌کند.
-      </p>
-    </div>
-
-    <div style="margin-bottom: 12px;">
-      <strong style="color: #1e1b4b;">سؤال: اگر سرور خاموش شود چه اتفاقی می‌افتد؟</strong>
-      <p style="margin: 4px 0 0 0; color: #475569; font-size: 12.5px;">
-        <strong>پاسخ:</strong> سرور به گونه‌ای پیکربندی شده که سرویس ربات به عنوان یک سرویس خودکار سیستمی (Systemd Service) اجرا می‌شود و در صورت ری‌استارت سرور، ربات بلافاصله به شکل اتوماتیک بالا می‌آید.
+    <div style="margin-top: 14px; margin-bottom: 10px;">
+      <strong style="color: #1e1b4b;">سؤال: اگر کاربر کلمه کلیدی را با فاصله یا حروف عربی/فارسی بفرستد چه می‌شود؟</strong>
+      <p style="margin: 3px 0 0 0; color: #475569; font-size: 12px;">
+        <strong>پاسخ:</strong> موتور نرمال‌سازی GramCRM تمامی حروف «ي»، «ك»، اعداد انگلیسی و فارسی (۱۲۳ و 123) و نیم‌فاصله‌ها را یکدست می‌کند؛ بنابراین سیستم در هر شرایطی پیام را شناسایی کرده و پاسخ می‌دهد.
       </p>
     </div>
 
     <div>
-      <strong style="color: #1e1b4b;">سؤال: اگر کلمه کلیدی پاسخ نداد چه مواردی را بررسی کنم؟</strong>
-      <p style="margin: 4px 0 0 0; color: #475569; font-size: 12.5px;">
-        <strong>پاسخ:</strong> ۱) در تب کلمات کلیدی مطمئن شوید وضعیت کلیدواژه روی حالت «فعال» است. ۲) در تب تنظیمات روی دکمه «تست زنده اتصال» بزنید تا از فعال بودن توکن زرنیو مطمئن شوید. ۳) مطمئن شوید کلمه کلیدی دقیقاً و به تنهایی تایپ شده باشد.
+      <strong style="color: #1e1b4b;">سؤال: فایل رسید سفارشات کجا ذخیره می‌شود؟</strong>
+      <p style="margin: 3px 0 0 0; color: #475569; font-size: 12px;">
+        <strong>پاسخ:</strong> تصاویر رسید مستقیماً در دیتابیس با رمزنگاری ایمن باینری نگهداری می‌شوند و هر زمان نیاز باشد با پسوند اصلی (PNG یا JPG) قابل دانلود هستند.
       </p>
     </div>
   </div>
 
   <!-- FOOTER -->
   <div class="footer-note">
-    <strong>⚡ پلتفرم اتوماسیون هوشمند GramCRM</strong> — طراحی شده برای رشد فروش و تعامل حرفه‌ای کسب‌وکارهای اینستاگرامی
+    <strong>⚡ پلتفرم اتوماسیون هوشمند GramCRM</strong> — راهنمای رسمی کاربری و فروشگاهی (به‌روزرسانی شده در مهر ۱۴۰۵)
   </div>
 
 </body>

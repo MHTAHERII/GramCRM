@@ -11,6 +11,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![OS Support](https://img.shields.io/badge/OS-Ubuntu%20%7C%20Debian-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com)
 [![Security](https://img.shields.io/badge/Security-Official%20Meta%20API-blueviolet?style=for-the-badge)](https://zernio.com)
+[![User Guide PDF](https://img.shields.io/badge/📖%20User%20Guide-Download%20PDF-6366f1?style=for-the-badge)](GramCRM_User_Guide.pdf)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br>
@@ -193,8 +194,10 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 * **🔑 پنل کاملاً مستقل برای فروش به مشتری:** خریداران می‌توانند توکن اختصاصی API اینستاگرام، شناسه‌های اکانت و نام کاربری/رمز عبور پنل را مستقیماً از تنظیمات پنل وب وارد و ویرایش کنند.
 * **⚡ تست زنده اتصال (Connection Test):** امکان بررسی اعتبار توکن و مشاهده وضعیت اتصال به سرورهای اینستاگرام تنها با یک کلیک در پنل.
 * **🔄 همگام‌سازی ابری خودکار (Auto-Sync):** با ایجاد، ویرایش یا حذف کلیدواژه در پنل مدیریت، تغییرات بلافاصله با اینستاگرام همگام می‌شود.
-* **💬 صندوق پیام‌های یکپارچه (Inbox CRM):** مشاهده زنده تاریخچه پیام‌های هر مشتری و امکان ارسال پاسخ مستقیم از پنل به دایرکت کاربر.
-* **🛍️ انبارداری و ثبت محصولات:** کاتالوگ کالاها، قیمت‌گذاری و ثبت موجودی با دیتابیس پایدار PostgreSQL.
+* **💬 صندوق پیام‌های یکپارچه (Inbox CRM):** مشاهده زنده تاریخچه پیام‌های هر مشتری، ارسال پاسخ مستقیم از پنل به دایرکت کاربر و قابلیت توقف موقت پاسخ خودکار برای مشتری خاص (`bot_paused`).
+* **🛍️ انبارداری و ثبت محصولات پیشرفته:** کاتالوگ کالاها، قیمت‌گذاری، ثبت موجودی، تعیین واحد سنجش کالا (unit) و متغیرهای داینامیک پاسخ (`{product_name}`, `{price}`, `{stock}`).
+* **📦 مدیریت یکپارچه سفارشات (Orders):** چرخه کامل ۴ وضعیتی (`pending → confirmed → shipped → cancelled`) با کسر خودکار انبار، ثبت کد رهگیری پستی و آپلود/دانلود رسید بانکی.
+* **📖 دانلود راهنمای جامع PDF:** دریافت مستقیم کتابچه رسمی راهنمای کاربری و فروش از مسیر `/guide.pdf` یا فایل [GramCRM_User_Guide.pdf](GramCRM_User_Guide.pdf).
 * **🎨 طراحی مدرن و واکنش‌گرا:** طراحی شده بر اساس استانداردهای روز با فونت فارسی وزیرمتن (Vazirmatn).
 
 ---

@@ -3,9 +3,9 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from sqlalchemy import text, inspect
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -190,6 +190,21 @@ app.include_router(websocket_router)
 @app.get("/", include_in_schema=False)
 def root():
     return RedirectResponse(url="/panel")
+
+
+@app.get("/guide.pdf", include_in_schema=False)
+@app.get("/download-guide", include_in_schema=False)
+def download_guide():
+    pdf_path = Path(__file__).resolve().parent.parent / "GramCRM_User_Guide.pdf"
+    if not pdf_path.exists():
+        pdf_path = PANEL_DIR / "GramCRM_User_Guide.pdf"
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail="فایل راهنما یافت نشد")
+    return FileResponse(
+        path=str(pdf_path),
+        filename="GramCRM_User_Guide.pdf",
+        media_type="application/pdf"
+    )
 
 
 # پنل مدیریت (فایل‌های استاتیک؛ خود APIها محافظت‌شده هستند)

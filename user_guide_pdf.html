@@ -2,20 +2,30 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>راهنمای جامع کاربری GramCRM</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>راهنمای جامع کاربری و فروشگاهی GramCRM</title>
   <style>
+    @font-face {
+      font-family: 'Vazirmatn';
+      src: url('Vazirmatn-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Vazirmatn';
+      src: url('Vazirmatn-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Vazirmatn';
+      src: url('Vazirmatn-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
     @page {
-      size: A4;
-      margin: 12mm 15mm 12mm 15mm;
-      @bottom-center {
-        content: counter(page);
-        font-family: 'Vazirmatn', Tahoma, sans-serif;
-        font-size: 8.5pt;
-        color: #64748b;
-      }
+      size: A4 portrait;
+      margin: 10mm 13mm 10mm 13mm;
     }
 
     * {
@@ -28,656 +38,1137 @@
       font-family: 'Vazirmatn', Tahoma, 'Segoe UI', sans-serif;
       background-color: #ffffff;
       color: #0f172a;
-      line-height: 1.65;
-      font-size: 13px;
+      line-height: 1.58;
+      font-size: 11.8px;
       margin: 0;
       padding: 0;
+      direction: rtl;
     }
 
-    /* Cover / Header */
-    .header-hero {
-      background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1e1b4b 100%);
-      color: #ffffff;
-      padding: 28px 26px;
-      border-radius: 16px;
-      margin-bottom: 20px;
+    /* Page container */
+    .doc-page {
+      page-break-after: always;
       position: relative;
+      height: 270mm;
+      max-height: 272mm;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
-    .badge-official {
+    .doc-page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Running page header */
+    .page-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+      border-bottom: 1.5px solid #f1f5f9;
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    .brand-logo-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 800;
+      color: #4f46e5;
+      font-size: 11px;
+    }
+
+    /* Cover / Hero Header */
+    .hero-banner {
+      background: radial-gradient(circle at 12% 20%, rgba(99, 102, 241, 0.45), transparent 42%),
+                  radial-gradient(circle at 88% 80%, rgba(56, 189, 248, 0.35), transparent 40%),
+                  linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+      color: #ffffff;
+      padding: 22px 22px;
+      border-radius: 16px;
+      margin-bottom: 11px;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 25px -8px rgba(15, 23, 42, 0.35);
+    }
+
+    .hero-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .badge-pill-neon {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       background: rgba(99, 102, 241, 0.25);
-      border: 1px solid rgba(129, 140, 248, 0.4);
+      border: 1px solid rgba(129, 140, 248, 0.5);
       color: #c7d2fe;
-      padding: 3px 12px;
+      padding: 3px 11px;
       border-radius: 9999px;
-      font-size: 11px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .version-tag {
+      font-size: 9.5px;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       font-weight: 600;
-      margin-bottom: 10px;
     }
 
     .hero-title {
-      font-size: 25px;
+      font-size: 23px;
       font-weight: 900;
-      margin: 0 0 6px 0;
-      letter-spacing: -0.5px;
+      margin: 0 0 5px 0;
       color: #ffffff;
     }
 
-    .hero-title span {
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
+    .hero-title .gradient-text {
+      background: linear-gradient(90deg, #38bdf8 0%, #818cf8 60%, #c084fc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .hero-subtitle {
-      font-size: 12.5px;
-      color: #94a3b8;
-      margin: 0;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      margin: 0 0 11px 0;
       line-height: 1.6;
     }
 
-    /* Cards & Containers */
+    .hero-spec-strip {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .spec-chip {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 3px 9px;
+      border-radius: 7px;
+      font-size: 9.8px;
+      color: #f1f5f9;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+    }
+
+    /* Cards */
     .card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 13px;
-      padding: 16px 18px;
-      margin-bottom: 16px;
+      padding: 12px 15px;
+      margin-bottom: 10px;
       page-break-inside: avoid;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.02);
+      position: relative;
+    }
+
+    .card.accent-indigo { border-top: 3.5px solid #6366f1; }
+    .card.accent-cyan { border-top: 3.5px solid #06b6d4; }
+    .card.accent-emerald { border-top: 3.5px solid #10b981; }
+    .card.accent-purple { border-top: 3.5px solid #a855f7; }
+    .card.accent-rose { border-top: 3.5px solid #f43f5e; }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .card-title {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 15px;
+      gap: 8px;
+      font-size: 13.5px;
       font-weight: 800;
       color: #1e293b;
-      margin-top: 0;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #f1f5f9;
+      margin: 0;
     }
 
-    .card-title-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 8px;
-      background: #e0e7ff;
-      color: #4f46e5;
-      display: flex;
+    .icon-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+      color: #4338ca;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 800;
       flex-shrink: 0;
     }
 
-    /* Step Badge */
-    .step-item {
+    .icon-box.emerald { background: #d1fae5; color: #047857; }
+    .icon-box.cyan { background: #cffafe; color: #0e7490; }
+    .icon-box.purple { background: #f3e8ff; color: #7e22ce; }
+    .icon-box.amber { background: #fef3c7; color: #b45309; }
+
+    /* Bento Grid */
+    .bento-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+    }
+
+    /* Steps */
+    .step-list {
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .step-row {
+      display: flex;
+      gap: 8px;
       align-items: flex-start;
     }
 
-    .step-number {
+    .step-badge {
       background: #4f46e5;
       color: white;
-      font-weight: 700;
-      font-size: 11px;
-      width: 22px;
-      height: 22px;
+      font-weight: 800;
+      font-size: 9.5px;
+      width: 19px;
+      height: 19px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       margin-top: 2px;
+      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
     }
 
-    .step-content {
+    .step-text {
       flex: 1;
-      font-size: 12.5px;
+      font-size: 11.4px;
       color: #334155;
+      line-height: 1.55;
     }
 
-    .step-content strong {
+    .step-text strong {
       color: #0f172a;
     }
 
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-      font-size: 12px;
+    /* Instagram Live Mockup */
+    .ig-mockup-wrapper {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 13px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px -3px rgba(15, 23, 42, 0.05);
     }
 
-    th {
+    .ig-mockup-top {
+      background: #f8fafc;
+      padding: 6px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 10px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .ig-user-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ig-avatar {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .ig-chat-canvas {
+      background: #ffffff;
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ig-bubble-in {
+      align-self: flex-start;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 7px 11px;
+      border-radius: 12px 12px 12px 3px;
+      font-size: 10.8px;
+      max-width: 88%;
+      line-height: 1.52;
+      border: 1px solid #e2e8f0;
+    }
+
+    .ig-bubble-out {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 12px 12px 3px 12px;
+      font-size: 11px;
+      max-width: 60%;
+      font-weight: 600;
+    }
+
+    .ig-glass-buttons {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+
+    .ig-glass-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #2563eb;
+      font-weight: 700;
+      padding: 3.5px 10px;
+      border-radius: 6px;
+      font-size: 9.8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    /* Sleek Tables */
+    table.sleek-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 6px 0;
+      font-size: 11px;
+      border-radius: 9px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+
+    table.sleek-table th {
       background: #f8fafc;
       color: #475569;
-      font-weight: 700;
+      font-weight: 800;
       text-align: right;
-      padding: 8px 10px;
-      border: 1px solid #e2e8f0;
+      padding: 7px 10px;
+      border-bottom: 1.5px solid #e2e8f0;
+      font-size: 10.5px;
     }
 
-    td {
-      padding: 8px 10px;
-      border: 1px solid #e2e8f0;
+    table.sleek-table td {
+      padding: 6.5px 10px;
+      border-bottom: 1px solid #f1f5f9;
       color: #334155;
     }
 
-    tr:nth-child(even) td {
-      background-color: #fbfcfe;
+    table.sleek-table tr:last-child td {
+      border-bottom: none;
     }
 
-    /* Alerts */
-    .alert {
-      border-radius: 9px;
-      padding: 10px 12px;
-      margin: 10px 0;
-      font-size: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      page-break-inside: avoid;
+    table.sleek-table tr:nth-child(even) td {
+      background-color: #fafbfc;
     }
 
-    .alert-tip {
-      background-color: #ecfdf5;
-      border: 1px solid #a7f3d0;
-      color: #065f46;
-    }
-
-    .alert-info {
-      background-color: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1e40af;
-    }
-
-    .alert-warn {
-      background-color: #fffbeb;
-      border: 1px solid #fde68a;
-      color: #92400e;
-    }
-
+    /* Badges & Pills */
     .pill {
-      display: inline-block;
-      padding: 1px 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
       border-radius: 5px;
-      font-size: 11px;
-      font-weight: 600;
-      font-family: monospace, Tahoma;
+      font-size: 10px;
+      font-weight: 700;
       background: #f1f5f9;
       color: #334155;
       border: 1px solid #cbd5e1;
     }
 
-    .pill-green {
-      background: #dcfce7;
-      color: #15803d;
-      border-color: #86efac;
+    .pill.green { background: #dcfce7; color: #15803d; border-color: #86efac; }
+    .pill.blue { background: #e0f2fe; color: #0369a1; border-color: #7dd3fc; }
+    .pill.purple { background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe; }
+    .pill.amber { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .pill.rose { background: #ffe4e6; color: #be123c; border-color: #fca5a5; }
+
+    /* Callout Alerts */
+    .callout {
+      border-radius: 9px;
+      padding: 8px 11px;
+      margin: 7px 0;
+      font-size: 11px;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      line-height: 1.55;
     }
 
-    .pill-blue {
-      background: #e0f2fe;
-      color: #0369a1;
-      border-color: #7dd3fc;
-    }
+    .callout.tip { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+    .callout.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .callout.warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
 
-    .pill-purple {
-      background: #f3e8ff;
-      color: #7e22ce;
-      border-color: #d8b4fe;
-    }
-
-    /* Key-Value Summary Grid */
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .info-box {
+    /* Order tracker pipeline */
+    .order-pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 8px 10px;
+      border-radius: 10px;
+      padding: 9px 13px;
+      margin: 7px 0;
     }
 
-    .info-box-title {
+    .pipeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      flex: 1;
+    }
+
+    .pipeline-step:not(:last-child)::after {
+      content: "➔";
+      position: absolute;
+      left: -8px;
+      top: 5px;
+      color: #94a3b8;
       font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
-      margin-bottom: 3px;
     }
 
-    .info-box-val {
-      font-size: 12.5px;
-      font-weight: 600;
+    .pipeline-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .pipeline-step.active .pipeline-dot {
+      background: #4f46e5;
+      color: white;
+      box-shadow: 0 2px 5px rgba(79, 70, 229, 0.35);
+    }
+
+    .pipeline-title {
+      font-size: 10.2px;
+      font-weight: 800;
       color: #0f172a;
     }
 
-    .page-break {
-      page-break-before: always;
+    .pipeline-desc {
+      font-size: 8.8px;
+      color: #64748b;
     }
 
-    .footer-note {
-      text-align: center;
-      font-size: 11px;
+    /* Footer Note */
+    .doc-footer-bottom {
+      padding-top: 7px;
+      border-top: 1.5px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9.8px;
       color: #94a3b8;
-      margin-top: 20px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
     }
   </style>
 </head>
 <body>
 
-  <!-- HERO HEADER -->
-  <div class="header-hero">
-    <div class="badge-official">
-      <span>⚡</span> نسخه رسمی جدید (v2.3) - راهنمای جامع کاربری و فروش GramCRM
-    </div>
-    <h1 class="hero-title">راهنمای کاربری <span>GramCRM</span></h1>
-    <p class="hero-subtitle">
-      سامانه جامع مدیریت ارتباط با مشتری (CRM)، اتوماسیون هوشمند کامنت و دایرکت اینستاگرام، مدیریت انبار محصولات و ثبت سفارشات آنلاین
-    </p>
-  </div>
-
-  <!-- SECTION 1: LOGIN -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۱</div>
-      <span>ورود به پنل مدیریت (Login)</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      برای دسترسی به داشبورد، از هر دستگاهی (کامپیوتر، لپ‌تاپ، تبلت یا موبایل) می‌توانید وارد شوید:
-    </p>
-
-    <div class="step-item">
-      <div class="step-number">۱</div>
-      <div class="step-content">
-        مرورگر اینترنت خود را باز کرده و آدرس پنل را وارد کنید:
-        <br>
-        <span class="pill">https://your-domain.up.railway.app/panel/</span>
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        اطلاعات ورود پیش‌فرض را وارد نمایید:
-        <div class="info-grid">
-          <div class="info-box">
-            <div class="info-box-title">نام کاربری پیش‌فرض</div>
-            <div class="info-box-val"><span class="pill">admin</span></div>
-          </div>
-          <div class="info-box">
-            <div class="info-box-title">رمز عبور پیش‌فرض</div>
-            <div class="info-box-val"><span class="pill">admin123</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="alert alert-warn">
-      <span>🔒</span>
-      <div>
-        <strong>نکته امنیتی بسیار مهم:</strong> بلافاصله پس از اولین ورود، به تب <strong>تنظیمات ⚙️</strong> رفته و در بخش «امنیت و حساب کاربری ادمین»، نام کاربری و رمز عبور خود را تغییر دهید.
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 2: INSTAGRAM CONNECTION -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۲</div>
-      <span>اتصال پیج اینستاگرام (فقط در ۲ دقیقه با API زرنیو)</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      سیستم GramCRM با استفاده از API رسمی ابری Zernio متصل می‌شود. شناسه‌های پیج (Account ID و Profile ID) به‌صورت کاملاً خودکار و هوشمند توسط ربات دریافت می‌گردند:
-    </p>
-
-    <div class="step-item">
-      <div class="step-number">۱</div>
-      <div class="step-content">
-        وارد پنل <strong>Zernio.com</strong> شده و پیج اینستاگرام کاری خود را متصل نمایید.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        از منوی <strong>API Keys</strong> در زرنیو، کلید خود که با <span class="pill">sk_...</span> آغاز می‌شود را کپی کنید.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۳</div>
-      <div class="step-content">
-        در پنل GramCRM، به تب <strong>⚙️ تنظیمات (Settings)</strong> بروید و در کادر <strong>Zernio API Key</strong> کلید را قرار دهید.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۴</div>
-      <div class="step-content">
-        روی دکمه <strong>💾 ذخیره تنظیمات</strong> و سپس <strong>⚡ تست زنده اتصال</strong> بزنید تا کادر سبز تایید نمایش داده شود.
-      </div>
-    </div>
-
-    <div class="alert alert-tip">
-      <span>✅</span>
-      <div>
-        <strong>امنیت ۱۰۰٪ تضمین‌شده:</strong> بر خلاف ربات‌های قدیمی که نیازمند پسورد پیج در سرور بودند و باعث شادوبن می‌شدند، GramCRM فقط با توکن استاندارد Meta/Zernio کار می‌کند و حساب شما کاملاً امن و ضدبلاک است.
-      </div>
-    </div>
-  </div>
-
-  <div class="page-break"></div>
-
-  <!-- SECTION 3: PRODUCTS & DYNAMIC TOKENS -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۳</div>
-      <span>کاتالوگ محصولات، واحد کالا و قالب‌های داینامیک پاسخ</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      در نسخه جدید، کاتالوگ محصولات با سیستم فروش یکپارچه شده است و پاسخ‌های ربات می‌توانند قیمت و موجودی زنده را در متن نمایش دهند:
-    </p>
-
-    <div class="step-item">
-      <div class="step-number">۱</div>
-      <div class="step-content">
-        <strong>افزودن محصول جدید:</strong> به تب <strong>🛍️ محصولات</strong> بروید و روی دکمه <strong>➕ افزودن محصول</strong> بزنید.
-        <br>
-        فیلدهای <strong>نام کالا</strong>، <strong>توضیحات</strong>، <strong>قیمت (تومان)</strong>، <strong>موجودی انبار</strong> و <strong>واحد سنجش کالا (unit)</strong> را وارد کنید.
-      </div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>واحد کالا (Unit)</th>
-          <th>کاربرد</th>
-          <th>نمونه</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="pill">عدد</span> (پیش‌فرض)</td>
-          <td>کالاهای دانه‌ای و قطعه‌ای</td>
-          <td>ساعت، قاب گوشی، لباس، کتاب</td>
-        </tr>
-        <tr>
-          <td><span class="pill">میل</span> یا <span class="pill">گرم</span></td>
-          <td>محصولات حجمی یا وزنی</td>
-          <td>عطر دست‌ریز ۵۰ میل، زعفران ۵ گرم</td>
-        </tr>
-        <tr>
-          <td><span class="pill">بسته</span> یا <span class="pill">باکس</span></td>
-          <td>فروش بسته‌ای یا عمده</td>
-          <td>باکس ادکلن ۱۲ تایی، پک مراقبت پوستی</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        <strong>قالب‌های هوشمند و متغیرهای داینامیک در متن پاسخ (Dynamic Tokens):</strong>
-        <br>
-        هنگام ساخت کلیدواژه، می‌توانید یک محصول را به آن متصل کنید و از متغیرهای زیر در متن پاسخ استفاده نمایید:
-      </div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>متغیر هوشمند</th>
-          <th>توضیح و عملکرد</th>
-          <th>خروجی در دایرکت مشتری</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="pill pill-blue">{product_name}</span></td>
-          <td>نام محصول متصل‌شده</td>
-          <td>عطر مگاماره ارتو پاریسی</td>
-        </tr>
-        <tr>
-          <td><span class="pill pill-green">{price}</span></td>
-          <td>قیمت فرمت‌شده با جداکننده هزارگان</td>
-          <td>۱,۸۵۰,۰۰۰ تومان</td>
-        </tr>
-        <tr>
-          <td><span class="pill pill-purple">{stock}</span></td>
-          <td>موجودی لحظه‌ای انبار</td>
-          <td>۱۴</td>
-        </tr>
-        <tr>
-          <td><span class="pill">{unit}</span></td>
-          <td>واحد سنجش تعریف‌شده</td>
-          <td>میل / عدد / بسته</td>
-        </tr>
-        <tr>
-          <td><span class="pill">{description}</span></td>
-          <td>متن توضیحات محصول</td>
-          <td>رایحه خنک و دریایی با ماندگاری ۲۴ ساعته</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="alert alert-info">
-      <span>💡</span>
-      <div>
-        <strong>آپدیت آنی و بدون نیاز به ویرایش کلیدواژه‌ها:</strong> اگر قیمت یا موجودی محصولی را در انبار تغییر دهید، متن پاسخ ربات در زرنیو و دایرکت به شکل خودکار و در همان ثانیه به‌روزرسانی می‌شود!
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 4: ORDERS & RECEIPTS -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۴</div>
-      <span>مدیریت سفارشات، قفل موجودی انبار و رسید پرداخت</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      سیستم سفارشات با قفل هم‌زمانی (Optimistic Concurrency) طراحی شده تا موجودی انبار هرگز دچار مغایرت یا فروش بیش از حد نشود:
-    </p>
-
-    <div class="step-item">
-      <div class="step-number">۱</div>
-      <div class="step-content">
-        <strong>چرخه ۴ مرحله‌ای وضعیت سفارش:</strong>
-        <br>
-        • <span class="pill">pending (در انتظار)</span>: سفارش ثبت شده و منتظر بررسی فیش واریزی توسط ادمین است.
-        <br>
-        • <span class="pill pill-green">confirmed (تایید شده)</span>: ادمین سفارش را تایید می‌کند؛ <strong>موجودی انبار کالا بلافاصله و به‌صورت اتمیک کسر می‌شود.</strong>
-        <br>
-        • <span class="pill pill-blue">shipped (ارسال شده)</span>: کالا به پست تحویل داده شده و <strong>کد پیگیری مرسوله (Tracking Code)</strong> در سیستم ثبت می‌گردد.
-        <br>
-        • <span class="pill pill-purple">cancelled (لغو شده)</span>: در صورتی که سفارش تاییدشده لغو شود، <strong>موجودی کسر شده به صورت خودکار به انبار بازمی‌گردد.</strong>
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        <strong>آپلود و دانلود تصویر رسید پرداخت (Receipt Management):</strong>
-        <br>
-        ادمین یا ربات می‌تواند تصویر فیش واریزی بانکی (PNG یا JPG تا حجم ۵ مگابایت) را در سفارش ثبت کند. رسید در دیتابیس به صورت امن نگهداری می‌شود و با یک کلیک امکان دانلود یا نمایش فایل اصلی وجود دارد.
-      </div>
-    </div>
-  </div>
-
-  <div class="page-break"></div>
-
-  <!-- SECTION 5: KEYWORDS & COMMENT REPLIES -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۵</div>
-      <span>تعریف کلمات کلیدی، پاسخ دایرکت و ریپلای عمومی کامنت</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      در تب <strong>🔑 کلمات کلیدی</strong>، می‌توانید تعامل هم‌زمان کامنت و دایرکت را پیاده‌سازی کنید:
-    </p>
-
-    <div class="step-item">
-      <div class="step-number">۱</div>
-      <div class="step-content">
-        <strong>کلمه کلیدی (Keyword):</strong> کلمه یا عددی که کاربر می‌فرستد (مثلاً <span class="pill">قیمت</span>، <span class="pill">سفارش</span> یا عدد <span class="pill">7</span>).
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        <strong>پاسخ دایرکت (DM Message):</strong> متنی که در دایرکت به کاربر ارسال می‌شود (امکان انتخاب محصول متصل و استفاده از توکن‌های داینامیک).
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۳</div>
-      <div class="step-content">
-        <strong>ریپلای عمومی به کامنت (Public Comment Reply):</strong>
-        <br>
-        متنی که ربات به عنوان پاسخ عمومی زیر همان کامنت ارسال می‌کند (مثلاً: <i>«اطلاعات کامل و قیمت براتون دایرکت شد 🌸»</i>).
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۴</div>
-      <div class="step-content">
-        <strong>تست آنلاین پیش‌نمایش کامنت قبل از ذخیره:</strong>
-        <br>
-        دکمه «تست متن کامنت» در پنل به شما اجازه می‌دهد قبل از ذخیره، متن یک کامنت فرضی را بسنجید. اگر کادر تست خالی باشد، سیستم خودکار متن نمونه می‌گذارد و وضعیت تطابق و متن ریپلای را نشان می‌دهد.
-      </div>
-    </div>
-
-    <div class="alert alert-tip">
-      <span>🎯</span>
-      <div>
-        <strong>جداسازی هوشمند دایرکت و کامنت:</strong>
-        تطابق در کامنت‌ها به‌صورت هوشمند و منعطف انجام می‌شود تا هر کاربری کامنت گذاشت پیام بگیرد؛ اما در دایرکت تطابق دقیق توسط موتور داخلی انجام می‌شود تا هیچ پاسخ اشتباهی در گفتگوهای روزمره مشتری ارسال نشود.
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 6: FOLLOW GATE & AUDIENCE -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۶</div>
-      <span>دروازه فالو و پاسخ عمومی برای غیرفالورها (Follow Gate)</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      یکی از قوی‌ترین ابزارهای رشد تضمینی فالوور! با این قابلیت، حتی غیرفالورها هم پاسخ کامنت عمومی می‌گیرند اما محتوای دایرکت قفل است تا فالو کنند:
-    </p>
-
-    <div class="step-item">
-      <div class="step-number">۱</div>
-      <div class="step-content">
-        <strong>ارسال پاسخ عمومی به همه افراد (فالور و غیرفالور):</strong>
-        سیستم طوری برنامه‌ریزی شده که ریپلای عمومی زیر کامنت برای ۱۰۰٪ افراد (حتی غیرفالورها) ارسال می‌شود تا اکسپلور و تعامل پست بالا برود.
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۲</div>
-      <div class="step-content">
-        <strong>قفل هوشمند محتوای دایرکت (Follow Gate):</strong>
-        اگر کاربر پیج را فالو نکرده باشد، ربات در دایرکت به او پیام می‌دهد:
-        <br>
-        <i>«سلام دوست عزیز! برای دریافت لینک دانلود و کاتالوگ، ابتدا پیج ما را فالو کنید و سپس دکمه "فالو کردم ✅" را بزنید.»</i>
-      </div>
-    </div>
-
-    <div class="step-item">
-      <div class="step-number">۳</div>
-      <div class="step-content">
-        <strong>دکمه‌های تعاملی شیشه‌ای:</strong>
-        <br>
-        • دکمه اول (<span class="pill pill-blue">🔗 لینک پیج</span>): هدایت مستقیم کاربر به پروفایل اینستاگرام شما جهت لمس دکمه Follow.
-        <br>
-        • دکمه دوم (<span class="pill pill-green">💬 پیام سریع</span>): با زدن دکمه «فالو کردم ✅»، پیام ارسال شده، ربات بلافاصله فالو بودن کاربر را تایید و محتوای اصلی را می‌فرستد.
-      </div>
-    </div>
-  </div>
-
-  <div class="page-break"></div>
-
-  <!-- SECTION 7: INBOX & CRM & BOT PAUSED -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۷</div>
-      <span>صندوق گفتگوی زنده، CRM و قابلیت توقف موقت ربات (Bot Paused)</span>
-    </div>
-    <p style="margin-top: 0; color: #475569;">
-      تب <strong>💬 پیام‌ها (Messages)</strong> یک محیط چت پیشرفته برای ارتباط مستقیم با مشتریان شماست:
-    </p>
-
-    <ul>
-      <li><strong>گفتگوی بلادرنگ با WebSocket:</strong> بدون نیاز به رفرش، به محض دریافت پیام جدید در اینستاگرام، صفحه چت در لحظه آپدیت می‌شود.</li>
-      <li><strong>پاسخ دستی به دایرکت مشتری:</strong> ادمین می‌تواند از داخل پنل پیام تایپ کند؛ پیام مستقیم به دایرکت کاربر در اینستاگرام ارسال و در پرونده مشتری ذخیره می‌گردد.</li>
-      <li>
-        <strong>توقف موقت ربات برای مشتری خاص (<span class="pill pill-purple">bot_paused</span>):</strong>
-        <br>
-        اگر می‌خواهید خودتان شخصاً با یک مشتری چت کنید و مایل نیستید ربات به کلمات او پاسخ خودکار بدهد، می‌توانید ربات را <strong>تنها برای همان یک مشتری متوقف (Pause) کنید</strong> بدون آن‌که پاسخ‌گویی ربات برای سایر مشتریان پیج مختل شود!
-      </li>
-    </ul>
-  </div>
-
-  <!-- SECTION 8: BACKUP & FAQ -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-icon">۸</div>
-      <span>پشتیبان‌گیری، امنیت و پرسش‌های متداول</span>
-    </div>
-
-    <div class="info-grid">
-      <div class="info-box">
-        <div class="info-box-title">📥 دانلود فایل پشتیبان دیتابیس (JSON)</div>
-        <div class="info-box-val" style="font-size: 11.5px; font-weight: normal; color: #334155;">
-          در تب تنظیمات با یک کلیک کل اطلاعات مشتریان، محصولات، سفارشات و کلیدواژه‌ها را در کامپیوتر یا گوشی ذخیره کنید.
-        </div>
-      </div>
-      <div class="info-box">
-        <div class="info-box-title">🔄 به‌روزرسانی آنلاین سیستم</div>
-        <div class="info-box-val" style="font-size: 11.5px; font-weight: normal; color: #334155;">
-          با زدن دکمه «بررسی به‌روزرسانی»، سیستم بدون نیاز به ترمینال و با یک کلیک به آخرین نسخه ارتقا می‌یابد.
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top: 14px; margin-bottom: 10px;">
-      <strong style="color: #1e1b4b;">سؤال: اگر کاربر کلمه کلیدی را با فاصله یا حروف عربی/فارسی بفرستد چه می‌شود؟</strong>
-      <p style="margin: 3px 0 0 0; color: #475569; font-size: 12px;">
-        <strong>پاسخ:</strong> موتور نرمال‌سازی GramCRM تمامی حروف «ي»، «ك»، اعداد انگلیسی و فارسی (۱۲۳ و 123) و نیم‌فاصله‌ها را یکدست می‌کند؛ بنابراین سیستم در هر شرایطی پیام را شناسایی کرده و پاسخ می‌دهد.
-      </p>
-    </div>
-
+  <!-- ==================== PAGE 1: COVER & QUICK START ==================== -->
+  <div class="doc-page">
     <div>
-      <strong style="color: #1e1b4b;">سؤال: فایل رسید سفارشات کجا ذخیره می‌شود؟</strong>
-      <p style="margin: 3px 0 0 0; color: #475569; font-size: 12px;">
-        <strong>پاسخ:</strong> تصاویر رسید مستقیماً در دیتابیس با رمزنگاری ایمن باینری نگهداری می‌شوند و هر زمان نیاز باشد با پسوند اصلی (PNG یا JPG) قابل دانلود هستند.
-      </p>
+      <div class="hero-banner">
+        <div class="hero-top-row">
+          <span class="badge-pill-neon">
+            <span>⚡</span> پلتفرم رسمی اتوماسیون اینستاگرام و CRM
+          </span>
+          <span class="version-tag">نسخه ۲.۳ • مهر ۱۴۰۵</span>
+        </div>
+        <h1 class="hero-title">راهنمای جامع کاربری و فروش <span class="gradient-text">GramCRM</span></h1>
+        <p class="hero-subtitle">
+          دستیار هوشمند ۲۴ ساعته فروش، مدیریت انبار محصولات، ثبت سفارشات با کسر موجودی، پاسخ خودکار دایرکت و ریپلای کامنت مبتنی بر وب‌هوک رسمی Meta و زیرساخت ابری Zernio
+        </p>
+        <div class="hero-spec-strip">
+          <span class="spec-chip">🛡️ ۱۰۰٪ ضد مسدودی و شادوبن</span>
+          <span class="spec-chip">⚡ پاسخ‌دهی زیر ۱ ثانیه</span>
+          <span class="spec-chip">📦 انبارداری با قفل هوشمند</span>
+          <span class="spec-chip">🔒 دروازه فالو برای ۱۰۰٪ افراد</span>
+        </div>
+      </div>
+
+      <!-- SECTION 1: LOGIN -->
+      <div class="card accent-indigo">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box">۱</div>
+            <span>ورود به داشبورد مدیریت (Web Dashboard)</span>
+          </div>
+          <span class="pill blue">دسترسی از کامپیوتر و موبایل</span>
+        </div>
+        <div class="bento-grid-2">
+          <div class="step-list">
+            <div class="step-row">
+              <div class="step-badge">۱</div>
+              <div class="step-text">
+                مرورگر خود (Chrome، Edge یا Safari) را باز کرده و آدرس سرور را همراه با پسوند <span class="pill">/panel/</span> وارد کنید.
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-badge">۲</div>
+              <div class="step-text">
+                اطلاعات ورود پیش‌فرض سیستم را در فرم درج کرده و دکمه <strong>ورود</strong> را بزنید:
+              </div>
+            </div>
+          </div>
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; justify-content: center; gap: 7px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.2px;">
+              <span style="color: #64748b; font-weight: 600;">نام کاربری پیش‌فرض:</span>
+              <span class="pill">admin</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.2px;">
+              <span style="color: #64748b; font-weight: 600;">رمز عبور پیش‌فرض:</span>
+              <span class="pill">admin123</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top: 9px;">
+          <span>🔒</span>
+          <div><strong>نکته امنیتی بسیار مهم:</strong> پس از ورود اولیه، از تب تنظیمات ⚙️ در بخش «امنیت و حساب کاربری»، حتماً نام کاربری و پسورد دلخواه خود را تعیین نمایید.</div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: ZERNIO CONNECTION -->
+      <div class="card accent-cyan">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box cyan">۲</div>
+            <span>اتصال پیج اینستاگرام (فقط در ۲ دقیقه با API زرنیو)</span>
+          </div>
+          <span class="pill green">هوشمند و بدون نیاز به ID دستی</span>
+        </div>
+        <p style="margin: 0 0 7px 0; color: #475569; font-size: 11.2px;">
+          سیستم GramCRM با بهره‌گیری از هوش Zernio شناسه‌های پیج (Account ID و Profile ID) را خودکار تشخیص می‌دهد:
+        </p>
+        <div class="step-list">
+          <div class="step-row">
+            <div class="step-badge">۱</div>
+            <div class="step-text">
+              وارد پنل <strong>Zernio.com</strong> شده و پیج اینستاگرام کاری (Business یا Creator) خود را متصل کنید.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۲</div>
+            <div class="step-text">
+              از منوی <strong>API Keys</strong> در زرنیو، کلید اختصاصی خود را که با <span class="pill">sk_...</span> شروع می‌شود کپی کنید.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۳</div>
+            <div class="step-text">
+              در پنل GramCRM به تب <strong>⚙️ تنظیمات</strong> رفته، کلید را در فیلد <strong>Zernio API Key</strong> قرار داده و دکمه <strong>ذخیره</strong> را بزنید.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۴</div>
+            <div class="step-text">
+              روی <strong>⚡ تست زنده اتصال</strong> بزنید؛ تاییدیه سبز و نام پیج اینستاگرام شما در ۱ ثانیه نمایان می‌گردد!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPARISON BOX -->
+      <div class="card accent-emerald">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box emerald">🛡️</div>
+            <span>برتری قطعی GramCRM نسبت به ربات‌های سنتی و غیررسمی</span>
+          </div>
+          <span class="pill green">استاندارد رسمی متا</span>
+        </div>
+        <table class="sleek-table">
+          <thead>
+            <tr>
+              <th>شاخص کلیدی</th>
+              <th>GramCRM ⚡</th>
+              <th>ربات‌های سنتی (شبیه‌ساز و پسوردی)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ریسک مسدودی / شادوبن</strong></td>
+              <td><span class="pill green">صفر (کاملاً رسمی و ضدبلاک)</span></td>
+              <td>بسیار بالا (شناسایی توسط الگوریتم اینستاگرام)</td>
+            </tr>
+            <tr>
+              <td><strong>سرعت ارسال پاسخ</strong></td>
+              <td><span class="pill blue">زیر ۱ ثانیه با رویداد Webhook</span></td>
+              <td>چند دقیقه تأخیر و نیاز به لاگین مداوم</td>
+            </tr>
+            <tr>
+              <td><strong>پشتیبانی از دکمه شیشه‌ای</strong></td>
+              <td><span class="pill purple">تا ۳ دکمه تعاملی و لینک‌دار</span></td>
+              <td>فاقد دکمه (فقط متن ساده و خام)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="doc-footer-bottom">
+      <span>پلتفرم اتوماسیون GramCRM — نسخه ۲.۳</span>
+      <span>صفحه ۱ از ۵</span>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <div class="footer-note">
-    <strong>⚡ پلتفرم اتوماسیون هوشمند GramCRM</strong> — راهنمای رسمی کاربری و فروشگاهی (به‌روزرسانی شده در مهر ۱۴۰۵)
+  <!-- ==================== PAGE 2: KEYWORDS & INSTAGRAM LIVE MOCKUP ==================== -->
+  <div class="doc-page">
+    <div>
+      <div class="page-header-bar">
+        <span class="brand-logo-text"><span>⚡</span> GramCRM User Guide</span>
+        <span>بخش ۳ و ۴: موتور کلمات کلیدی، پاسخ عمومی و دکمه‌های شیشه‌ای</span>
+      </div>
+
+      <!-- SECTION 3: KEYWORDS -->
+      <div class="card accent-indigo">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box">۳</div>
+            <span>تعریف کلمات کلیدی و پاسخ خودکار (Keywords Engine)</span>
+          </div>
+          <span class="pill purple">سقف استاندارد ۶۴۰ کاراکتر</span>
+        </div>
+        <div class="step-list">
+          <div class="step-row">
+            <div class="step-badge">۱</div>
+            <div class="step-text">
+              به تب <strong>🔑 کلمات کلیدی</strong> رفته و دکمه <strong>➕ کلمه کلیدی جدید</strong> را کلیک کنید.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۲</div>
+            <div class="step-text">
+              <strong>کلمه یا عبارت محرک:</strong> کلمه‌ای که کاربر در دایرکت یا کامنت می‌فرستد (مثال: <span class="pill">قیمت</span>، <span class="pill">عطر</span> یا عدد <span class="pill">7</span>). سیستم تمام حروف عربی و فارسی را خودکار یکدست می‌کند.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۳</div>
+            <div class="step-text">
+              <strong>متن پاسخ دایرکت:</strong> متنی که مشتری در دایرکت دریافت می‌کند (پشتیبانی کامل از اموجی، تخفیف، تلفن و قالب کالا).
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۴</div>
+            <div class="step-text">
+              <strong>ریپلای عمومی به کامنت:</strong> متنی که زیر همان کامنت کاربر نوشته می‌شود (مثال: <i>«اطلاعات کامل و قیمت دایرکت شد 🌸»</i>).
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">۵</div>
+            <div class="step-text">
+              <strong>تست زنده قبل از ذخیره:</strong> با زدن دکمه «تست متن کامنت»، رفتار تطابق کلمه و متن پاسخ را قبل از انتشار مشاهده کنید!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUAL MOCKUP -->
+      <div class="card accent-purple">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box purple">👁️</div>
+            <span>پیش‌نمایش تعامل واقعی در اینستاگرام (Instagram Real Simulation)</span>
+          </div>
+          <span class="pill green">خروجی زنده در گوشی مشتری</span>
+        </div>
+        
+        <div class="bento-grid-2">
+          <!-- DM Mockup -->
+          <div class="ig-mockup-wrapper">
+            <div class="ig-mockup-top">
+              <div class="ig-user-badge">
+                <div class="ig-avatar">GC</div>
+                <span>دایرکت اینستاگرام (GramCRM Bot)</span>
+              </div>
+              <span style="color:#10b981; font-size:9.5px; font-weight:700;">● آنلاین</span>
+            </div>
+            <div class="ig-chat-canvas">
+              <div class="ig-bubble-out">قیمت</div>
+              <div class="ig-bubble-in">
+                سلام دوست عزیز! 🌸<br>
+                <strong>عطر مگاماره ارتو پاریسی</strong><br>
+                قیمت: <strong>۱,۸۵۰,۰۰۰ تومان</strong> (موجودی: ۱۲ میل)<br>
+                برای ثبت سفارش روی دکمه‌های زیر بزنید 👇
+                <div class="ig-glass-buttons">
+                  <span class="ig-glass-btn">🛒 خرید آنلاین</span>
+                  <span class="ig-glass-btn">💬 پشتیبانی سریع</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comment Mockup -->
+          <div class="ig-mockup-wrapper">
+            <div class="ig-mockup-top">
+              <div class="ig-user-badge">
+                <span>💬 ریپلای عمومی زیر پست و ریلز</span>
+              </div>
+              <span style="color:#6366f1; font-size:9.5px; font-weight:700;">ارسال در کمتر از ۱ ثانیه</span>
+            </div>
+            <div class="ig-chat-canvas">
+              <div style="font-size: 10.5px; color: #475569; border-right: 2.5px solid #cbd5e1; padding-right: 7px;">
+                <strong>@customer_user:</strong> قیمت این کار چنده؟ لطفا بفرستید
+              </div>
+              <div style="font-size: 11px; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 7px 10px; margin-top: 4px;">
+                <strong style="color: #4f46e5;">@your_shop:</strong> @customer_user جزئیات کامل و کد تخفیف براتون دایرکت شد 🌸 دایرکتتون رو چک کنید!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: GLASS BUTTONS -->
+      <div class="card accent-cyan">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box cyan">۴</div>
+            <span>دکمه‌های شیشه‌ای تعاملی (Interactive Glass Buttons)</span>
+          </div>
+          <span class="pill blue">حداکثر ۳ دکمه زیر هر پیام</span>
+        </div>
+        <table class="sleek-table">
+          <thead>
+            <tr>
+              <th>نوع دکمه</th>
+              <th>عملکرد و کاربرد</th>
+              <th>نمونه اجرایی</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pill blue">🔗 باز کردن لینک (URL)</span></td>
+              <td>هدایت آنی خریدار به درگاه پرداخت آنلاین، وب‌سایت فروشگاه، دوره یا کانال</td>
+              <td>«خرید اینترنتی 💳» ➔ <span class="pill">https://shop.ir/pay</span></td>
+            </tr>
+            <tr>
+              <td><span class="pill green">💬 ارسال پیام در دایرکت</span></td>
+              <td>پاسخ سریع مشتری بدون نیاز به تایپ (لمس دکمه = ارسال متن سریع)</td>
+              <td>«مشاهده کاتالوگ 📚» ➔ ارسال خودکار «کاتالوگ»</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout info" style="margin-top: 6px;">
+          <span>💡</span>
+          <div><strong>چرا دکمه شیشه‌ای معجزه می‌کند؟</strong> مشتریان در دایرکت سریع‌تر خرید می‌کنند وقتی به جای تایپ متن، با ۱ لمس به درگاه یا کاتالوگ هدایت شوند.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer-bottom">
+      <span>پلتفرم اتوماسیون GramCRM — نسخه ۲.۳</span>
+      <span>صفحه ۲ از ۵</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3: PRODUCTS & DYNAMIC TOKENS ==================== -->
+  <div class="doc-page">
+    <div>
+      <div class="page-header-bar">
+        <span class="brand-logo-text"><span>⚡</span> GramCRM User Guide</span>
+        <span>بخش ۵ و ۶: کاتالوگ محصولات با متغیرهای داینامیک و دروازه فالو</span>
+      </div>
+
+      <!-- SECTION 5: PRODUCTS -->
+      <div class="card accent-emerald">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box emerald">۵</div>
+            <span>کاتالوگ محصولات، واحد کالا و متغیرهای داینامیک پاسخ</span>
+          </div>
+          <span class="pill green">همگام‌سازی لحظه‌ای با انبار</span>
+        </div>
+        <p style="margin: 0 0 6px 0; color: #475569; font-size: 11.2px;">
+          در تب <strong>🛍️ محصولات</strong> کالاهای فروشگاه را با فیلد واحد کالا تعریف کرده و به کلیدواژه‌ها متصل نمایید:
+        </p>
+
+        <table class="sleek-table">
+          <thead>
+            <tr>
+              <th>واحد سنجش (Unit)</th>
+              <th>کالاهای هدف در فروشگاه</th>
+              <th>مثال در پیج</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pill">عدد</span> (پیش‌فرض)</td>
+              <td>کالاهای قطعه‌ای، پوشاک و اکسسوری</td>
+              <td>عینک آفتابی، ساعت، قاب گوشی، پیراهن، کیف</td>
+            </tr>
+            <tr>
+              <td><span class="pill blue">میل / گرم</span></td>
+              <td>عطر، ادکلن، زعفران، قهوه، اسانس</td>
+              <td>دکانت ۵۰ میل، اسانس خالص ۱۰ گرم</td>
+            </tr>
+            <tr>
+              <td><span class="pill purple">بسته / باکس</span></td>
+              <td>فروش عمده، پک‌های ترکیبی و هدیه</td>
+              <td>پک کادویی ولنتاین، باکس ۶ عددی ادکلن مینی</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- DYNAMIC TOKENS TABLE -->
+        <div style="margin-top: 8px;">
+          <strong style="font-size: 11.8px; color: #0f172a;">قالب‌های هوشمند و متغیرهای داینامیک در متن پاسخ:</strong>
+          <p style="margin: 2px 0 5px 0; color: #64748b; font-size: 10.8px;">
+            با انتخاب محصول در کلیدواژه، متغیرهای زیر خودکار جایگزین می‌شوند و با تغییر قیمت در انبار، پاسخ ربات هم در همان لحظه آپدیت می‌شود:
+          </p>
+          <table class="sleek-table">
+            <thead>
+              <tr>
+                <th>متغیر هوشمند</th>
+                <th>اطلاعات جایگزین‌شده</th>
+                <th>نمونه خروجی دایرکت</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="pill blue">{product_name}</span></td>
+                <td>نام کالا در انبار</td>
+                <td>عطر تام فورد بلک ارکید</td>
+              </tr>
+              <tr>
+                <td><span class="pill green">{price}</span></td>
+                <td>قیمت با جداکننده ۳ رقمی</td>
+                <td>۲,۴۰۰,۰۰۰ تومان</td>
+              </tr>
+              <tr>
+                <td><span class="pill purple">{stock}</span></td>
+                <td>موجودی واقعی و لحظه‌ای انبار</td>
+                <td>۱۸</td>
+              </tr>
+              <tr>
+                <td><span class="pill amber">{unit}</span></td>
+                <td>واحد سنجش انتخابی کالا</td>
+                <td>میل / عدد / بسته</td>
+              </tr>
+              <tr>
+                <td><span class="pill">{description}</span></td>
+                <td>توضیحات و مشخصات کالا</td>
+                <td>رایحه گرم و شرقی با ماندگاری ۲۴ ساعته</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 6: FOLLOW GATE -->
+      <div class="card accent-indigo">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box">۶</div>
+            <span>دروازه فالو و پاسخ عمومی برای ۱۰۰٪ افراد (Follow Gate)</span>
+          </div>
+          <span class="pill purple">پشتیبانی کامل از غیرفالورها</span>
+        </div>
+        <div class="bento-grid-2">
+          <div class="step-list">
+            <div class="step-row">
+              <div class="step-badge">۱</div>
+              <div class="step-text">
+                <strong>پاسخ عمومی برای همه:</strong> ریپلای عمومی زیر کامنت به ۱۰۰٪ افراد (فالور و غیرفالور) داده می‌شود تا پست به اکسپلور برود.
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-badge">۲</div>
+              <div class="step-text">
+                <strong>قفل هوشمند محتوا:</strong> اگر کاربر پیج را فالو نکرده باشد، پیام قفل فالوگیت در دایرکت به او ارسال می‌شود.
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-badge">۳</div>
+              <div class="step-text">
+                <strong>دکمه‌های تعاملی:</strong> دکمه <span class="pill blue">مشاهده پیج 👀</span> برای فالو کردن و دکمه <span class="pill green">فالو کردم ✅</span> برای باز شدن قفل.
+              </div>
+            </div>
+          </div>
+          <div class="callout tip" style="margin: 0; display: flex; flex-direction: column; justify-content: center;">
+            <strong style="color: #065f46; font-size: 11.5px; margin-bottom: 4px;">🚀 نرخ تبدیل فوق‌العاده بالا:</strong>
+            <span>کاربر بدون نیاز به تایپ کلمه، فقط دکمه «فالو کردم ✅» را لمس می‌کند؛ ربات در کسری از ثانیه فالوور بودن او را تایید کرده و لینک خرید را آزاد می‌نماید!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer-bottom">
+      <span>پلتفرم اتوماسیون GramCRM — نسخه ۲.۳</span>
+      <span>صفحه ۳ از ۵</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4: ORDERS & RECEIPTS ==================== -->
+  <div class="doc-page">
+    <div>
+      <div class="page-header-bar">
+        <span class="brand-logo-text"><span>⚡</span> GramCRM User Guide</span>
+        <span>بخش ۷: مدیریت پیشرفته سفارشات، انبارداری اتمیک و فیش واریزی</span>
+      </div>
+
+      <!-- SECTION 7: ORDERS PIPELINE -->
+      <div class="card accent-indigo">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box">۷</div>
+            <span>سیستم سفارشات و انبارداری با قفل خوش‌بینانه (Orders Lifecycle)</span>
+          </div>
+          <span class="pill green">مدیریت اتوماتیک موجودی کالا</span>
+        </div>
+        <p style="margin: 0 0 6px 0; color: #475569; font-size: 11.2px;">
+          تمامی سفارش‌های مشتریان همراه با نام تحویل‌گیرنده، شماره تماس، آدرس و تعداد ثبت شده و چرخه ۴ مرحله‌ای را طی می‌کنند:
+        </p>
+
+        <!-- Visual Pipeline -->
+        <div class="order-pipeline">
+          <div class="pipeline-step active">
+            <div class="pipeline-dot">۱</div>
+            <span class="pipeline-title">pending</span>
+            <span class="pipeline-desc">در انتظار فیش</span>
+          </div>
+          <div class="pipeline-step active">
+            <div class="pipeline-dot" style="background:#10b981; color:white;">۲</div>
+            <span class="pipeline-title">confirmed</span>
+            <span class="pipeline-desc">تایید و کسر انبار</span>
+          </div>
+          <div class="pipeline-step active">
+            <div class="pipeline-dot" style="background:#0284c7; color:white;">۳</div>
+            <span class="pipeline-title">shipped</span>
+            <span class="pipeline-desc">ثبت کد رهگیری</span>
+          </div>
+          <div class="pipeline-step">
+            <div class="pipeline-dot" style="background:#f43f5e; color:white;">✕</div>
+            <span class="pipeline-title">cancelled</span>
+            <span class="pipeline-desc">برگشت به انبار</span>
+          </div>
+        </div>
+
+        <table class="sleek-table">
+          <thead>
+            <tr>
+              <th>وضعیت سفارش</th>
+              <th>رویداد خودکار در سیستم</th>
+              <th>وظیفه ادمین فروشگاه</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pill amber">pending (در انتظار)</span></td>
+              <td>سفارش ثبت شده و منتظر بررسی فیش است</td>
+              <td>بررسی واریزی بانکی یا تماس با مشتری</td>
+            </tr>
+            <tr>
+              <td><span class="pill green">confirmed (تایید شده)</span></td>
+              <td><strong>موجودی انبار کالا بلافاصله کسر می‌شود</strong></td>
+              <td>آماده‌سازی بسته جهت تحویل به پست یا پیک</td>
+            </tr>
+            <tr>
+              <td><span class="pill blue">shipped (ارسال شده)</span></td>
+              <td>ثبت <strong>کد پیگیری مرسوله (Tracking Code)</strong></td>
+              <td>کد رهگیری پست پیشتاز یا تیپاکس در سفارش درج می‌شود</td>
+            </tr>
+            <tr>
+              <td><span class="pill rose">cancelled (لغو شده)</span></td>
+              <td><strong>موجودی کسرشده خودکار به انبار بازمی‌گردد</strong></td>
+              <td>در صورت انصراف خریدار یا عدم واریز وجه</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION: RECEIPTS MANAGEMENT -->
+      <div class="card accent-emerald">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box emerald">🧾</div>
+            <span>آپلود و دانلود امن فیش واریزی (Receipt Management)</span>
+          </div>
+          <span class="pill blue">حداکثر ۵ مگابایت (PNG / JPG)</span>
+        </div>
+        <div class="bento-grid-2">
+          <div class="step-list">
+            <div class="step-row">
+              <div class="step-badge">۱</div>
+              <div class="step-text">
+                <strong>آپلود آسان فیش:</strong> تصویر رسید واریزی بانک را با یک کلیک روی سفارش بارگذاری کنید.
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-badge">۲</div>
+              <div class="step-text">
+                <strong>ذخیره‌سازی پایدار:</strong> فایل رسید باینری در دیتابیس محفوظ است و با حذف نرم‌افزار هم پاک نمی‌شود.
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-badge">۳</div>
+              <div class="step-text">
+                <strong>دانلود در لحظه:</strong> با کلیک روی مشاهده رسید، فایل اصلی با بالاترین کیفیت دانلود می‌شود.
+              </div>
+            </div>
+          </div>
+          <div class="callout info" style="margin: 0; display: flex; flex-direction: column; justify-content: center;">
+            <strong style="color: #1e40af; font-size: 11.5px; margin-bottom: 4px;">🔒 قفل هم‌زمانی (Optimistic Lock):</strong>
+            <span>اگر دو ادمین همزمان روی یک سفارش کار کنند، سیستم بر اساس شماره نسخه (<span class="pill">version</span>) از مغایرت مالی یا تایید دوباره جلوگیری می‌کند.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAMPLE ORDER CARD -->
+      <div class="card accent-purple" style="padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+          <div>
+            <strong style="color: #1e293b;">نمونه کارت سفارش در سیستم:</strong>
+            <span style="color: #64748b; margin-right: 6px;">سفارش #1042 • خریدار: علی رضایی • عطر مگاماره (۵۰ میل)</span>
+          </div>
+          <span class="pill green">confirmed (تایید و کسر انبار)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer-bottom">
+      <span>پلتفرم اتوماسیون GramCRM — نسخه ۲.۳</span>
+      <span>صفحه ۴ از ۵</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 5: CRM, BACKUP & FAQ ==================== -->
+  <div class="doc-page">
+    <div>
+      <div class="page-header-bar">
+        <span class="brand-logo-text"><span>⚡</span> GramCRM User Guide</span>
+        <span>بخش ۸، ۹ و ۱۰: صندوق گفتگوی زنده، بکاپ و سوالات متداول</span>
+      </div>
+
+      <!-- SECTION 8: CRM & BOT PAUSED -->
+      <div class="card accent-indigo">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box">۸</div>
+            <span>صندوق پیام‌ها (CRM) و توقف موقت ربات (Bot Paused)</span>
+          </div>
+          <span class="pill purple">ارتباط آنی وب‌سوکت</span>
+        </div>
+        <div class="step-list">
+          <div class="step-row">
+            <div class="step-badge">●</div>
+            <div class="step-text">
+              <strong>چت زنده بلادرنگ:</strong> پیام‌های مشتریان بدون رفرش صفحه و به کمک پروتکل WebSocket در همان ثانیه در پنل ظاهر می‌شوند.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">●</div>
+            <div class="step-text">
+              <strong>پاسخ دستی ادمین:</strong> از داخل پنل مستقیماً پاسخ تایپ کنید؛ پیام با اکانت رسمی پیج در دایرکت مشتری ارسال می‌شود.
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-badge">●</div>
+            <div class="step-text">
+              <strong>توقف هوشمند ربات برای مشتری خاص (<span class="pill purple">bot_paused</span>):</strong>
+              اگر می‌خواهید خودتان شخصاً با یک مشتری چت کنید و مایل نیستید ربات به کلمات او پاسخ اتوماتیک دهد، فقط برای همان یک مشتری ربات را متوقف کنید؛ ربات برای بقیه کاربران پیج طبق روال فعال می‌ماند!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 9: BACKUP & UPDATES -->
+      <div class="card accent-cyan">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box cyan">۹</div>
+            <span>پشتیبان‌گیری دیتابیس (JSON) و به‌روزرسانی ۱ کلیکی</span>
+          </div>
+          <span class="pill green">بازیابی امن بدون کدنویسی</span>
+        </div>
+        <div class="bento-grid-2">
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 10px 13px;">
+            <strong style="color: #0f172a; font-size: 11.5px; display: block; margin-bottom: 4px;">📥 دانلود فایل پشتیبان دیتابیس</strong>
+            <span style="color: #475569; font-size: 10.5px;">در تب تنظیمات با ۱ کلیک کل مشتریان، محصولات، سفارشات و کلیدواژه‌ها را در قالب فایل JSON دانلود کنید.</span>
+          </div>
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 10px 13px;">
+            <strong style="color: #0f172a; font-size: 11.5px; display: block; margin-bottom: 4px;">🔄 آپدیت آنلاین سیستم (1-Click)</strong>
+            <span style="color: #475569; font-size: 10.5px;">با زدن دکمه «بررسی به‌روزرسانی»، سیستم بدون نیاز به ترمینال در چند ثانیه به آخرین نسخه پایدار ارتقا می‌یابد.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 10: FAQ -->
+      <div class="card accent-rose">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="icon-box amber">۱۰</div>
+            <span>پرسش‌های پرتکرار ادمین‌ها و فروشگاه‌ها</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #fdf2f8; border: 1.5px solid #fbcfe8; border-radius: 9px; padding: 8px 12px;">
+            <strong style="color: #9d174d; font-size: 11.5px;">سؤال: آیا اگر مشتری کلمه را با حروف عربی (ي/ك) بفرستد ربات متوجه می‌شود؟</strong>
+            <p style="margin: 2px 0 0 0; color: #475569; font-size: 11px;">
+              <strong>پاسخ:</strong> بله! موتور نرمال‌سازی هوشمند GramCRM کلیه حروف عربی، فارسی، فواصل و اعداد انگلیسی/فارسی (۱۲۳ و 123) را یکدست کرده و دقیق پاسخ می‌دهد.
+            </p>
+          </div>
+          <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 9px; padding: 8px 12px;">
+            <strong style="color: #166534; font-size: 11.5px;">سؤال: چگونه این فایل راهنمای PDF را از پنل دانلود کنم؟</strong>
+            <p style="margin: 2px 0 0 0; color: #475569; font-size: 11px;">
+              <strong>پاسخ:</strong> در بالای پنل وب دکمه <strong>«📖 دانلود فایل راهنما»</strong> قرار دارد؛ همچنین در مرورگر با باز کردن آدرس <span class="pill">/guide.pdf</span> مستقیماً دانلود می‌شود.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOLDEN FOOTER -->
+      <div style="background: linear-gradient(135deg, #090d16 0%, #1e1b4b 100%); color: white; border-radius: 12px; padding: 11px 16px; text-align: center; margin-top: 6px;">
+        <strong style="font-size: 12px; color: #38bdf8;">✨ با GramCRM، هیچ مشتری و سفارشی را حتی در زمان خواب از دست نخواهید داد!</strong>
+        <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">پلتفرم اختصاصی اتوماسیون هوشمند فروش اینستاگرام • پشتیبانی فنی ۲۴ ساعته</div>
+      </div>
+    </div>
+
+    <div class="doc-footer-bottom">
+      <span>پلتفرم اتوماسیون GramCRM — نسخه ۲.۳</span>
+      <span>صفحه ۵ از ۵</span>
+    </div>
   </div>
 
 </body>

@@ -195,6 +195,14 @@ def favicon():
     raise HTTPException(status_code=404, detail="Favicon not found")
 
 
+@app.get("/favicon.png", include_in_schema=False)
+def favicon_png():
+    icon_path = PANEL_DIR / "favicon-32x32.png"
+    if icon_path.exists():
+        return FileResponse(path=str(icon_path), media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
 @app.get("/", include_in_schema=False)
 def root():
     return RedirectResponse(url="/panel")

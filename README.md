@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="GramCRM Logo" width="130" height="130" style="border-radius: 30px; box-shadow: 0 12px 36px rgba(99, 102, 241, 0.4);" />
+<img src="logo.png" alt="GramCRM Logo" width="130" height="130" />
 
 # ⚡ GramCRM
 ### پلتفرم جامع اتوماسیون هوشمند دایرکت، کامنت و مدیریت فروش اینستاگرام

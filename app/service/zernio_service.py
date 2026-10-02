@@ -307,7 +307,7 @@ class ZernioService:
             logger.error(f"Error deleting Zernio automation {automation_id}: {e}")
             return False
 
-    def sync_all_keywords(self, db: Session) -> dict:
+    def sync_all_keywords(self, db: Session, force_recreate: bool = False) -> dict:
         """
         همگام‌سازی کامل کلیدواژه‌های دیتابیس با اتوماسیون‌های کامنت Zernio
         شامل دکمه‌های لینک‌دار و قفل فالو دو دکمه‌ای
@@ -348,6 +348,9 @@ class ZernioService:
             if existing and not existing_id:
                 logger.warning("Automation %s has no id; skipping to avoid a duplicate", auto_name)
                 continue
+            if force_recreate and existing_id:
+                self.delete_comment_automation(existing_id)
+                existing_id = None
 
             created = self.create_comment_automation(
                 name=auto_name,

@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON, F
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
+from app.models.product import Product  # noqa: F401
 
 
 class Keyword(Base):

@@ -269,6 +269,20 @@ function deliveryLabel(status) {
   return labels[status] || "نامشخص";
 }
 
+function formatDeliveryError(err) {
+  if (!err) return "";
+  if (err.includes("Already sent DM to this commenter")) {
+    return "این کاربر قبلاً این دایرکت را دریافت کرده (جهت ضد اسپم اینستاگرام مجدداً فرستاده نمی‌شود). برای تست مجدد، دکمه «ریست و همگام‌سازی تست» را بزنید.";
+  }
+  if (err.includes("Follow gate already pending")) {
+    return "پیام قفل فالو قبلاً برای کاربر فرستاده شده و منتظر لمس دکمه است.";
+  }
+  if (err.includes("not_follower") || err.includes("Audience rule: not_follower")) {
+    return "کاربر پیج را فالو نکرده است.";
+  }
+  return err;
+}
+
 function renderKeywordDelivery(result, keyword) {
   if (!result) return '<span class="muted">در حال استعلام…</span>';
   const states = {
@@ -293,8 +307,8 @@ function renderKeywordDelivery(result, keyword) {
       const replyClass = event.reply_status === "sent" ? "ok" : event.reply_status === "failed" ? "bad" : "pending";
       lines.push(`<span class="${replyClass}" title="${esc(event.reply_error || "")}">آخرین ریپلای: ${esc(deliveryLabel(event.reply_status))}</span>`);
     }
-    if (event.dm_error) lines.push(`<span class="bad">${esc(event.dm_error)}</span>`);
-    if (event.reply_error) lines.push(`<span class="bad">${esc(event.reply_error)}</span>`);
+    if (event.dm_error) lines.push(`<span class="bad" style="font-size:0.75rem;line-height:1.4;">${esc(formatDeliveryError(event.dm_error))}</span>`);
+    if (event.reply_error) lines.push(`<span class="bad" style="font-size:0.75rem;line-height:1.4;">${esc(formatDeliveryError(event.reply_error))}</span>`);
     if (event.created_at) lines.push(`<span class="muted">${esc(fmtTime(event.created_at))}</span>`);
   } else {
     lines.push('<span class="muted">در ۱۰ رویداد اخیر کامنتی ثبت نشده</span>');
@@ -330,6 +344,29 @@ async function loadKeywordDiagnostics() {
 }
 
 document.getElementById("keyword-refresh-diagnostics")?.addEventListener("click", loadKeywordDiagnostics);
+document.getElementById("keyword-resync-zernio")?.addEventListener("click", async () => {
+  const btn = document.getElementById("keyword-resync-zernio");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "در حال بازسازی…";
+  }
+  try {
+    const res = await api("/keywords/sync-zernio?reset=true", { method: "POST" });
+    if (res && res.success) {
+      toast("اتوماسیون‌ها با موفقیت در زرنیو ریست و تازه شدند. اکنون می‌توانید مجدداً از همان اکانت تست کنید ✅");
+      await loadKeywords();
+    } else {
+      toast("خطا در همگام‌سازی زرنیو", true);
+    }
+  } catch (e) {
+    toast("خطا در اتصال به سرور", true);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "🔄 ریست و همگام‌سازی تست";
+    }
+  }
+});
 
 document.getElementById("keyword-preview-btn")?.addEventListener("click", async () => {
   const result = document.getElementById("keyword-preview-result");

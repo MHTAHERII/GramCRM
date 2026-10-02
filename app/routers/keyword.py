@@ -119,9 +119,9 @@ def get_keyword_diagnostics(db: Session = Depends(get_db)):
 
 
 @router.post("/sync-zernio", summary="همگام‌سازی کلیدواژه‌ها با اتوماسیون کامنت به دایرکت Zernio")
-def sync_keywords_zernio(db: Session = Depends(get_db)):
+def sync_keywords_zernio(reset: bool = False, db: Session = Depends(get_db)):
     """ارسال تمام کلیدواژه‌های فعال به Zernio برای ارسال خودکار دایرکت در صورت کامنت شدن کلیدواژه"""
-    return zernio_service.sync_all_keywords(db)
+    return zernio_service.sync_all_keywords(db, force_recreate=reset)
 
 
 @router.put("/{keyword_id}", response_model=KeywordResponse)

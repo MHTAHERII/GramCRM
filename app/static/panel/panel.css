@@ -643,3 +643,21 @@ input:invalid:not(:placeholder-shown) { border-color: rgba(239, 68, 68, 0.4); }
 .log-line.WARNING { color: #facc15; }
 .log-line.ERROR { color: #f87171; }
 .log-line.SUCCESS { color: #34d399; }
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  display: block;
+  object-fit: cover;
+  filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.4));
+}
+
+.login-logo-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  display: block;
+  object-fit: cover;
+  filter: drop-shadow(0 6px 20px rgba(99, 102, 241, 0.5));
+}

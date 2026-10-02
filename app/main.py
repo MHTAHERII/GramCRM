@@ -187,6 +187,14 @@ app.include_router(system_router)
 app.include_router(websocket_router)
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    icon_path = PANEL_DIR / "favicon.ico"
+    if icon_path.exists():
+        return FileResponse(path=str(icon_path), media_type="image/x-icon")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
 @app.get("/", include_in_schema=False)
 def root():
     return RedirectResponse(url="/panel")

@@ -9,7 +9,15 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="alternate icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="panel.css?v=2.3.3">
+  <link rel="stylesheet" href="panel.css?v=2.3.4">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("gramcrm_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -105,6 +113,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
             <span>جستجو</span>
             <kbd>⌘K</kbd>
+          </button>
+          <button id="theme-toggle-btn" class="btn small ghost" type="button" aria-label="تغییر پوسته" title="تغییر تم به روشن یا تاریک" style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;padding:7px 12px;">
+            <span id="theme-icon">🌙</span>
+            <span id="theme-text">تاریک</span>
           </button>
           <span class="user-chip"><span class="user-avatar">GC</span><span>GramCRM Admin</span></span>
         </div>
@@ -699,6 +711,6 @@
     })();
   </script>
 
-  <script src="panel.js?v=2.3.3"></script>
+  <script src="panel.js?v=2.3.4"></script>
 </body>
 </html>

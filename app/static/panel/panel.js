@@ -1916,9 +1916,39 @@ function initCharCounters() {
   setupCharCounter("chat-input", "chat-input-counter", 640);
 }
 
+/* ---------------- مدیریت تم (تاریک / روشن) ---------------- */
+
+function initTheme() {
+  const saved = localStorage.getItem("gramcrm_theme") || "dark";
+  applyTheme(saved, false);
+
+  document.getElementById("theme-toggle-btn")?.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = current === "light" ? "dark" : "light";
+    applyTheme(next, true);
+  });
+}
+
+function applyTheme(theme, notify = false) {
+  document.documentElement.setAttribute("data-theme", theme);
+  try {
+    localStorage.setItem("gramcrm_theme", theme);
+  } catch (e) {}
+
+  const icon = document.getElementById("theme-icon");
+  const text = document.getElementById("theme-text");
+  if (icon) icon.textContent = theme === "light" ? "☀️" : "🌙";
+  if (text) text.textContent = theme === "light" ? "روشن" : "تاریک";
+
+  if (notify) {
+    showToast(theme === "light" ? "تم روشن فعال شد ☀️" : "تم تاریک فعال شد 🌙", "info");
+  }
+}
+
 /* ---------------- راه‌اندازی ---------------- */
 
 async function init() {
+  initTheme();
   initCharCounters();
   try {
     const settings = await api("/settings/");

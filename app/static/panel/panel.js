@@ -76,6 +76,8 @@ function showToast(message, type = "") {
     toast.classList.add("hidden");
   }, 3200);
 }
+const toast = showToast;
+window.toast = showToast;
 
 function flashButtonSuccess(btn, originalText = null, successText = "✓ ذخیره شد") {
   if (!btn) return;
@@ -353,13 +355,13 @@ document.getElementById("keyword-resync-zernio")?.addEventListener("click", asyn
   try {
     const res = await api("/keywords/sync-zernio?reset=true", { method: "POST" });
     if (res && res.success) {
-      toast("اتوماسیون‌ها با موفقیت در زرنیو ریست و تازه شدند. اکنون می‌توانید مجدداً از همان اکانت تست کنید ✅");
+      showToast("اتوماسیون‌ها با موفقیت در زرنیو ریست و تازه شدند. اکنون می‌توانید مجدداً از همان اکانت تست کنید ✅", "success");
       await loadKeywords();
     } else {
-      toast("خطا در همگام‌سازی زرنیو", true);
+      showToast("خطا در همگام‌سازی زرنیو", "error");
     }
   } catch (e) {
-    toast("خطا در اتصال به سرور", true);
+    showToast("خطا در اتصال به سرور: " + (e.message || e), "error");
   } finally {
     if (btn) {
       btn.disabled = false;

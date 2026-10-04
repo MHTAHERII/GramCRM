@@ -298,6 +298,54 @@
                 </p>
                 <div id="keyword-buttons-container"></div>
               </div>
+
+              <!-- چرخش و تنوع متن‌ها برای ضد اسپم -->
+              <div class="keyword-variations-section" style="margin-top: 14px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 10px;">
+                <div style="margin-bottom: 8px;">
+                  <span style="font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                    🎲 چرخش و تنوع متن‌ها (ضد اسپم و جلوگیری از بلاک)
+                  </span>
+                </div>
+                <p class="hint" style="font-size: 0.76rem; margin-bottom: 12px; line-height: 1.5;">
+                  برای اینکه اینستاگرام رفتار را طبیعی تشخیص دهد، می‌توانید چند متن جایگزین وارد کنید (هر خط یک متن، حداکثر ۵ مورد). ربات برای هر کاربر یکی از متن‌ها را به صورت تصادفی ارسال خواهد کرد.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                  <div class="field" style="margin-bottom: 0;">
+                    <label for="keyword-comment-variations-input" style="font-size: 0.78rem;">متن‌های متناوب ریپلای کامنت (هر خط یک پاسخ)</label>
+                    <textarea id="keyword-comment-variations-input" rows="3" placeholder="متن ۲ (مثلاً: دایرکت رو چک کن عزیزم 🌸)&#10;متن ۳ (مثلاً: براتون ارسال شد ✨)&#10;متن ۴ (مثلاً: پیام رو توی دایرکت فرستادم 📩)"></textarea>
+                  </div>
+                  <div class="field" style="margin-bottom: 0;">
+                    <label for="keyword-dm-variations-input" style="font-size: 0.78rem;">متن‌های متناوب دایرکت (هر خط یک پیام)</label>
+                    <textarea id="keyword-dm-variations-input" rows="3" placeholder="پیام ۲ دایرکت...&#10;پیام ۳ دایرکت..."></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- تنظیمات تأخیر زمانی هوشمند و اتصال به پست خاص -->
+              <div class="keyword-delays-section" style="margin-top: 14px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 10px;">
+                <div style="margin-bottom: 8px;">
+                  <span style="font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                    ⏱️ تأخیر زمانی هوشمند و هدف‌گیری ریلز/پست (اختیاری)
+                  </span>
+                </div>
+                <p class="hint" style="font-size: 0.76rem; margin-bottom: 12px; line-height: 1.5;">
+                  با تنظیم تأخیر، پیام‌ها بلافاصله ارسال نمی‌شوند و فاصله‌ای طبیعی (مشابه تایپ انسان) اعمال می‌شود. اگر شناسه پست خالی باشد، روی تمام پست‌ها و ریلزهای پیج فعال خواهد بود.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                  <div class="field" style="margin-bottom: 0;">
+                    <label for="keyword-comment-delay-input" style="font-size: 0.78rem;">تأخیر ریپلای کامنت (ثانیه)</label>
+                    <input id="keyword-comment-delay-input" type="number" min="0" max="3600" placeholder="مثلاً: 5" value="0">
+                  </div>
+                  <div class="field" style="margin-bottom: 0;">
+                    <label for="keyword-dm-delay-input" style="font-size: 0.78rem;">تأخیر ارسال دایرکت (ثانیه)</label>
+                    <input id="keyword-dm-delay-input" type="number" min="0" max="3600" placeholder="مثلاً: 25" value="0">
+                  </div>
+                  <div class="field" style="margin-bottom: 0;">
+                    <label for="keyword-platform-post-id-input" style="font-size: 0.78rem;">شناسه پست/ریلز مشخص (اختیاری)</label>
+                    <input id="keyword-platform-post-id-input" type="text" placeholder="مثلاً: 17982345678...">
+                  </div>
+                </div>
+              </div>
               <div class="keyword-preview">
                 <label for="keyword-preview-text">تست متن کامنت قبل از ذخیره</label>
                 <div class="keyword-preview-controls">

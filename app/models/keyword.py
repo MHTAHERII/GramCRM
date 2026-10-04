@@ -48,6 +48,17 @@ class Keyword(Base):
         default=list
     )
 
+    # تنظیمات تاخیر هوشمند برای رفتار طبیعی
+    comment_reply_delay_seconds = Column(Integer, nullable=True, default=0)
+    dm_delay_seconds = Column(Integer, nullable=True, default=0)
+
+    # چرخش و تنوع متن‌ها برای جلوگیری از اسپم
+    comment_reply_variations = Column(JSON, nullable=True, default=list)
+    dm_message_variations = Column(JSON, nullable=True, default=list)
+
+    # اتصال به شناسه پست یا ریلز خاص اینستاگرام (اختیاری)
+    platform_post_id = Column(String(100), nullable=True)
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow

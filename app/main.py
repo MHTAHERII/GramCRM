@@ -40,7 +40,14 @@ def run_schema_migrations() -> None:
     additions = {
         "products": {"unit": "VARCHAR(30) NOT NULL DEFAULT 'عدد'"},
         "customers": {"bot_paused": "BOOLEAN NOT NULL DEFAULT FALSE"},
-        "keywords": {"product_id": "INTEGER REFERENCES products(id)"},
+        "keywords": {
+            "product_id": "INTEGER REFERENCES products(id)",
+            "comment_reply_delay_seconds": "INTEGER DEFAULT 0",
+            "dm_delay_seconds": "INTEGER DEFAULT 0",
+            "comment_reply_variations": "JSON",
+            "dm_message_variations": "JSON",
+            "platform_post_id": "VARCHAR(100)",
+        },
     }
     with engine.begin() as conn:
         for table_name, columns in additions.items():
@@ -91,6 +98,21 @@ def run_schema_migrations() -> None:
             ))
             conn.execute(text(
                 "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS comment_reply TEXT;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS comment_reply_delay_seconds INTEGER DEFAULT 0;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS dm_delay_seconds INTEGER DEFAULT 0;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS comment_reply_variations JSON;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS dm_message_variations JSON;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE keywords ADD COLUMN IF NOT EXISTS platform_post_id VARCHAR(100);"
             ))
             conn.execute(text(
                 "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS admin_username VARCHAR(100) DEFAULT 'admin';"

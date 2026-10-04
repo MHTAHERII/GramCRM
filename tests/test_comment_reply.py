@@ -197,5 +197,54 @@ class CommentReplyTests(unittest.TestCase):
             engine.dispose()
 
 
+    def test_create_comment_automation_with_delays_variations_and_post_target(self):
+        service = ZernioService()
+        service.api_key, service.account_id, service.profile_id = "test-key", "test-account", "test-profile"
+        response = SimpleNamespace(status_code=201, json=lambda: {"id": "test-automation"})
+        with patch("app.service.zernio_service.requests.post", return_value=response) as post:
+            service.create_comment_automation(
+                name="KW_1_7", keywords=["7"], dm_message="DM",
+                comment_reply="ریپلای اصلی",
+                comment_reply_delay_seconds=15,
+                dm_delay_seconds=45,
+                comment_reply_variations=["ریپلای ۲", "ریپلای ۳"],
+                dm_message_variations=["دایرکت ۲"],
+                platform_post_id="17912345678901234"
+            )
+        payload = post.call_args.kwargs["json"]
+        self.assertEqual(payload["commentReplyDelaySeconds"], 15)
+        self.assertEqual(payload["dmDelaySeconds"], 45)
+        self.assertEqual(payload["commentReplyVariations"], ["ریپلای ۲", "ریپلای ۳"])
+        self.assertEqual(payload["dmMessageVariations"], ["دایرکت ۲"])
+        self.assertEqual(payload["platformPostId"], "17912345678901234")
+
+    def test_sync_passes_delays_variations_and_post_id_to_automation(self):
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(engine)
+        try:
+            with Session(engine) as db:
+                db.add(Keyword(
+                    keyword="7", response="DM", comment_reply="ریپلای", active=True,
+                    comment_reply_delay_seconds=10, dm_delay_seconds=30,
+                    comment_reply_variations=["متن ۲", "متن ۳"],
+                    dm_message_variations=["پیام ۲"],
+                    platform_post_id="post_999"
+                ))
+                db.commit()
+                service = ZernioService()
+                service.api_key, service.account_id, service.profile_id = "k", "a", "p"
+                with patch.object(service, "list_comment_automations", return_value=[]), \
+                     patch.object(service, "create_comment_automation", return_value={"id": "x"}) as create, \
+                     patch("time.sleep"):
+                    service.sync_all_keywords(db)
+                self.assertEqual(create.call_args.kwargs["comment_reply_delay_seconds"], 10)
+                self.assertEqual(create.call_args.kwargs["dm_delay_seconds"], 30)
+                self.assertEqual(create.call_args.kwargs["comment_reply_variations"], ["متن ۲", "متن ۳"])
+                self.assertEqual(create.call_args.kwargs["dm_message_variations"], ["پیام ۲"])
+                self.assertEqual(create.call_args.kwargs["platform_post_id"], "post_999")
+        finally:
+            engine.dispose()
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -539,7 +539,14 @@ async function loadKeywords() {
       : (k.button_title && k.button_url ? [{ title: k.button_title, url: k.button_url }] : []);
     return `
       <tr>
-        <td class="kw-text">${esc(k.keyword)}</td>
+        <td class="kw-text">
+          <div style="font-weight: 600;">${esc(k.keyword)}</div>
+          <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; font-size:0.73rem;">
+            ${(k.comment_reply_delay_seconds > 0 || k.dm_delay_seconds > 0) ? `<span style="padding:2px 6px; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); border-radius:4px;" title="تأخیر ریپلای/دایرکت">⏱️ ${k.comment_reply_delay_seconds || 0}s / ${k.dm_delay_seconds || 0}s</span>` : ""}
+            ${((k.comment_reply_variations && k.comment_reply_variations.length) || (k.dm_message_variations && k.dm_message_variations.length)) ? `<span style="padding:2px 6px; background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3); border-radius:4px;" title="چرخش متن‌های متناوب">🎲 ${(k.comment_reply_variations?.length || 0) + (k.dm_message_variations?.length || 0)} تنوع</span>` : ""}
+            ${k.platform_post_id ? `<span style="padding:2px 6px; background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); border-radius:4px;" title="محدود به پست خاص">🎯 ${esc(k.platform_post_id)}</span>` : ""}
+          </div>
+        </td>
         <td class="kw-response">
           <div>${esc(k.response)}</div>
           ${btns.length ? `
@@ -602,6 +609,11 @@ function startEditKeyword(id) {
   document.getElementById("keyword-input").value = k.keyword || "";
   document.getElementById("keyword-response-input").value = k.response || "";
   document.getElementById("keyword-comment-reply-input").value = k.comment_reply || "";
+  document.getElementById("keyword-comment-delay-input").value = k.comment_reply_delay_seconds || 0;
+  document.getElementById("keyword-dm-delay-input").value = k.dm_delay_seconds || 0;
+  document.getElementById("keyword-platform-post-id-input").value = k.platform_post_id || "";
+  document.getElementById("keyword-comment-variations-input").value = (k.comment_reply_variations || []).join("\n");
+  document.getElementById("keyword-dm-variations-input").value = (k.dm_message_variations || []).join("\n");
   document.getElementById("keyword-response-input").dispatchEvent(new Event("input"));
   document.getElementById("keyword-comment-reply-input").dispatchEvent(new Event("input"));
 
@@ -632,6 +644,11 @@ function resetKeywordForm() {
   document.getElementById("keyword-form").reset();
   document.getElementById("keyword-preview-result").classList.add("hidden");
   document.getElementById("keyword-comment-reply-input").value = "";
+  document.getElementById("keyword-comment-delay-input").value = 0;
+  document.getElementById("keyword-dm-delay-input").value = 0;
+  document.getElementById("keyword-platform-post-id-input").value = "";
+  document.getElementById("keyword-comment-variations-input").value = "";
+  document.getElementById("keyword-dm-variations-input").value = "";
   document.getElementById("keyword-response-input").dispatchEvent(new Event("input"));
   document.getElementById("keyword-comment-reply-input").dispatchEvent(new Event("input"));
   const container = document.getElementById("keyword-buttons-container");
@@ -672,6 +689,14 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
   });
 
   const commentReplyVal = document.getElementById("keyword-comment-reply-input").value.trim();
+  const crVars = document.getElementById("keyword-comment-variations-input").value
+    .split("\n").map(s => s.trim()).filter(Boolean);
+  const dmVars = document.getElementById("keyword-dm-variations-input").value
+    .split("\n").map(s => s.trim()).filter(Boolean);
+  const crDelay = parseInt(document.getElementById("keyword-comment-delay-input").value, 10) || 0;
+  const dmDelay = parseInt(document.getElementById("keyword-dm-delay-input").value, 10) || 0;
+  const postId = document.getElementById("keyword-platform-post-id-input").value.trim() || null;
+
   const body = JSON.stringify({
     keyword: document.getElementById("keyword-input").value.trim(),
     response: document.getElementById("keyword-response-input").value.trim(),
@@ -679,6 +704,11 @@ document.getElementById("keyword-form").addEventListener("submit", async (e) => 
     buttons: buttons,
     button_title: buttons.length ? buttons[0].title : null,
     button_url: buttons.length ? buttons[0].url : null,
+    comment_reply_delay_seconds: crDelay,
+    dm_delay_seconds: dmDelay,
+    comment_reply_variations: crVars,
+    dm_message_variations: dmVars,
+    platform_post_id: postId,
   });
 
   try {

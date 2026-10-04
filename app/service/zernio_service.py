@@ -177,12 +177,20 @@ class ZernioService:
         follow_gate_message: str | None = None,
         follow_gate_buttons: list[dict] | None = None,
         comment_reply: str | None = None,
-        automation_id: str | None = None
+        automation_id: str | None = None,
+        comment_reply_delay_seconds: int | None = None,
+        dm_delay_seconds: int | None = None,
+        comment_reply_variations: list[str] | None = None,
+        dm_message_variations: list[str] | None = None,
+        platform_post_id: str | None = None
     ) -> dict | None:
         """
         ساخت اتوماسیون جدید کامنت به دایرکت:
         - اگر follow_gate_message ست باشد: اینستاگرام پیام قفل فالو با دو دکمه تعاملی می‌فرستد.
         - اگر buttons یا button_title/button_url ست باشد: پیام نهایی همراه با دکمه‌های لینک‌دار شکیل (تا ۳ دکمه) ارسال می‌شود.
+        - تاخیر زمانی (Delays) برای طبیعی‌سازی رفتار ارسال.
+        - چرخش متن‌ها (Variations) برای جلوگیری از تشخیص اسپم توسط اینستاگرام.
+        - اتصال به پست یا ریلز مشخص (platformPostId).
         """
         if not self.is_configured():
             logger.warning("Zernio is not configured.")
@@ -212,6 +220,37 @@ class ZernioService:
             payload["commentReply"] = public_reply
         elif automation_id:
             payload["commentReply"] = ""
+
+        # تنظیمات تاخیر زمانی هوشمند (Delays)
+        if comment_reply_delay_seconds and comment_reply_delay_seconds > 0:
+            payload["commentReplyDelaySeconds"] = int(comment_reply_delay_seconds)
+        elif automation_id:
+            payload["commentReplyDelaySeconds"] = 0
+
+        if dm_delay_seconds and dm_delay_seconds > 0:
+            payload["dmDelaySeconds"] = int(dm_delay_seconds)
+        elif automation_id:
+            payload["dmDelaySeconds"] = 0
+
+        # چرخش و تنوع متن‌های ریپلای کامنت (حداکثر ۵ مورد)
+        clean_cr_vars = [v.strip()[:640] for v in (comment_reply_variations or []) if v.strip()]
+        if clean_cr_vars:
+            payload["commentReplyVariations"] = clean_cr_vars[:5]
+        elif automation_id:
+            payload["commentReplyVariations"] = []
+
+        # چرخش و تنوع متن‌های دایرکت (حداکثر ۵ مورد)
+        clean_dm_vars = [v.strip()[:640] for v in (dm_message_variations or []) if v.strip()]
+        if clean_dm_vars:
+            payload["dmMessageVariations"] = clean_dm_vars[:5]
+        elif automation_id:
+            payload["dmMessageVariations"] = []
+
+        # اتصال به پست یا ریلز مشخص (در صورت خالی بودن روی کل پیج اعمال می‌شود)
+        if platform_post_id and platform_post_id.strip():
+            payload["platformPostId"] = platform_post_id.strip()
+        elif automation_id:
+            payload["platformPostId"] = None
 
         # افزودن دکمه‌های لینک‌دار یا تعاملی (حداکثر ۳ دکمه طبق استاندارد اینستاگرام)
         formatted_buttons = []
@@ -363,7 +402,12 @@ class ZernioService:
                 button_url=kw.button_url,
                 follow_gate_message=fg_msg,
                 follow_gate_buttons=fg_buttons,
-                automation_id=existing_id
+                automation_id=existing_id,
+                comment_reply_delay_seconds=kw.comment_reply_delay_seconds,
+                dm_delay_seconds=kw.dm_delay_seconds,
+                comment_reply_variations=kw.comment_reply_variations,
+                dm_message_variations=kw.dm_message_variations,
+                platform_post_id=kw.platform_post_id,
             )
             if created:
                 synced_count += 1

@@ -16,6 +16,11 @@ class KeywordBase(BaseModel):
     button_title: str | None = None
     button_url: str | None = None
     buttons: list[KeywordButton] | None = None
+    comment_reply_delay_seconds: int | None = Field(default=0, ge=0, le=86400)
+    dm_delay_seconds: int | None = Field(default=0, ge=0, le=86400)
+    comment_reply_variations: list[str] | None = None
+    dm_message_variations: list[str] | None = None
+    platform_post_id: str | None = None
 
     @field_validator("keyword", "response")
     @classmethod
@@ -40,6 +45,11 @@ class KeywordUpdate(BaseModel):
     button_title: str | None = None
     button_url: str | None = None
     buttons: list[KeywordButton] | None = None
+    comment_reply_delay_seconds: int | None = Field(default=None, ge=0, le=86400)
+    dm_delay_seconds: int | None = Field(default=None, ge=0, le=86400)
+    comment_reply_variations: list[str] | None = None
+    dm_message_variations: list[str] | None = None
+    platform_post_id: str | None = None
     active: bool | None = None
 
 

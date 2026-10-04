@@ -76,6 +76,9 @@ def create_keyword(
     elif keyword.button_title and keyword.button_url:
         btn_list.append({"title": keyword.button_title.strip(), "url": keyword.button_url.strip(), "type": "url"})
 
+    reply_variations = [v.strip() for v in (keyword.comment_reply_variations or []) if v.strip()]
+    dm_variations = [v.strip() for v in (keyword.dm_message_variations or []) if v.strip()]
+
     new_keyword = Keyword(
         product_id=keyword.product_id,
         keyword=keyword.keyword.strip(),
@@ -83,7 +86,12 @@ def create_keyword(
         comment_reply=(keyword.comment_reply or "").strip() or None,
         buttons=btn_list if btn_list else None,
         button_title=btn_list[0]["title"] if btn_list else None,
-        button_url=btn_list[0]["url"] if btn_list else None
+        button_url=btn_list[0]["url"] if btn_list else None,
+        comment_reply_delay_seconds=keyword.comment_reply_delay_seconds or 0,
+        dm_delay_seconds=keyword.dm_delay_seconds or 0,
+        comment_reply_variations=reply_variations if reply_variations else None,
+        dm_message_variations=dm_variations if dm_variations else None,
+        platform_post_id=keyword.platform_post_id.strip() if keyword.platform_post_id and keyword.platform_post_id.strip() else None,
     )
 
     db.add(new_keyword)
@@ -178,6 +186,23 @@ def update_keyword(
 
     if keyword_data.active is not None:
         keyword.active = keyword_data.active
+
+    if "comment_reply_delay_seconds" in keyword_data.model_fields_set:
+        keyword.comment_reply_delay_seconds = keyword_data.comment_reply_delay_seconds or 0
+
+    if "dm_delay_seconds" in keyword_data.model_fields_set:
+        keyword.dm_delay_seconds = keyword_data.dm_delay_seconds or 0
+
+    if "comment_reply_variations" in keyword_data.model_fields_set:
+        variations = [v.strip() for v in (keyword_data.comment_reply_variations or []) if v.strip()]
+        keyword.comment_reply_variations = variations if variations else None
+
+    if "dm_message_variations" in keyword_data.model_fields_set:
+        variations = [v.strip() for v in (keyword_data.dm_message_variations or []) if v.strip()]
+        keyword.dm_message_variations = variations if variations else None
+
+    if "platform_post_id" in keyword_data.model_fields_set:
+        keyword.platform_post_id = keyword_data.platform_post_id.strip() if keyword_data.platform_post_id and keyword_data.platform_post_id.strip() else None
 
     db.commit()
     db.refresh(keyword)

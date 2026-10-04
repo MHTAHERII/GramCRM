@@ -242,10 +242,10 @@ class ZernioService:
         elif automation_id:
             payload["buttons"] = []
 
-        # افزودن قفل فالو طبق استاندارد رسمی Zernio
+        # افزودن قفل فالو طبق استاندارد رسمی Zernio (فقط فالوورها مستقیماً پیام را دریافت می‌کنند)
         if follow_gate_message:
             payload["audience"] = {
-                "followerStatus": "any",
+                "followerStatus": "follower",
                 "whenUnknown": "verify"
             }
             btn_label = "فالو کردم ✅"
@@ -263,6 +263,7 @@ class ZernioService:
             }
         elif automation_id:
             payload["audience"] = {"followerStatus": "any", "whenUnknown": "send"}
+            payload["followGate"] = None
 
         try:
             if automation_id:

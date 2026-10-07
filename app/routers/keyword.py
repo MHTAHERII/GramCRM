@@ -16,6 +16,7 @@ from app.schemas.keyword import (
     KeywordResponse
 )
 from app.service.zernio_service import zernio_service
+from app.service.automation_service import automation_service
 from app.service.keyword_diagnostics import keyword_delivery_statuses, preview_comment
 
 router = APIRouter(
@@ -35,18 +36,24 @@ class KeywordPreviewRequest(BaseModel):
     draft_active: bool = True
 
 
-def _sync_zernio_bg():
-    """همگام‌سازی کلیدواژه‌ها با Zernio در پس‌زمینه بدون معطل کردن کاربر"""
+def _sync_automation_bg():
+    """همگام‌سازی کلیدواژه‌ها با سرویس اتوماسیون (PostZen یا Zernio) در پس‌زمینه بدون معطل کردن کاربر"""
     db = None
     try:
         db = SessionLocal()
-        zernio_service.sync_all_keywords(db)
+        automation_service.sync_all_keywords(db)
     except Exception as e:
         import logging
-        logging.getLogger("keyword_router").error(f"Failed to auto-sync to Zernio: {e}")
+        logging.getLogger("keyword_router").error(f"Failed to auto-sync keywords to provider: {e}")
     finally:
         if db is not None:
             db.close()
+
+
+# Backward-compatible alias
+_sync_zernio_bg = _sync_automation_bg
+
+
 
 
 @router.post("/", response_model=KeywordResponse)
@@ -98,7 +105,7 @@ def create_keyword(
     db.commit()
     db.refresh(new_keyword)
 
-    background_tasks.add_task(_sync_zernio_bg)
+    background_tasks.add_task(_sync_automation_bg)
     return new_keyword
 
 
@@ -118,18 +125,18 @@ def preview_keyword(data: KeywordPreviewRequest, db: Session = Depends(get_db)):
                            data.comment_reply, data.editing_id, data.draft_active)
 
 
-@router.get("/diagnostics", summary="وضعیت واقعی دایرکت و ریپلای کامنت در زرنیو")
+@router.get("/diagnostics", summary="وضعیت واقعی دایرکت و ریپلای کامنت در ارائه‌دهنده اتوماسیون")
 def get_keyword_diagnostics(db: Session = Depends(get_db)):
     try:
         return keyword_delivery_statuses(db)
     except (requests.RequestException, ValueError, TypeError):
-        raise HTTPException(status_code=502, detail="استعلام وضعیت اتوماسیون‌ها از زرنیو ناموفق بود")
+        raise HTTPException(status_code=502, detail="استعلام وضعیت اتوماسیون‌ها ناموفق بود")
 
 
-@router.post("/sync-zernio", summary="همگام‌سازی کلیدواژه‌ها با اتوماسیون کامنت به دایرکت Zernio")
+@router.post("/sync-zernio", summary="همگام‌سازی کلیدواژه‌ها با اتوماسیون کامنت به دایرکت")
 def sync_keywords_zernio(reset: bool = False, db: Session = Depends(get_db)):
-    """ارسال تمام کلیدواژه‌های فعال به Zernio برای ارسال خودکار دایرکت در صورت کامنت شدن کلیدواژه"""
-    return zernio_service.sync_all_keywords(db, force_recreate=reset)
+    """ارسال تمام کلیدواژه‌های فعال به ارائه‌دهنده فعال (PostZen یا Zernio) برای ارسال خودکار دایرکت در صورت کامنت شدن کلیدواژه"""
+    return automation_service.sync_all_keywords(db, force_recreate=reset)
 
 
 @router.put("/{keyword_id}", response_model=KeywordResponse)
@@ -207,7 +214,7 @@ def update_keyword(
     db.commit()
     db.refresh(keyword)
 
-    background_tasks.add_task(_sync_zernio_bg)
+    background_tasks.add_task(_sync_automation_bg)
     return keyword
 
 
@@ -222,7 +229,7 @@ def toggle_keyword(
     db.commit()
     db.refresh(keyword)
 
-    background_tasks.add_task(_sync_zernio_bg)
+    background_tasks.add_task(_sync_automation_bg)
     return keyword
 
 
@@ -236,8 +243,9 @@ def delete_keyword(
     db.delete(keyword)
     db.commit()
 
-    background_tasks.add_task(_sync_zernio_bg)
+    background_tasks.add_task(_sync_automation_bg)
     return {"message": "keyword deleted"}
+
 
 
 def _get_keyword_or_404(db: Session, keyword_id: int) -> Keyword:

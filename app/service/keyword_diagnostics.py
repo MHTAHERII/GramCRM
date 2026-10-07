@@ -10,7 +10,8 @@ from app.models.bot_setting import BotSetting
 from app.models.keyword import Keyword
 from app.service.reply_engine import normalize_text
 from app.service.product_response import keyword_response
-from app.service.zernio_service import ZERNIO_BASE_URL, comment_keyword_variants, zernio_service
+from app.service.zernio_service import comment_keyword_variants, zernio_service
+from app.service.automation_service import automation_service
 
 
 def preview_comment(db: Session, text: str, keyword: str, response: str,
@@ -49,12 +50,19 @@ def preview_comment(db: Session, text: str, keyword: str, response: str,
 
 
 def _latest_comment_result(automation_id: str) -> dict:
-    url = f"{ZERNIO_BASE_URL}/comment-automations/{quote(str(automation_id), safe='')}/logs"
+    svc = automation_service.active_service
+    base_url = getattr(svc, "base_url", None) or ("https://api.postzen.dev/v1" if automation_service.provider == "postzen" else "https://zernio.com/api/v1")
+    url = f"{base_url}/comment-automations/{quote(str(automation_id), safe='')}/logs"
     try:
-        result = requests.get(url, headers=zernio_service.headers, params={"limit": 10}, timeout=8)
+        result = requests.get(url, headers=svc.headers, params={"limit": 10}, timeout=8)
+
         result.raise_for_status()
         logs = result.json().get("logs", [])
-        comments = [log for log in logs if log.get("source", "comment") == "comment"]
+        comments = [
+            log for log in logs
+            if (log.get("source") == "comment") or (log.get("trigger") == "comment") or ("source" not in log and "trigger" not in log)
+        ]
+
         latest = max(comments, key=lambda log: log.get("createdAt") or "", default=None)
         if not latest:
             return {"last_comment": None, "logs_error": False}
@@ -87,20 +95,18 @@ def _configuration_differs(kw: Keyword, auto: dict) -> bool:
 def keyword_delivery_statuses(db: Session) -> dict:
     """Get synced state, counters and the latest real comment outcome for each rule."""
     keywords = db.query(Keyword).all()
-    if not zernio_service.api_key or not zernio_service.profile_id:
-        return {"available": False, "message": "اتصال زرنیو تنظیم نشده است", "keywords": []}
+    if not automation_service.is_configured():
+        provider_name = "پست‌زن" if automation_service.provider == "postzen" else "زرنیو"
+        return {"available": False, "message": f"اتصال {provider_name} تنظیم نشده است", "keywords": []}
 
-    response = requests.get(
-        f"{ZERNIO_BASE_URL}/comment-automations",
-        headers=zernio_service.headers,
-        params={"profileId": zernio_service.profile_id}, timeout=10,
-    )
-    response.raise_for_status()
-    automations = response.json().get("automations", [])
+    automations = automation_service.list_comment_automations()
+    svc = automation_service.active_service
+    acc_id = getattr(svc, "account_id", None)
     by_name = {
         auto.get("name"): auto for auto in automations
-        if auto.get("accountId") in (None, zernio_service.account_id)
+        if auto.get("accountId") in (None, acc_id)
     }
+
     rows = []
     pending = {}
     for kw in keywords:

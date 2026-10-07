@@ -19,6 +19,7 @@ from app.models.message import Message
 from app.models.bot_setting import BotSetting
 from app.service.bot_settings import get_bot_settings, apply_credentials_to_services
 from app.service.zernio_service import zernio_service
+from app.service.automation_service import automation_service
 
 # ثبت زمان استارت پروسس برای محاسبه دقیق آپتایم
 START_TIME = time.time()
@@ -178,7 +179,7 @@ def get_system_status(db: Session) -> Dict[str, Any]:
 
     # ۵. وضعیت ربات و اتصال اینستاگرام
     settings = get_bot_settings(db)
-    is_connected = zernio_service.is_configured()
+    is_connected = automation_service.is_configured()
 
     return {
         "system": {
@@ -383,9 +384,9 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
 
         db.commit()
 
-        # ۵. همگام‌سازی فوری با اینستاگرام (Zernio)
+        # ۵. همگام‌سازی فوری با اینستاگرام (اتوماسیون فعال)
         try:
-            zernio_service.sync_all_keywords(db)
+            automation_service.sync_all_keywords(db)
         except Exception as e:
             logging.getLogger("system_service").error(f"Error auto-syncing restored keywords: {e}")
 

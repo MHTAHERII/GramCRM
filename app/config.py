@@ -32,4 +32,11 @@ class Settings:
     ZERNIO_API_KEY: str = os.getenv("ZERNIO_API_KEY", "")
     ZERNIO_PROFILE_ID: str = os.getenv("ZERNIO_PROFILE_ID", "")
     ZERNIO_ACCOUNT_ID: str = os.getenv("ZERNIO_ACCOUNT_ID", "")
+
+    # انتخاب ارائه‌دهنده اتوماسیون (zernio یا postzen)
+    AUTOMATION_PROVIDER: str = os.getenv("AUTOMATION_PROVIDER", "zernio").lower()
+    POSTZEN_API_KEY: str = os.getenv("POSTZEN_API_KEY", "")
+    POSTZEN_ACCOUNT_ID: str = os.getenv("POSTZEN_ACCOUNT_ID", "")
+
 settings = Settings()
+

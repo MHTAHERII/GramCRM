@@ -48,7 +48,13 @@ def run_schema_migrations() -> None:
             "dm_message_variations": "JSON",
             "platform_post_id": "VARCHAR(100)",
         },
+        "bot_settings": {
+            "automation_provider": "VARCHAR(50) DEFAULT 'zernio'",
+            "postzen_api_key": "VARCHAR(255)",
+            "postzen_account_id": "VARCHAR(100)",
+        },
     }
+
     with engine.begin() as conn:
         for table_name, columns in additions.items():
             existing = {column["name"] for column in inspect(conn).get_columns(table_name)}
@@ -133,8 +139,18 @@ def run_schema_migrations() -> None:
                 "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS instagram_username VARCHAR(100);"
             ))
             conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS automation_provider VARCHAR(50) DEFAULT 'zernio';"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS postzen_api_key VARCHAR(255);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS postzen_account_id VARCHAR(100);"
+            ))
+            conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
             ))
+
 
 
 @asynccontextmanager

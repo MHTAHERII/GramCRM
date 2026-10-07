@@ -1099,6 +1099,16 @@ async function loadSettings() {
     checkFollowGateButtonCount();
   }
 
+  // فیلدهای ارائه‌دهنده اتوماسیون (PostZen / Zernio)
+  const provSelect = document.getElementById("setting-automation-provider");
+  if (provSelect) {
+    provSelect.value = (settings.automation_provider || "postzen").toLowerCase();
+  }
+  const pznKeyInput = document.getElementById("setting-postzen-api-key");
+  if (pznKeyInput) pznKeyInput.value = settings.postzen_api_key || "";
+  const pznAccInput = document.getElementById("setting-postzen-account-id");
+  if (pznAccInput) pznAccInput.value = settings.postzen_account_id || "";
+
   // فیلدهای توکن و اکانت Zernio
   document.getElementById("setting-zernio-api-key").value = settings.zernio_api_key || "";
   document.getElementById("setting-zernio-profile-id").value = settings.zernio_profile_id || "";
@@ -1108,7 +1118,18 @@ async function loadSettings() {
   const zBadge = document.getElementById("zernio-account-badge");
   const zInfo = document.getElementById("zernio-connected-info");
   const zUserEl = document.getElementById("zernio-connected-username");
-  if (settings.instagram_username) {
+  const isPostZen = (settings.automation_provider || "zernio").toLowerCase() === "postzen";
+
+  if (isPostZen && settings.postzen_account_id) {
+    if (zBadge) {
+      zBadge.textContent = "🟢 PostZen متصل";
+      zBadge.style.display = "inline-block";
+    }
+    if (zInfo && zUserEl) {
+      zUserEl.textContent = `PostZen (اکانت: ${settings.postzen_account_id})`;
+      zInfo.style.display = "block";
+    }
+  } else if (settings.instagram_username) {
     if (zBadge) {
       zBadge.textContent = `🟢 @${settings.instagram_username}`;
       zBadge.style.display = "inline-block";
@@ -1126,6 +1147,7 @@ async function loadSettings() {
     if (zBadge) zBadge.style.display = "none";
     if (zInfo) zInfo.style.display = "none";
   }
+
 
   // فیلد نام کاربری
   document.getElementById("setting-admin-username").value = settings.admin_username || "admin";
@@ -1307,26 +1329,43 @@ document.getElementById("save-follow-gate").addEventListener("click", async () =
   }
 });
 
-// ذخیره کلید و شناسه‌های API اینستاگرام (Zernio) با اتصال و استعلام خودکار
+// دکمه نمایش/مخفی کردن کلید PostZen
+document.getElementById("btn-toggle-postzen-vis")?.addEventListener("click", () => {
+  const input = document.getElementById("setting-postzen-api-key");
+  if (!input) return;
+  input.type = input.type === "password" ? "text" : "password";
+});
+
+// ذخیره کلید و شناسه‌های API اینستاگرام (PostZen / Zernio) با اتصال و استعلام خودکار
 document.getElementById("save-api-settings")?.addEventListener("click", async () => {
   const saveBtn = document.getElementById("save-api-settings");
-  const apiKey = document.getElementById("setting-zernio-api-key").value.trim();
-  const profileId = document.getElementById("setting-zernio-profile-id").value.trim();
-  const accountId = document.getElementById("setting-zernio-account-id").value.trim();
+  const provider = document.getElementById("setting-automation-provider")?.value || "postzen";
+  const pznApiKey = document.getElementById("setting-postzen-api-key")?.value.trim() || "";
+  const pznAccountId = document.getElementById("setting-postzen-account-id")?.value.trim() || "";
+  const apiKey = document.getElementById("setting-zernio-api-key")?.value.trim() || "";
+  const profileId = document.getElementById("setting-zernio-profile-id")?.value.trim() || "";
+  const accountId = document.getElementById("setting-zernio-account-id")?.value.trim() || "";
   const alertEl = document.getElementById("connection-status-alert");
 
-  if (!apiKey) {
-    showToast("لطفاً کلید API توکن را وارد کنید", "error");
+  if (provider === "postzen" && !pznApiKey) {
+    showToast("لطفاً کلید API پست‌زن (pzn_live_...) را وارد کنید", "error");
+    return;
+  }
+  if (provider === "zernio" && !apiKey) {
+    showToast("لطفاً کلید API زرنیو را وارد کنید", "error");
     return;
   }
 
   saveBtn.disabled = true;
   if (alertEl) {
-    alertEl.textContent = "در حال ذخیره و شناسایی خودکار اکانت اینستاگرام...";
+    alertEl.textContent = `در حال ذخیره و شناسایی خودکار اکانت در ${provider === 'postzen' ? 'PostZen' : 'Zernio'}...`;
     alertEl.style.color = "#818cf8";
   }
 
   const body = JSON.stringify({
+    automation_provider: provider,
+    postzen_api_key: pznApiKey || null,
+    postzen_account_id: pznAccountId || null,
     zernio_api_key: apiKey || null,
     zernio_profile_id: profileId || null,
     zernio_account_id: accountId || null,
@@ -1334,17 +1373,30 @@ document.getElementById("save-api-settings")?.addEventListener("click", async ()
   try {
     const updated = await api("/settings/", { method: "PUT", body });
     
-    // پر کردن خودکار شناسه‌ها در فیلدهای پیشرفته
+    if (updated.postzen_account_id && document.getElementById("setting-postzen-account-id")) {
+      document.getElementById("setting-postzen-account-id").value = updated.postzen_account_id;
+    }
     if (updated.zernio_profile_id) {
       document.getElementById("setting-zernio-profile-id").value = updated.zernio_profile_id;
     }
     if (updated.zernio_account_id) {
       document.getElementById("setting-zernio-account-id").value = updated.zernio_account_id;
     }
-    if (updated.instagram_username) {
-      const badge = document.getElementById("zernio-account-badge");
-      const info = document.getElementById("zernio-connected-info");
-      const usernameEl = document.getElementById("zernio-connected-username");
+
+    const badge = document.getElementById("zernio-account-badge");
+    const info = document.getElementById("zernio-connected-info");
+    const usernameEl = document.getElementById("zernio-connected-username");
+
+    if (provider === "postzen" && updated.postzen_account_id) {
+      if (badge) {
+        badge.textContent = `🟢 PostZen متصل`;
+        badge.style.display = "inline-block";
+      }
+      if (info && usernameEl) {
+        usernameEl.textContent = `PostZen (اکانت: ${updated.postzen_account_id})`;
+        info.style.display = "block";
+      }
+    } else if (updated.instagram_username) {
       if (badge) {
         badge.textContent = `🟢 @${updated.instagram_username}`;
         badge.style.display = "inline-block";
@@ -1356,9 +1408,9 @@ document.getElementById("save-api-settings")?.addEventListener("click", async ()
     }
 
     flashButtonSuccess(saveBtn, "ذخیره و اتصال خودکار ⚡", "✓ ذخیره شد");
-    showToast(`تنظیمات اتصال با موفقیت ذخیره شد${updated.instagram_username ? ' (@' + updated.instagram_username + ')' : ''}`, "success");
+    showToast(`تنظیمات اتصال با موفقیت ذخیره شد (${provider === 'postzen' ? 'PostZen' : 'Zernio'})`, "success");
     if (alertEl) {
-      alertEl.textContent = `✅ تنظیمات ذخیره و متصل شد.${updated.instagram_username ? ' پیج فعال: @' + updated.instagram_username : ''}`;
+      alertEl.textContent = `✅ تنظیمات ذخیره و فعال شد. ارائه‌دهنده: ${provider === 'postzen' ? 'PostZen 🚀' : 'Zernio ⚡'}`;
       alertEl.style.color = "#10b981";
     }
   } catch (err) {
@@ -1372,47 +1424,53 @@ document.getElementById("save-api-settings")?.addEventListener("click", async ()
   }
 });
 
-// استعلام فوری شناسه‌ها از سرور Zernio بدون نیاز به ذخیره کامل
+// استعلام فوری شناسه‌ها از سرور ارائه‌دهنده
 document.getElementById("btn-auto-discover")?.addEventListener("click", async () => {
   const btn = document.getElementById("btn-auto-discover");
-  const apiKey = document.getElementById("setting-zernio-api-key").value.trim();
+  const provider = document.getElementById("setting-automation-provider")?.value || "postzen";
+  const apiKey = provider === "postzen"
+    ? (document.getElementById("setting-postzen-api-key")?.value.trim() || "")
+    : (document.getElementById("setting-zernio-api-key")?.value.trim() || "");
   const alertEl = document.getElementById("connection-status-alert");
 
   if (!apiKey) {
-    showToast("لطفاً ابتدا کلید API توکن را وارد کنید", "error");
+    showToast(`لطفاً ابتدا کلید API مربوط به ${provider === 'postzen' ? 'PostZen' : 'Zernio'} را وارد کنید`, "error");
     return;
   }
 
   btn.disabled = true;
   if (alertEl) {
-    alertEl.textContent = "در حال استعلام شناسه‌ها از سرورهای Zernio...";
+    alertEl.textContent = `در حال استعلام شناسه‌ها از سرورهای ${provider === 'postzen' ? 'PostZen' : 'Zernio'}...`;
     alertEl.style.color = "#818cf8";
   }
 
   try {
     const res = await api("/settings/auto-discover", {
       method: "POST",
-      body: JSON.stringify({ api_key: apiKey })
+      body: JSON.stringify({ api_key: apiKey, provider: provider })
     });
     if (res.success && res.data) {
-      if (res.data.account_id) document.getElementById("setting-zernio-account-id").value = res.data.account_id;
-      if (res.data.profile_id) document.getElementById("setting-zernio-profile-id").value = res.data.profile_id;
-      if (res.data.username) {
-        const badge = document.getElementById("zernio-account-badge");
-        const info = document.getElementById("zernio-connected-info");
-        const usernameEl = document.getElementById("zernio-connected-username");
-        if (badge) {
-          badge.textContent = `🟢 @${res.data.username}`;
-          badge.style.display = "inline-block";
-        }
-        if (info && usernameEl) {
-          usernameEl.textContent = `@${res.data.username}`;
-          info.style.display = "block";
-        }
+      if (provider === "postzen" && res.data.account_id) {
+        document.getElementById("setting-postzen-account-id").value = res.data.account_id;
+      }
+      if (res.data.account_id && provider === "zernio") document.getElementById("setting-zernio-account-id").value = res.data.account_id;
+      if (res.data.profile_id && provider === "zernio") document.getElementById("setting-zernio-profile-id").value = res.data.profile_id;
+      
+      const badge = document.getElementById("zernio-account-badge");
+      const info = document.getElementById("zernio-connected-info");
+      const usernameEl = document.getElementById("zernio-connected-username");
+
+      if (badge) {
+        badge.textContent = provider === "postzen" ? "🟢 PostZen متصل" : `🟢 @${res.data.username || ''}`;
+        badge.style.display = "inline-block";
+      }
+      if (info && usernameEl) {
+        usernameEl.textContent = provider === "postzen" ? `PostZen (${res.data.account_id})` : `@${res.data.username || ''}`;
+        info.style.display = "block";
       }
       showToast(res.message, "success");
       if (alertEl) {
-        alertEl.textContent = `✅ اکانت @${res.data.username || ''} با موفقیت شناسایی و تنظیم شد.`;
+        alertEl.textContent = `✅ شناسه اکانت با موفقیت شناسایی و تنظیم شد.`;
         alertEl.style.color = "#10b981";
       }
     } else {
@@ -1440,43 +1498,40 @@ document.getElementById("test-connection-btn")?.addEventListener("click", async 
   if (!alertEl) return;
 
   btn.disabled = true;
-  alertEl.textContent = "در حال بررسی وضعیت اتصال به سرورهای اینستاگرام...";
+  alertEl.textContent = "در حال بررسی وضعیت اتصال به سرورهای اتوماسیون...";
   alertEl.style.color = "#94a3b8";
 
   try {
     const res = await api("/settings/test-connection", { method: "POST" });
     if (res.success) {
-      if (res.account_id) document.getElementById("setting-zernio-account-id").value = res.account_id;
-      if (res.profile_id) document.getElementById("setting-zernio-profile-id").value = res.profile_id;
-      if (res.username) {
-        const badge = document.getElementById("zernio-account-badge");
-        const info = document.getElementById("zernio-connected-info");
-        const usernameEl = document.getElementById("zernio-connected-username");
-        if (badge) {
-          badge.textContent = `🟢 @${res.username}`;
-          badge.style.display = "inline-block";
-        }
-        if (info && usernameEl) {
-          usernameEl.textContent = `@${res.username}`;
-          info.style.display = "block";
-        }
+      const badge = document.getElementById("zernio-account-badge");
+      const info = document.getElementById("zernio-connected-info");
+      const usernameEl = document.getElementById("zernio-connected-username");
+      if (badge) {
+        badge.textContent = res.provider === "postzen" ? "🟢 PostZen فعال" : `🟢 @${res.username || ''}`;
+        badge.style.display = "inline-block";
       }
-      alertEl.textContent = `${res.message} ${res.username ? '(پیج: @' + res.username + ' | ' : '('}تعداد سناریوها: ${res.automations_count ?? 0})`;
+      if (info && usernameEl) {
+        usernameEl.textContent = res.provider === "postzen" ? `PostZen (${res.account_id})` : `@${res.username || ''}`;
+        info.style.display = "block";
+      }
+      showToast(res.message, "success");
+      alertEl.textContent = `✅ ${res.message}`;
       alertEl.style.color = "#10b981";
-      showToast("اتصال با موفقیت تأیید شد ✅", "success");
     } else {
+      showToast(res.message, "error");
       alertEl.textContent = `❌ ${res.message}`;
       alertEl.style.color = "#ef4444";
-      showToast("خطا در اتصال به اینستاگرام", "error");
     }
   } catch (err) {
-    alertEl.textContent = `❌ ${err.message}`;
-    alertEl.style.color = "#ef4444";
     showToast(err.message, "error");
+    alertEl.textContent = `❌ خطا در بررسی اتصال: ${err.message}`;
+    alertEl.style.color = "#ef4444";
   } finally {
     btn.disabled = false;
   }
 });
+
 
 // ذخیره اطلاعات ورود به پنل (یوزرنیم و پسورد)
 document.getElementById("save-auth-settings")?.addEventListener("click", async () => {

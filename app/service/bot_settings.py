@@ -24,9 +24,10 @@ REMINDER_NOT_FOLLOWED = (
 
 
 def apply_credentials_to_services(setting: BotSetting):
-    """به‌روزرسانی کلیدها و شناسه‌های Zernio در سرویس‌های زنده برنامه"""
+    """به‌روزرسانی کلیدها و شناسه‌های Zernio و PostZen در سرویس‌های زنده برنامه"""
     try:
         from app.service.zernio_service import zernio_service
+        from app.service.postzen_service import postzen_service
         from app.service.instagram_service import instagram_client
         from app.config import settings
 
@@ -46,13 +47,25 @@ def apply_credentials_to_services(setting: BotSetting):
         zernio_service.account_id = account_id
         instagram_client.account_id = account_id
 
+        # پیکربندی PostZen
+        pzn_key = setting.postzen_api_key or settings.POSTZEN_API_KEY
+        pzn_acc = setting.postzen_account_id or settings.POSTZEN_ACCOUNT_ID
+        postzen_service.api_key = pzn_key
+        postzen_service.account_id = pzn_acc
+
+        provider = (setting.automation_provider or settings.AUTOMATION_PROVIDER or "zernio").lower()
+        settings.AUTOMATION_PROVIDER = provider
+
         # در صورت داشتن توکن اما نبود شناسه‌ها، اتصال خودکار را امتحان کن
         if api_key and (not profile_id or not account_id):
             zernio_service.ensure_configured()
             instagram_client.ensure_authenticated()
+        if pzn_key and not pzn_acc:
+            postzen_service.discover_account()
     except Exception as e:
         import logging
         logging.getLogger("bot_settings").error(f"Error applying credentials to services: {e}")
+
 
 
 def get_bot_settings(db: Session) -> BotSetting:
@@ -105,6 +118,17 @@ def get_bot_settings(db: Session) -> BotSetting:
     if not setting.zernio_account_id and env_settings.ZERNIO_ACCOUNT_ID:
         setting.zernio_account_id = env_settings.ZERNIO_ACCOUNT_ID
         changed = True
+
+    if not setting.postzen_api_key and env_settings.POSTZEN_API_KEY:
+        setting.postzen_api_key = env_settings.POSTZEN_API_KEY
+        changed = True
+    if not setting.postzen_account_id and env_settings.POSTZEN_ACCOUNT_ID:
+        setting.postzen_account_id = env_settings.POSTZEN_ACCOUNT_ID
+        changed = True
+    if not setting.automation_provider and env_settings.AUTOMATION_PROVIDER:
+        setting.automation_provider = env_settings.AUTOMATION_PROVIDER
+        changed = True
+
 
     # اگر توکن موجود است ولی شناسه‌ها یا نام کاربری اینستاگرام ثبت نشده، استعلام و کشف خودکار کن
     if setting.zernio_api_key and (not setting.zernio_account_id or not setting.zernio_profile_id or not setting.instagram_username):

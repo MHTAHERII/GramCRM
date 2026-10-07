@@ -48,8 +48,12 @@ def get_settings(db: Session = Depends(get_db)):
         zernio_profile_id=setting.zernio_profile_id,
         zernio_account_id=setting.zernio_account_id,
         instagram_username=setting.instagram_username,
+        automation_provider=setting.automation_provider or "zernio",
+        postzen_api_key=setting.postzen_api_key,
+        postzen_account_id=setting.postzen_account_id,
         updated_at=setting.updated_at
     )
+
 
 
 @router.put("/", response_model=BotSettingResponse)
@@ -120,6 +124,24 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
     if data.instagram_username is not None:
         setting.instagram_username = data.instagram_username.strip() if data.instagram_username.strip() else None
 
+    if data.automation_provider is not None and data.automation_provider.strip():
+        setting.automation_provider = data.automation_provider.strip().lower()
+    if data.postzen_api_key is not None:
+        setting.postzen_api_key = data.postzen_api_key.strip() or None
+    if data.postzen_account_id is not None:
+        setting.postzen_account_id = data.postzen_account_id.strip() or None
+
+    # کشف و پر کردن خودکار شناسه‌های PostZen از روی توکن جدید
+    if setting.postzen_api_key and not setting.postzen_account_id:
+        try:
+            from app.service.postzen_service import postzen_service
+            pzn_acc = postzen_service.discover_account(setting.postzen_api_key)
+            if pzn_acc:
+                setting.postzen_account_id = pzn_acc
+        except Exception as e:
+            import logging
+            logging.getLogger("settings_router").warning(f"Failed to auto-discover PostZen credentials: {e}")
+
     # کشف و پر کردن خودکار شناسه‌های Account و Profile از روی توکن جدید
     if setting.zernio_api_key and (not setting.zernio_account_id or not setting.zernio_profile_id or api_key_changed):
         try:
@@ -138,7 +160,21 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
     from app.service.bot_settings import apply_credentials_to_services
     apply_credentials_to_services(setting)
 
-    background_tasks.add_task(_sync_zernio_bg)
+    from app.service.automation_service import automation_service
+    def _sync_auto_bg():
+        db_s = None
+        try:
+            db_s = SessionLocal()
+            automation_service.sync_all_keywords(db_s)
+        except Exception as e:
+            import logging
+            logging.getLogger("settings_router").error(f"Failed to auto-sync keywords on settings update: {e}")
+        finally:
+            if db_s is not None:
+                db_s.close()
+
+    background_tasks.add_task(_sync_auto_bg)
+
 
     return BotSettingResponse(
         id=setting.id,
@@ -161,17 +197,45 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         zernio_profile_id=setting.zernio_profile_id,
         zernio_account_id=setting.zernio_account_id,
         instagram_username=setting.instagram_username,
+        automation_provider=setting.automation_provider or "zernio",
+        postzen_api_key=setting.postzen_api_key,
+        postzen_account_id=setting.postzen_account_id,
         updated_at=setting.updated_at
     )
 
 
-@router.post("/auto-discover", summary="استعلام خودکار اطلاعات اکانت و پروفایل از Zernio با توکن")
-def auto_discover_zernio(payload: dict | None = None, db: Session = Depends(get_db)):
+
+@router.post("/auto-discover", summary="استعلام خودکار اطلاعات اکانت و پروفایل از ارائه‌دهنده اتوماسیون")
+def auto_discover_credentials(payload: dict | None = None, db: Session = Depends(get_db)):
     """استعلام خودکار و ذخیره شناسه اکانت و پروفایل تنها با وارد کردن توکن"""
     setting = get_bot_settings(db)
     api_key = None
+    provider = "zernio"
     if payload and isinstance(payload, dict):
         api_key = payload.get("api_key")
+        provider = payload.get("provider") or setting.automation_provider or "zernio"
+    provider = provider.lower()
+
+    if provider == "postzen":
+        token = (api_key or setting.postzen_api_key or "").strip()
+        if not token:
+            return {"success": False, "message": "لطفاً ابتدا کلید API پست‌زن (pzn_live_...) را وارد کنید."}
+        from app.service.postzen_service import postzen_service
+        acc_id = postzen_service.discover_account(token)
+        if not acc_id:
+            return {"success": False, "message": "هیچ اکانت اینستاگرامی متصل به این کلید در PostZen یافت نشد."}
+        setting.postzen_api_key = token
+        setting.postzen_account_id = acc_id
+        db.commit()
+        db.refresh(setting)
+        from app.service.bot_settings import apply_credentials_to_services
+        apply_credentials_to_services(setting)
+        return {
+            "success": True,
+            "message": f"اکانت PostZen با شناسه {acc_id} با موفقیت شناسایی و متصل شد! 🎉",
+            "data": {"account_id": acc_id, "provider": "postzen"}
+        }
+
     token = (api_key or setting.zernio_api_key or "").strip()
     if not token:
         return {
@@ -212,12 +276,29 @@ def auto_discover_zernio(payload: dict | None = None, db: Session = Depends(get_
     }
 
 
-@router.api_route("/test-connection", methods=["GET", "POST"], summary="بررسی وضعیت اتصال به اینستاگرام و Zernio")
+@router.api_route("/test-connection", methods=["GET", "POST"], summary="بررسی وضعیت اتصال به اینستاگرام")
 def test_connection(db: Session = Depends(get_db)):
-    """تست زنده توکن و شناسه‌ها جهت اطمینان از صحت ارتباط با اینستاگرام"""
+    """تست زنده توکن و شناسه‌ها جهت اطمینان از صحت ارتباط با اینستاگرام بر اساس ارائه‌دهنده فعال"""
     setting = get_bot_settings(db)
-    token = (setting.zernio_api_key or "").strip()
+    provider = (setting.automation_provider or "zernio").lower()
 
+    if provider == "postzen":
+        from app.service.postzen_service import postzen_service
+        if not setting.postzen_api_key:
+            return {"success": False, "message": "کلید API پست‌زن تنظیم نشده است."}
+        try:
+            automations = postzen_service.list_comment_automations()
+            return {
+                "success": True,
+                "message": f"اتصال به PostZen با موفقیت برقرار است! ✅ (اکانت: {setting.postzen_account_id} | تعداد سناریوها: {len(automations)})",
+                "account_id": setting.postzen_account_id,
+                "automations_count": len(automations),
+                "provider": "postzen"
+            }
+        except Exception as e:
+            return {"success": False, "message": f"خطا در ارتباط با PostZen: {e}"}
+
+    token = (setting.zernio_api_key or "").strip()
     if not token:
         return {
             "success": False,
@@ -239,7 +320,6 @@ def test_connection(db: Session = Depends(get_db)):
             elif r.status_code == 200:
                 accounts = r.json().get("accounts", [])
                 if not accounts:
-                    # پاک کردن شناسه‌های پیج قبلی از دیتابیس
                     setting.zernio_account_id = None
                     setting.zernio_profile_id = None
                     setting.instagram_username = None
@@ -281,5 +361,7 @@ def test_connection(db: Session = Depends(get_db)):
         "username": setting.instagram_username,
         "account_id": setting.zernio_account_id,
         "profile_id": setting.zernio_profile_id,
-        "automations_count": automations_count
+        "automations_count": automations_count,
+        "provider": "zernio"
     }
+

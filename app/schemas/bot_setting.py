@@ -19,6 +19,10 @@ class BotSettingUpdate(BaseModel):
     zernio_profile_id: str | None = None
     zernio_account_id: str | None = None
     instagram_username: str | None = None
+    automation_provider: str | None = None
+    postzen_api_key: str | None = None
+    postzen_account_id: str | None = None
+
 
 
 class BotSettingResponse(BaseModel):
@@ -39,7 +43,11 @@ class BotSettingResponse(BaseModel):
     zernio_profile_id: str | None = None
     zernio_account_id: str | None = None
     instagram_username: str | None = None
+    automation_provider: str = "zernio"
+    postzen_api_key: str | None = None
+    postzen_account_id: str | None = None
     updated_at: datetime
+
 
     class Config:
         from_attributes = True

@@ -41,6 +41,12 @@ class BotSetting(Base):
     zernio_account_id = Column(String(100), nullable=True)
     instagram_username = Column(String(100), nullable=True)
 
+    # انتخاب ارائه‌دهنده اتوماسیون (postzen یا zernio) و اطلاعات PostZen
+    automation_provider = Column(String(50), default="zernio", nullable=True)
+    postzen_api_key = Column(String(255), nullable=True)
+    postzen_account_id = Column(String(100), nullable=True)
+
+
     updated_at = Column(
         DateTime,
         default=datetime.utcnow,

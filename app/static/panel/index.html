@@ -518,44 +518,74 @@
             </div>
           </div>
 
-          <!-- کارت اتصال به API اینستاگرام -->
+          <!-- کارت اتصال به API اینستاگرام و اتوماسیون (Zernio & PostZen) -->
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-              <h2>اتصال به اینستاگرام (API Zernio)</h2>
+              <h2>اتصال به سرویس اتوماسیون اینستاگرام</h2>
               <span id="zernio-account-badge" class="badge" style="display: none; padding: 4px 12px; font-weight: 600; font-size: 0.8rem; border-radius: 99px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"></span>
             </div>
-            <p class="hint">تنها کافی است توکن API دریافتی از پنل زرنیو را وارد کنید؛ شناسه اکانت و پروفایل شما به صورت خودکار شناسایی و متصل می‌شوند.</p>
-            
-            <div class="field" style="margin-top: 1rem;">
-              <label for="setting-zernio-api-key">کلید API توکن (API Key)</label>
-              <div style="display: flex; gap: 8px;">
-                <input id="setting-zernio-api-key" type="password" placeholder="sk_..." style="flex: 1;">
-                <button id="btn-toggle-token-vis" type="button" class="btn ghost small" title="نمایش/مخفی کردن توکن" style="padding: 0 12px;">👁️</button>
+            <p class="hint">می‌توانید بین سرویس‌های <strong>PostZen</strong> و <strong>Zernio</strong> انتخاب کنید. برای هر کدام کافیست کلید API را وارد کنید تا اتوماسیون کامنت و دایرکت به آن متصل شود.</p>
+
+            <!-- انتخاب ارائه‌دهنده فعال -->
+            <div class="field" style="margin-top: 1.25rem;">
+              <label for="setting-automation-provider" style="font-weight: 600; color: #a5b4fc;">ارائه‌دهنده فعال اتوماسیون (Automation Provider)</label>
+              <select id="setting-automation-provider" style="height: 42px; width: 100%; max-width: 400px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; font-weight: 500;">
+                <option value="postzen">🚀 PostZen (پیشنهادی - مدرن و پایدار)</option>
+                <option value="zernio">⚡ Zernio (زرنیو)</option>
+              </select>
+            </div>
+
+            <!-- بخش تنظیمات PostZen -->
+            <div id="provider-postzen-section" style="margin-top: 1rem; padding: 14px; background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.15); border-radius: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <strong style="color: #818cf8;">تنظیمات PostZen (api.postzen.dev)</strong>
+              </div>
+              <div class="field">
+                <label for="setting-postzen-api-key">کلید API پست‌زن (API Key)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input id="setting-postzen-api-key" type="password" placeholder="pzn_live_..." style="flex: 1;">
+                  <button id="btn-toggle-postzen-vis" type="button" class="btn ghost small" title="نمایش/مخفی کردن کلید" style="padding: 0 12px;">👁️</button>
+                </div>
+              </div>
+              <div class="field" style="margin-top: 8px;">
+                <label for="setting-postzen-account-id">شناسه اکانت اینستاگرام در PostZen (Account ID)</label>
+                <input id="setting-postzen-account-id" type="text" placeholder="مثلاً: j9792ac8zdv5zattazzp42mtm18ftg51 (با کلیک روی استعلام خودکار پر می‌شود)">
               </div>
             </div>
 
-            <div id="zernio-connected-info" style="display: none; margin-top: 10px; padding: 10px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; font-size: 0.85rem;">
-              <span style="color: var(--text-secondary);">پیج متصل: </span>
-              <strong id="zernio-connected-username" style="color: #6366f1; direction: ltr; display: inline-block;"></strong>
-            </div>
-
-            <!-- بخش پیشرفته (اکانت و پروفایل به صورت خودکار پر می‌شوند) -->
-            <details style="margin-top: 1rem; border: 1px dashed var(--border); border-radius: 8px; padding: 10px 14px; background: rgba(0,0,0,0.02);">
-              <summary style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer; user-select: none; font-weight: 500;">
-                ⚙️ تنظیمات پیشرفته (شناسه‌ها به‌طور خودکار دریافت می‌شوند)
-              </summary>
-              <p class="hint" style="margin-top: 6px; font-size: 0.78rem;">سیستم شناسه‌های زیر را خودکار از زرنیو دریافت می‌کند. فقط در صورت نیاز به تغییر دستی اکانت این بخش را ویرایش کنید.</p>
-              <div class="grid-2" style="margin-top: 8px;">
-                <div class="field">
-                  <label for="setting-zernio-profile-id">شناسه پروفایل (Profile ID)</label>
-                  <input id="setting-zernio-profile-id" type="text" placeholder="دریافت خودکار...">
-                </div>
-                <div class="field">
-                  <label for="setting-zernio-account-id">شناسه اکانت (Account ID)</label>
-                  <input id="setting-zernio-account-id" type="text" placeholder="دریافت خودکار...">
+            <!-- بخش تنظیمات Zernio -->
+            <div id="provider-zernio-section" style="margin-top: 1rem; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <strong style="color: #a5b4fc;">تنظیمات Zernio (zernio.com)</strong>
+              </div>
+              <div class="field">
+                <label for="setting-zernio-api-key">کلید API توکن زرنیو (API Key)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input id="setting-zernio-api-key" type="password" placeholder="sk_..." style="flex: 1;">
+                  <button id="btn-toggle-token-vis" type="button" class="btn ghost small" title="نمایش/مخفی کردن توکن" style="padding: 0 12px;">👁️</button>
                 </div>
               </div>
-            </details>
+              <details style="margin-top: 8px; border: 1px dashed var(--border); border-radius: 8px; padding: 8px 12px; background: rgba(0,0,0,0.02);">
+                <summary style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer; user-select: none;">
+                  شناسه‌های پیشرفته Zernio (Profile & Account ID)
+                </summary>
+                <div class="grid-2" style="margin-top: 8px;">
+                  <div class="field">
+                    <label for="setting-zernio-profile-id">شناسه پروفایل (Profile ID)</label>
+                    <input id="setting-zernio-profile-id" type="text" placeholder="دریافت خودکار...">
+                  </div>
+                  <div class="field">
+                    <label for="setting-zernio-account-id">شناسه اکانت (Account ID)</label>
+                    <input id="setting-zernio-account-id" type="text" placeholder="دریافت خودکار...">
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <div id="zernio-connected-info" style="display: none; margin-top: 12px; padding: 10px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; font-size: 0.85rem;">
+              <span style="color: var(--text-secondary);">پیج / اکانت متصل: </span>
+              <strong id="zernio-connected-username" style="color: #10b981; direction: ltr; display: inline-block;"></strong>
+            </div>
 
             <div class="form-actions" style="margin-top: 1.25rem; display: flex; gap: 10px; flex-wrap: wrap;">
               <button id="save-api-settings" class="btn primary">ذخیره و اتصال خودکار ⚡</button>
@@ -564,6 +594,7 @@
             </div>
             <div id="connection-status-alert" class="hint" style="margin-top: 10px; font-weight: 500;"></div>
           </div>
+
 
           <!-- کارت امنیت و اطلاعات ورود به پنل -->
           <div class="card">

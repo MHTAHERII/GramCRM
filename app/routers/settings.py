@@ -165,7 +165,11 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         db_s = None
         try:
             db_s = SessionLocal()
-            automation_service.sync_all_keywords(db_s)
+            if not setting.bot_enabled:
+                # اگر ربات خاموش شده باشد، اتوماسیون‌های ریموت متوقف می‌شوند تا هیچ تداخلی با سایر سیستم‌ها پیش نیاید
+                automation_service.pause_all_automations()
+            else:
+                automation_service.sync_all_keywords(db_s)
         except Exception as e:
             import logging
             logging.getLogger("settings_router").error(f"Failed to auto-sync keywords on settings update: {e}")

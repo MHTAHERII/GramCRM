@@ -14,9 +14,22 @@ def poll_cycle() -> int:
     """
     یک دور بررسی پیام‌های جدید (Polling):
     پیام‌های خوانده‌نشده را می‌گیرد، در دیتابیس ثبت و پاسخ مناسب را ارسال می‌کند.
+    اگر ربات از پنل خاموش باشد، هیچ درخواستی به اینستاگرام/زرنیو ارسال نمی‌شود تا با سایر سیستم‌ها تداخل نکند.
     """
     if not settings.ENABLE_IG_WORKER:
         return 0
+
+    # بررسی وضعیت فعال بودن ربات از دیتابیس؛ اگر خاموش باشد هیچ استفاده‌ای از اکانت و توکن نمی‌شود
+    db_check = SessionLocal()
+    try:
+        from app.service.bot_settings import get_bot_settings
+        bot_set = get_bot_settings(db_check)
+        if not bot_set.bot_enabled:
+            return 0
+    except Exception as e:
+        logger.debug(f"Error checking bot_enabled in poll_cycle: {e}")
+    finally:
+        db_check.close()
 
     try:
         messages = instagram_client.fetch_unread_messages(amount=10)

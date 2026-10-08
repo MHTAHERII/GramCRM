@@ -239,8 +239,41 @@ class UnifiedInstagramService:
                         f"Cannot send DM to {conv_id}: outside 24h messaging window. "
                         f"User needs to message first."
                     )
-                else:
-                    logger.error(f"Failed to send DM ({res.status_code}): {res.text[:200]}")
+                    return False
+
+                # حل خودکار خطای Handover Protocol (409 Conflict / Meta subcode 2534037)
+                # اگر گفتگو در کنترل سیستم دیگری (مثل اینباکس منیجر یا پیج فیس‌بوک) باشد، کنترل را پس می‌گیریم
+                is_handover_conflict = (
+                    res.status_code == 409 or
+                    platform_code == 2534037 or
+                    "another receiver" in res.text or
+                    "thread-control" in res.text or
+                    "take control" in res.text
+                )
+                if is_handover_conflict:
+                    logger.info(f"Handover conflict (409) on {conv_id}. Attempting to take thread control...")
+                    control_url = f"{self.base_url}/inbox/conversations/{conv_id}/thread-control"
+                    try:
+                        c_res = self.session.post(
+                            control_url,
+                            headers=self.headers,
+                            json={"accountId": self.account_id, "action": "take"},
+                            timeout=6
+                        )
+                        if c_res.status_code in [200, 201]:
+                            logger.info(f"Thread control successfully taken for {conv_id}. Retrying DM send...")
+                            retry_res = self.session.post(url, headers=self.headers, json=payload, timeout=8)
+                            if retry_res.status_code in [200, 201]:
+                                logger.info(f"DM sent successfully after taking thread control to {conv_id}")
+                                return True
+                            else:
+                                logger.error(f"Retry DM send failed after taking control: {retry_res.text[:200]}")
+                        else:
+                            logger.warning(f"Failed to take thread control ({c_res.status_code}): {c_res.text[:200]}")
+                    except Exception as ce:
+                        logger.warning(f"Error taking thread control: {ce}")
+
+                logger.error(f"Failed to send DM ({res.status_code}): {res.text[:200]}")
                 return False
 
         except requests.exceptions.Timeout:

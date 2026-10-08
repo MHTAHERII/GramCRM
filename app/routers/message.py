@@ -68,6 +68,13 @@ def create_message(
     message: MessageCreate,
     db: Session = Depends(get_db)
 ):
+    # پیام‌های مشتری فقط از مسیر وب‌هوک/ورکر (با امضای شناسه اینستاگرام) ثبت می‌شوند
+    if message.sender == "customer":
+        raise HTTPException(
+            status_code=400,
+            detail="ثبت پیام با فرستنده customer از این مسیر مجاز نیست"
+        )
+
     new_message = Message(
         customer_id=message.customer_id,
         text=message.text,

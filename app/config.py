@@ -43,5 +43,8 @@ class Settings:
     # توکن اختیاری وب‌هوک زرنیو (اگر تنظیم شود، درخواست‌ها باید هدر X-Zernio-Webhook-Token را داشته باشند)
     ZERNIO_WEBHOOK_SECRET: str = os.getenv("ZERNIO_WEBHOOK_SECRET", "")
 
+    # مستندات OpenAPI (/docs و /openapi.json)؛ در محیط عملیاتی پیش‌فرض غیرفعال است
+    ENABLE_DOCS: bool = os.getenv("ENABLE_DOCS", "false").lower() in ("true", "1", "yes")
+
 settings = Settings()
 

@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
+from app.models.customer import Customer
+from app.models.message import Message
+from app.service.bot_settings import get_bot_settings, REMINDER_NOT_FOLLOWED
 from app.service.chat_service import process_incoming_message
 from app.service.instagram_service import instagram_client
 
@@ -14,6 +17,42 @@ router = APIRouter(
     prefix="/webhook/zernio",
     tags=["Zernio Webhook"]
 )
+
+
+def _record_remote_gate_message(db, text: str | None, sender_id, sender_name) -> None:
+    """
+    پیام دروازه فالویی که خود زرنیو ارسال کرده در دیتابیس ثبت می‌شود تا
+    کول‌داون ۱۵ دقیقه‌ای بات داخلی آن را ببیند و پیام تکراری نفرستد.
+    """
+    if not text or not sender_id:
+        return
+    try:
+        gate_setting = get_bot_settings(db)
+        gate_texts = {
+            t.strip() for t in (gate_setting.follow_gate_message, REMINDER_NOT_FOLLOWED) if t
+        }
+        if text.strip() not in gate_texts:
+            return
+
+        customer = (
+            db.query(Customer)
+            .filter(Customer.instagram_id == str(sender_id))
+            .first()
+        )
+        if not customer:
+            customer = Customer(
+                instagram_id=str(sender_id),
+                username=sender_name,
+                name=sender_name,
+            )
+            db.add(customer)
+            db.flush()
+        db.add(Message(customer_id=customer.id, text=text.strip(), sender="bot"))
+        db.commit()
+        logger.debug(f"Recorded remote follow-gate message for user {sender_id} (cooldown tracking).")
+    except Exception as e:
+        db.rollback()
+        logger.debug(f"Could not record remote gate message: {e}")
 
 
 def _verify_zernio_token(request: Request) -> bool:
@@ -78,6 +117,8 @@ async def receive_zernio_webhook(request: Request, db: Session = Depends(get_db)
 
         # نادیده گرفتن پیام‌های ارسالی توسط خود پیج
         if direction == "outgoing":
+            # پیام دروازه فالوی ارسالی زرنیو ثبت شود تا بات داخلی تکرار نفرستد
+            _record_remote_gate_message(db, text, sender_id, sender_name)
             return {"status": "IGNORED_OUTGOING"}
 
         if sender_id and text:

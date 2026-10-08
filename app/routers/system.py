@@ -1,3 +1,4 @@
+import asyncio
 import json
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
@@ -60,7 +61,9 @@ async def upload_restore(file: UploadFile = File(...), db: Session = Depends(get
         raise HTTPException(status_code=400, detail=f"فایل نامعتبر است یا ساختار JSON خراب است: {str(e)}")
 
     try:
-        result = restore_backup(db, backup_data)
+        # بازیابی سنگین دیتابیس در نخ جداگانه تا event-loop بلوک نشود
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, restore_backup, db, backup_data)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"خطا در بازیابی اطلاعات: {str(e)}")

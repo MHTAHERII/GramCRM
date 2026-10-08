@@ -217,7 +217,11 @@ app = FastAPI(
     title="GramCRM API",
     description="پلتفرم جامع مدیریت ارتباط با مشتری (CRM) و اتوماسیون هوشمند دایرکت و فروش اینستاگرام",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    # غیرفعال بودن مستندات عمومی در محیط عملیاتی (قابل فعال‌سازی با ENABLE_DOCS=true)
+    docs_url="/docs" if settings.ENABLE_DOCS else None,
+    redoc_url="/redoc" if settings.ENABLE_DOCS else None,
+    openapi_url="/openapi.json" if settings.ENABLE_DOCS else None,
 )
 
 # کوکی امضاشده برای سشن ورود به پنل

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.keyword import Keyword
 from app.service.product_response import keyword_response
+from app.service.bot_settings import REMINDER_NOT_FOLLOWED
 
 logger = logging.getLogger("zernio_service")
 
@@ -298,7 +299,8 @@ class ZernioService:
             payload["followGate"] = {
                 "message": follow_gate_message.strip()[:640],
                 "buttonLabel": btn_label,
-                "notFollowingMessage": "هنوز پیج رو فالو نکردید! لطفاً ابتدا پیج را فالو کنید و سپس دکمه را لمس کنید 🌸"
+                # متن یکسان با یادآوری بات داخلی تا پیام‌های کاربر یکدست باشد
+                "notFollowingMessage": REMINDER_NOT_FOLLOWED
             }
         elif automation_id:
             payload["audience"] = {"followerStatus": "any", "whenUnknown": "send"}

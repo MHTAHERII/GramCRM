@@ -64,9 +64,16 @@ def create_keyword(
 ):
     if keyword.product_id is not None and not db.get(Product, keyword.product_id):
         raise HTTPException(404, "محصول پیدا نشد")
+
+    stripped_keyword = keyword.keyword.strip()
+    if not stripped_keyword:
+        raise HTTPException(status_code=400, detail="کلیدواژه نمی‌تواند خالی باشد")
+    if not keyword.response.strip():
+        raise HTTPException(status_code=400, detail="متن پاسخ نمی‌تواند خالی باشد")
+
     exists = (
         db.query(Keyword)
-        .filter(Keyword.keyword == keyword.keyword.strip())
+        .filter(Keyword.keyword == stripped_keyword)
         .first()
     )
     if exists:
@@ -155,6 +162,8 @@ def update_keyword(
 
     if keyword_data.keyword is not None:
         stripped = keyword_data.keyword.strip()
+        if not stripped:
+            raise HTTPException(status_code=400, detail="کلیدواژه نمی‌تواند خالی باشد")
         duplicate = (
             db.query(Keyword)
             .filter(Keyword.keyword == stripped, Keyword.id != keyword_id)
@@ -165,7 +174,10 @@ def update_keyword(
         keyword.keyword = stripped
 
     if keyword_data.response is not None:
-        keyword.response = keyword_data.response.strip()
+        stripped_response = keyword_data.response.strip()
+        if not stripped_response:
+            raise HTTPException(status_code=400, detail="متن پاسخ نمی‌تواند خالی باشد")
+        keyword.response = stripped_response
 
     if keyword_data.comment_reply is not None:
         keyword.comment_reply = keyword_data.comment_reply.strip() or None

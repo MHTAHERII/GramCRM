@@ -92,7 +92,11 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
         logger.error(f"Failed to parse webhook JSON body: {e}")
         return {"status": "INVALID_JSON"}
 
-    logger.info(f"Webhook payload received: {payload}")
+    # فقط خلاصه رویداد لاگ می‌شود تا اطلاعات حساس پیام‌ها در لاگ‌ها نماند
+    logger.info(
+        f"Webhook payload received (object={payload.get('object')}, "
+        f"entries={len(payload.get('entry', []))}, bytes={len(body)})"
+    )
 
     # بررسی نوع آبجکت ارسالی متا (instagram یا page)
     if payload.get("object") in ["instagram", "page"]:

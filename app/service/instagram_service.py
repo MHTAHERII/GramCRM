@@ -4,6 +4,17 @@ from app.config import settings
 
 logger = logging.getLogger("instagram_service")
 
+# سقف ورودی‌های کش‌های درون‌حافظه‌ای (جلوگیری از نشت حافظه در اجرای بلندمدت)
+_CACHE_MAX_ENTRIES = 3000
+
+
+def _bounded_put(cache: dict, key, value, maxsize: int = _CACHE_MAX_ENTRIES) -> None:
+    """درج در کش با سقف اندازه؛ قدیمی‌ترین ورودی‌ها حذف می‌شوند"""
+    cache[key] = value
+    if len(cache) > maxsize:
+        for old_key in list(cache.keys())[: len(cache) - maxsize]:
+            cache.pop(old_key, None)
+
 
 class UnifiedInstagramService:
     """
@@ -89,6 +100,13 @@ class UnifiedInstagramService:
 
             conversations = r.json().get("data", [])
 
+            # تازه‌ترین مکالمه‌ها اول بررسی شوند تا پیام‌های جدید در همان چرخه پردازش شوند
+            conversations = sorted(
+                conversations,
+                key=lambda c: c.get("updatedTime") or "",
+                reverse=True,
+            )
+
             for conv in conversations[:amount]:
                 conv_id = conv.get("id")
                 participant = conv.get("participantUsername") or conv.get("participantName") or "unknown"
@@ -97,15 +115,15 @@ class UnifiedInstagramService:
 
                 # ثبت در کش مکالمات جهت پاسخ‌گویی بدون تاخیر از پنل
                 if conv_id:
-                    self._conv_cache[str(conv_id)] = conv_id
-                    if part_id: self._conv_cache[str(part_id)] = conv_id
+                    _bounded_put(self._conv_cache, str(conv_id), conv_id)
+                    if part_id: _bounded_put(self._conv_cache, str(part_id), conv_id)
                     if participant and participant != "unknown":
-                        self._conv_cache[str(participant).lower()] = conv_id
+                        _bounded_put(self._conv_cache, str(participant).lower(), conv_id)
 
                 # کش کردن وضعیت فالوور از دیتای Zernio
                 if part_id and "instagramProfile" in conv and isinstance(conv["instagramProfile"], dict):
                     if "isFollower" in conv["instagramProfile"]:
-                        self._follower_cache[str(part_id)] = bool(conv["instagramProfile"]["isFollower"])
+                        _bounded_put(self._follower_cache, str(part_id), bool(conv["instagramProfile"]["isFollower"]))
 
                 # بهینه‌سازی بسیار مهم: اگر مکالمه تغییر نکرده، هیچ درخواست HTTP اضافی ارسال نکن!
                 if conv_id and updated_str:
@@ -118,7 +136,7 @@ class UnifiedInstagramService:
                         updated_dt = datetime.fromisoformat(updated_str.replace("Z", "+00:00"))
                         if (now - updated_dt) > timedelta(hours=23):
                             logger.debug(f"Skip conversation {participant}: outside 24h window")
-                            if conv_id: self._conv_updated_times[str(conv_id)] = updated_str
+                            if conv_id: _bounded_put(self._conv_updated_times, str(conv_id), updated_str)
                             continue
                     except Exception:
                         pass
@@ -135,7 +153,7 @@ class UnifiedInstagramService:
                     continue
 
                 if conv_id and updated_str:
-                    self._conv_updated_times[str(conv_id)] = updated_str
+                    _bounded_put(self._conv_updated_times, str(conv_id), updated_str)
 
                 messages = m_res.json().get("messages", [])
                 if not messages:
@@ -190,7 +208,7 @@ class UnifiedInstagramService:
 
     def mark_processed(self, thread_id: str, message_id: str) -> None:
         """ثبت message_id به عنوان آخرین پیام پردازش‌شده برای این مکالمه"""
-        self._last_processed[thread_id] = message_id
+        _bounded_put(self._last_processed, thread_id, message_id)
 
     def send_direct_message(
         self,
@@ -286,11 +304,11 @@ class UnifiedInstagramService:
     def cache_conversation(self, user_id: str | None, thread_id: str | None, username: str | None = None) -> None:
         """ثبت فوری شناسه مکالمه در کش برای ارسال بلادرنگ از پنل"""
         if thread_id:
-            self._conv_cache[str(thread_id)] = thread_id
+            _bounded_put(self._conv_cache, str(thread_id), thread_id)
             if user_id:
-                self._conv_cache[str(user_id)] = thread_id
+                _bounded_put(self._conv_cache, str(user_id), thread_id)
             if username:
-                self._conv_cache[str(username).lower()] = thread_id
+                _bounded_put(self._conv_cache, str(username).lower(), thread_id)
 
     def find_conversation_id(self, instagram_user_id: str) -> str | None:
         """
@@ -323,9 +341,9 @@ class UnifiedInstagramService:
                 puser = conv.get("participantUsername", "")
 
                 if cid:
-                    self._conv_cache[str(cid)] = cid
-                    if pid: self._conv_cache[str(pid)] = cid
-                    if puser: self._conv_cache[str(puser).lower()] = cid
+                    _bounded_put(self._conv_cache, str(cid), cid)
+                    if pid: _bounded_put(self._conv_cache, str(pid), cid)
+                    if puser: _bounded_put(self._conv_cache, str(puser).lower(), cid)
 
                 if str(pid) == str(instagram_user_id) or str(cid) == str(instagram_user_id) or (puser and str(puser).lower() == key):
                     target_conv = cid
@@ -339,9 +357,16 @@ class UnifiedInstagramService:
             return None
 
     def follows_page(self, user_id: str) -> bool:
-        """بررسی وضعیت فالوور از روی کش پروفایل‌های دریافتی زِرنیو"""
+        """
+        بررسی وضعیت فالوور از روی کش پروفایل‌های دریافتی زِرنیو.
+        اگر وضعیت برای این کاربر هرگز از زرنیو دریافت نشده باشد، فالوور فرض می‌شود
+        (fail-open) تا مشتریان مشروع پشت دروازه فالو گیر نکنند.
+        """
         if str(user_id) in self._follower_cache:
             return self._follower_cache[str(user_id)]
+        logger.debug(
+            f"Follower status unknown for user {user_id}; treating as follower (fail-open)."
+        )
         return True
 
 

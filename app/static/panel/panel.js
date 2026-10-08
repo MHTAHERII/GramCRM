@@ -1252,8 +1252,8 @@ document.getElementById("btn-add-follow-gate-button")?.addEventListener("click",
 
 function updateBotStatusText(enabled) {
   document.getElementById("bot-status-text").textContent = enabled
-    ? "🟢 ربات روشن است و به دایرکت‌ها پاسخ خودکار می‌دهد."
-    : "🔴 ربات خاموش است؛ پیام‌ها ذخیره می‌شوند ولی پاسخی ارسال نمی‌شود.";
+    ? "🟢 ربات روشن است و به دایرکت‌ها و کامنت‌ها پاسخ خودکار می‌دهد."
+    : "🔴 ربات خاموش است؛ اتوماسیون‌ها متوقف شده و هیچ درخواستی به اکانت اینستاگرام ارسال نمی‌شود.";
 }
 
 function updateBotBadge(enabled) {

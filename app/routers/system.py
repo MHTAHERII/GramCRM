@@ -18,6 +18,9 @@ from app.service.system_service import (
 
 router = APIRouter(prefix="/system", tags=["System"], dependencies=[Depends(require_auth)])
 
+# سقف حجم فایل پشتیبان قابل بازیابی (جلوگیری از پر شدن حافظه سرور)
+_MAX_RESTORE_BYTES = 50 * 1024 * 1024  # 50MB
+
 
 @router.get("/status", summary="استعلام وضعیت زنده منابع سرور و آمار CRM")
 def get_status(db: Session = Depends(get_db)):
@@ -51,11 +54,22 @@ def download_backup(db: Session = Depends(get_db)):
 @router.post("/restore", summary="بازیابی دیتابیس از فایل پشتیبان JSON")
 async def upload_restore(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """آپلود فایل JSON پشتیبان و بازیابی کامل اطلاعات با تطبیق خودکار و بدون تداخل"""
-    if not file.filename.endswith(".json"):
+    if not file.filename or not file.filename.endswith(".json"):
         raise HTTPException(status_code=400, detail="فایل باید دارای پسوند .json باشد")
 
     try:
-        content = await file.read()
+        # فقط تا سقف مجاز خوانده می‌شود تا فایل بزرگ حافظه سرور را اشباع نکند
+        content = await file.read(_MAX_RESTORE_BYTES + 1)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"خطا در خواندن فایل: {str(e)}")
+
+    if len(content) > _MAX_RESTORE_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="حجم فایل پشتیبان بیش از حد مجاز است (حداکثر ۵۰ مگابایت)"
+        )
+
+    try:
         backup_data = json.loads(content.decode("utf-8"))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"فایل نامعتبر است یا ساختار JSON خراب است: {str(e)}")

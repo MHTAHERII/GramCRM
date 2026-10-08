@@ -4,13 +4,12 @@ from concurrent.futures import ThreadPoolExecutor
 from app.config import settings
 from app.database import SessionLocal
 from app.service.instagram_service import instagram_client
-from app.service.chat_service import process_incoming_message
+from app.service.chat_service import process_incoming_message, drop_unsent_reply
 
 logger = logging.getLogger("ig_worker")
 _executor = ThreadPoolExecutor(max_workers=2)
 
-# شمارنده تلاش‌های ناموفق ارسال برای هر پیام
-_send_fail_counts: dict[str, int] = {}
+# تعداد تلاش‌های ارسال همان لحظه قبل از تسلیم شدن
 _MAX_SEND_ATTEMPTS = 3
 
 
@@ -66,32 +65,27 @@ def poll_cycle() -> int:
                     is_new=msg.get("is_new", True)
                 )
 
-                # کلید پیام برای شمارش تلاش‌های ارسال
-                msg_key = msg.get("message_id") or f"{msg.get('thread_id')}:{msg.get('message_id')}"
-
                 if reply:
-                    sent = instagram_client.send_direct_message(
+                    # تلاش مجدد همان لحظه (قبلاً تلاش بین-چرخه‌ای به‌خاطر کش updatedTime
+                    # و dedup دیتابیس هرگز اجرا نمی‌شد و ارسال ناموفق = پاسخ گم‌شده بود)
+                    sent = instagram_client.send_direct_message_with_retry(
                         text=reply,
                         thread_id=msg.get("thread_id"),
-                        user_id=msg.get("user_id")
+                        user_id=msg.get("user_id"),
+                        attempts=_MAX_SEND_ATTEMPTS,
                     )
                     if sent:
                         processed += 1
-                        _send_fail_counts.pop(msg_key, None)
                         logger.info(
                             f"Replied to {msg.get('username', 'unknown')}: "
                             f"'{reply[:40]}...'"
                         )
                     else:
-                        _send_fail_counts[msg_key] = _send_fail_counts.get(msg_key, 0) + 1
-                        attempt = _send_fail_counts[msg_key]
-                        logger.warning(
-                            f"Failed to send reply to {msg.get('username', 'unknown')} "
-                            f"(attempt {attempt}/{_MAX_SEND_ATTEMPTS})"
+                        logger.error(
+                            f"Giving up after {_MAX_SEND_ATTEMPTS} attempts for "
+                            f"{msg.get('username', 'unknown')}; dropping unsent reply record."
                         )
-                        if attempt < _MAX_SEND_ATTEMPTS:
-                            # هنوز علامت‌گذاری نمی‌کنیم تا در دور بعدی پول تلاش مجدد شود
-                            continue
+                        drop_unsent_reply(db, msg["user_id"], reply)
 
                 # ثبت پیام به عنوان پردازش‌شده (چه جواب داده باشیم چه نه)
                 # این جلوی تکرار پردازش پیام قدیمی را می‌گیرد
@@ -99,7 +93,6 @@ def poll_cycle() -> int:
                     thread_id=msg.get("thread_id", ""),
                     message_id=msg.get("message_id", "")
                 )
-                _send_fail_counts.pop(msg_key, None)
 
             except Exception as e:
                 logger.error(

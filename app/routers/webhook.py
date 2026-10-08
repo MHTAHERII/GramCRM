@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.service.chat_service import process_incoming_message
+from app.service.chat_service import process_incoming_message, drop_unsent_reply
 from app.service.instagram_service import instagram_client
 
 logger = logging.getLogger("meta_webhook")
@@ -139,7 +139,7 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
                 if reply_text:
                     sent = await loop.run_in_executor(
                         None,
-                        instagram_client.send_direct_message,
+                        instagram_client.send_direct_message_with_retry,
                         reply_text,
                         sender_id,
                         None,
@@ -147,7 +147,13 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
                     if sent:
                         logger.info(f"Replied to {sender_id} via Meta Graph API successfully.")
                     else:
-                        logger.error(f"Failed to send reply to {sender_id} via Meta Graph API.")
+                        logger.error(
+                            f"Failed to send reply to {sender_id} after retries; "
+                            "dropping unsent record so history stays accurate."
+                        )
+                        await loop.run_in_executor(
+                            None, drop_unsent_reply, db, sender_id, reply_text
+                        )
             except Exception as e:
                 logger.error(f"Error processing Meta webhook event from {sender_id}: {e}", exc_info=True)
 

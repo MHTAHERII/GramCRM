@@ -301,6 +301,30 @@ class UnifiedInstagramService:
             logger.error(f"Network error sending DM via Zernio: {e}", exc_info=True)
             return False
 
+    def send_direct_message_with_retry(
+        self,
+        text: str,
+        user_id: str | None = None,
+        thread_id: str | None = None,
+        attempts: int = 3,
+        backoff_seconds: float = 1.0,
+    ) -> bool:
+        """
+        ارسال دایرکت با تلاش مجدد همان لحظه (پشتیبان ارسال‌های ناموفق شبکه).
+        باید در نخ جدا (ThreadPool/executor) اجرا شود چون بین تلاش‌ها sleep دارد.
+        """
+        import time
+
+        for attempt in range(1, max(attempts, 1) + 1):
+            if self.send_direct_message(text=text, user_id=user_id, thread_id=thread_id):
+                return True
+            if attempt < attempts:
+                logger.warning(
+                    f"DM send attempt {attempt}/{attempts} failed; retrying in {backoff_seconds * attempt}s..."
+                )
+                time.sleep(backoff_seconds * attempt)
+        return False
+
     def cache_conversation(self, user_id: str | None, thread_id: str | None, username: str | None = None) -> None:
         """ثبت فوری شناسه مکالمه در کش برای ارسال بلادرنگ از پنل"""
         if thread_id:

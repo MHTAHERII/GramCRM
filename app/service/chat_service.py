@@ -52,6 +52,49 @@ def _claims_followed(text: str) -> bool:
     return not (prefix.endswith("ن") or prefix.endswith("نه"))
 
 
+def drop_unsent_reply(db: Session, instagram_user_id: str, reply_text: str) -> None:
+    """
+    حذف پیام خروجی ربات که ثبت شده ولی ارسال آن شکست خورده است.
+    بدون این کار، دیتابیس نشان می‌ده بات پاسخ داده در حالی که هیچ پیامی به دست کاربر نرسیده
+    (و کول‌داون دروازه فالو هم بی‌جهت فعال می‌ماند).
+    فقط رکورد اخیر همان متن حذف می‌شود تا پیام‌های قدیمی‌تر آسیب نبینند.
+    """
+    try:
+        from datetime import timedelta
+
+        customer = (
+            db.query(Customer)
+            .filter(Customer.instagram_id == str(instagram_user_id))
+            .first()
+        )
+        if not customer:
+            return
+        cutoff = datetime.utcnow() - timedelta(minutes=5)
+        unsent = (
+            db.query(Message)
+            .filter(
+                Message.customer_id == customer.id,
+                Message.sender == "bot",
+                Message.text == reply_text,
+                Message.created_at >= cutoff,
+            )
+            .order_by(Message.id.desc())
+            .first()
+        )
+        if unsent:
+            db.delete(unsent)
+            db.commit()
+            logger.warning(
+                f"پاسخ ثبت‌شده برای مشتری {customer.id} حذف شد چون ارسال آن ناموفق بود."
+            )
+    except Exception as e:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        logger.error(f"Failed to drop unsent reply for user {instagram_user_id}: {e}")
+
+
 def process_incoming_message(
     db: Session,
     instagram_user_id: str,

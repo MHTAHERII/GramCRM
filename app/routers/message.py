@@ -75,6 +75,9 @@ def create_message(
             detail="ثبت پیام با فرستنده customer از این مسیر مجاز نیست"
         )
 
+    if not db.get(Customer, message.customer_id):
+        raise HTTPException(status_code=404, detail="مشتری موردنظر یافت نشد")
+
     new_message = Message(
         customer_id=message.customer_id,
         text=message.text,
@@ -92,9 +95,19 @@ def create_message(
 # Get All Messages
 @router.get("/", response_model=List[MessageResponse])
 def get_messages(
+    limit: int = 500,
+    offset: int = 0,
     db: Session = Depends(get_db)
 ):
-    return db.query(Message).all()
+    """لیست پیام‌ها با سقف و صفحه‌بندی (بدون سقف، جدول کامل بارگذاری می‌شد)"""
+    limit = min(max(limit, 1), 1000)
+    return (
+        db.query(Message)
+        .order_by(Message.id.asc())
+        .offset(max(offset, 0))
+        .limit(limit)
+        .all()
+    )
 
 
 # Get Message By ID

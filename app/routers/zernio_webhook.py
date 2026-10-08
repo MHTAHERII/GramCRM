@@ -1,4 +1,5 @@
 import asyncio
+import hmac
 import logging
 from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -8,7 +9,7 @@ from app.database import get_db
 from app.models.customer import Customer
 from app.models.message import Message
 from app.service.bot_settings import get_bot_settings, REMINDER_NOT_FOLLOWED
-from app.service.chat_service import process_incoming_message
+from app.service.chat_service import process_incoming_message, drop_unsent_reply
 from app.service.instagram_service import instagram_client
 
 logger = logging.getLogger("zernio_webhook")
@@ -68,7 +69,10 @@ def _verify_zernio_token(request: Request) -> bool:
         or request.query_params.get("token")
         or ""
     )
-    return provided == secret
+    # مقایسه زمان-ثابت (مهم نیست مقدار ASCII باشد یا نه)
+    return hmac.compare_digest(
+        provided.encode("utf-8"), str(secret).encode("utf-8")
+    )
 
 
 @router.get("", summary="تست صحت اندپوینت وب‌هوک Zernio")
@@ -143,7 +147,7 @@ async def receive_zernio_webhook(request: Request, db: Session = Depends(get_db)
             if reply and conv_id:
                 sent = await loop.run_in_executor(
                     None,
-                    instagram_client.send_direct_message,
+                    instagram_client.send_direct_message_with_retry,
                     reply,
                     str(sender_id),
                     str(conv_id),
@@ -151,7 +155,22 @@ async def receive_zernio_webhook(request: Request, db: Session = Depends(get_db)
                 if sent:
                     logger.info(f"Zernio Webhook: Replied to {sender_name or sender_id} successfully.")
                 else:
-                    logger.warning(f"Zernio Webhook: Failed to send reply to {conv_id}")
+                    logger.error(
+                        f"Zernio Webhook: Failed to send reply to {conv_id} after retries; "
+                        "dropping unsent record."
+                    )
+                    await loop.run_in_executor(
+                        None, drop_unsent_reply, db, str(sender_id), reply
+                    )
+            elif reply:
+                # پاسخ تولید ولی شناسه مکالمه موجود نیست → قابل ارسال نیست؛ رکورد شبح حذف شود
+                logger.error(
+                    f"Zernio Webhook: reply generated but conversationId missing for "
+                    f"{sender_id}; dropping unsent record."
+                )
+                await loop.run_in_executor(
+                    None, drop_unsent_reply, db, str(sender_id), reply
+                )
 
         return {"status": "MESSAGE_PROCESSED"}
 

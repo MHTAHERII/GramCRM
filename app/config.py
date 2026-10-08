@@ -46,5 +46,8 @@ class Settings:
     # مستندات OpenAPI (/docs و /openapi.json)؛ در محیط عملیاتی پیش‌فرض غیرفعال است
     ENABLE_DOCS: bool = os.getenv("ENABLE_DOCS", "false").lower() in ("true", "1", "yes")
 
+    # فقط از طریق HTTPS ارسال کوکی سشن (روی سرور عملیاتی true و در توسعه لوکال false)
+    SESSION_HTTPS_ONLY: bool = os.getenv("SESSION_HTTPS_ONLY", "false").lower() in ("true", "1", "yes")
+
 settings = Settings()
 

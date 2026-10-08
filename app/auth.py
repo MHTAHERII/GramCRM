@@ -27,7 +27,24 @@ def _login_rate_ok(client_ip: str) -> bool:
         return False
     attempts.append(now)
     _LOGIN_ATTEMPTS[client_ip] = attempts
+    # پاکسازی ورودی‌های منقضی‌شده سایر IP ها تا دیکشنری رشد نکند
+    if len(_LOGIN_ATTEMPTS) > 1000:
+        for ip in list(_LOGIN_ATTEMPTS):
+            stale = [t for t in _LOGIN_ATTEMPTS[ip] if now - t < _LOGIN_WINDOW_SECONDS]
+            if stale:
+                _LOGIN_ATTEMPTS[ip] = stale
+            else:
+                _LOGIN_ATTEMPTS.pop(ip, None)
     return True
+
+
+def _constant_time_equals(a: str, b: str) -> bool:
+    """
+    مقایسه زمان-ثابت امن برای هر نوع رشته (ASCII یا فارسی).
+    secrets.compare_digest روی str غیر-ASCII استثنا می‌دهد؛ تبدیل به UTF-8
+    هم مشکل را حل می‌کند و همچنان مقایسه را زمان-ثابت نگه می‌دارد.
+    """
+    return secrets.compare_digest(a.encode("utf-8"), b.encode("utf-8"))
 
 
 class LoginRequest(BaseModel):
@@ -51,11 +68,11 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     expected_username = bot_settings.admin_username or "admin"
     expected_password = bot_settings.admin_password or settings.ADMIN_PASSWORD
 
-    if not secrets.compare_digest(body.username.strip(), expected_username):
+    if not _constant_time_equals(body.username.strip(), expected_username):
         raise HTTPException(status_code=401, detail="نام کاربری یا رمز عبور اشتباه است")
 
-    # مقایسه زمان-ثابت برای جلوگیری از حمله timing
-    if not secrets.compare_digest(body.password, expected_password):
+    # مقایسه زمان-ثابت برای جلوگیری از حمله timing (پشتیبانی از رمزهای فارسی/غیر-ASCII)
+    if not _constant_time_equals(body.password, expected_password):
         raise HTTPException(status_code=401, detail="نام کاربری یا رمز عبور اشتباه است")
 
     request.session[SESSION_KEY] = True

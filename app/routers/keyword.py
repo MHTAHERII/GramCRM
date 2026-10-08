@@ -18,6 +18,7 @@ from app.schemas.keyword import (
 from app.service.zernio_service import zernio_service
 from app.service.automation_service import automation_service
 from app.service.keyword_diagnostics import keyword_delivery_statuses, preview_comment
+from app.service.reply_engine import normalize_text
 
 router = APIRouter(
     prefix="/keywords",
@@ -71,10 +72,11 @@ def create_keyword(
     if not keyword.response.strip():
         raise HTTPException(status_code=400, detail="متن پاسخ نمی‌تواند خالی باشد")
 
-    exists = (
-        db.query(Keyword)
-        .filter(Keyword.keyword == stripped_keyword)
-        .first()
+    # بررسی تکراری با نرمال‌سازی (تفاوت عربی/فارسی یا بزرگ/کوچک تکرار محسوب شود)
+    norm_new = normalize_text(stripped_keyword)
+    exists = any(
+        normalize_text(k.keyword) == norm_new
+        for k in db.query(Keyword).all()
     )
     if exists:
         raise HTTPException(status_code=409, detail="این کلیدواژه قبلاً ثبت شده است")
@@ -164,10 +166,11 @@ def update_keyword(
         stripped = keyword_data.keyword.strip()
         if not stripped:
             raise HTTPException(status_code=400, detail="کلیدواژه نمی‌تواند خالی باشد")
-        duplicate = (
-            db.query(Keyword)
-            .filter(Keyword.keyword == stripped, Keyword.id != keyword_id)
-            .first()
+        # بررسی تکراری با نرمال‌سازی (عربی/فارسی یا بزرگ/کوچک) به‌جز خودِ این رکورد
+        norm_new = normalize_text(stripped)
+        duplicate = any(
+            k.id != keyword_id and normalize_text(k.keyword) == norm_new
+            for k in db.query(Keyword).all()
         )
         if duplicate:
             raise HTTPException(status_code=409, detail="این کلیدواژه قبلاً ثبت شده است")

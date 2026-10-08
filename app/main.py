@@ -228,6 +228,9 @@ app = FastAPI(
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.ADMIN_SESSION_SECRET,
+    # روی سرور عملیاتی با SESSION_HTTPS_ONLY=true کوکی فقط با HTTPS ارسال می‌شود
+    https_only=settings.SESSION_HTTPS_ONLY,
+    same_site="lax",
 )
 
 app.include_router(auth_router)

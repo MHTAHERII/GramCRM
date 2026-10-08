@@ -35,6 +35,10 @@ class BoundedCacheTests(unittest.TestCase):
 
 
 class FakeMessageDb:
+    def get(self, model, pk):
+        # وجود مشتری ۱ فرض شده؛ هر id دیگری یافت نمی‌شود
+        return SimpleNamespace(id=pk) if pk == 1 else None
+
     def add(self, obj):
         self.obj = obj
 
@@ -76,6 +80,13 @@ class CreateMessageTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["sender"], "admin")
+
+    def test_unknown_customer_is_rejected_with_404(self):
+        response = self.client.post(
+            "/messages/",
+            json={"customer_id": 999, "text": "سلام", "sender": "admin"},
+        )
+        self.assertEqual(response.status_code, 404)
 
 
 class DocsDisabledTests(unittest.TestCase):

@@ -22,6 +22,15 @@ def _mask_secret(value: str | None) -> str | None:
     return f"{value[:4]}•••{value[-4:]}"
 
 
+def _is_masked_secret(value: str | None) -> bool:
+    """
+    آیا مقدار دریافتی صرفاً نمای ماسک‌شده یک کلید ذخیره‌شده است؟
+    در این صورت نباید به‌عنوان کلید واقعی ذخیره شود (مثلاً از سمت پنل با JS قدیمی
+    یا فراخوانی دستی API که خروجی GET را مستقیم POST می‌کند).
+    """
+    return "•••" in (value or "")
+
+
 def _sync_zernio_bg():
     """همگام‌سازی کلیدواژه‌ها و تنظیمات با Zernio در پس‌زمینه"""
     db = None
@@ -119,7 +128,7 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
 
     # تنظیمات توکن و شناسه‌های API اینستاگرام (Zernio)
     api_key_changed = False
-    if data.zernio_api_key is not None:
+    if data.zernio_api_key is not None and not _is_masked_secret(data.zernio_api_key):
         new_key = data.zernio_api_key.strip() if data.zernio_api_key.strip() else None
         if new_key != setting.zernio_api_key:
             api_key_changed = True
@@ -138,7 +147,7 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
 
     if data.automation_provider is not None and data.automation_provider.strip():
         setting.automation_provider = data.automation_provider.strip().lower()
-    if data.postzen_api_key is not None:
+    if data.postzen_api_key is not None and not _is_masked_secret(data.postzen_api_key):
         setting.postzen_api_key = data.postzen_api_key.strip() or None
     if data.postzen_account_id is not None:
         setting.postzen_account_id = data.postzen_account_id.strip() or None
@@ -229,6 +238,8 @@ def auto_discover_credentials(payload: dict | None = None, db: Session = Depends
     provider = "zernio"
     if payload and isinstance(payload, dict):
         api_key = payload.get("api_key")
+        if _is_masked_secret(api_key):
+            api_key = None  # مقدار ماسک‌شده یعنی بدون تغییر؛ از کلید ذخیره‌شده استفاده شود
         provider = payload.get("provider") or setting.automation_provider or "zernio"
     provider = provider.lower()
 

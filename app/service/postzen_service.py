@@ -299,7 +299,8 @@ class PostZenService:
         existing_automations = self.list_comment_automations()
         existing_by_name = {
             auto.get("name"): auto for auto in existing_automations
-            if auto.get("accountId") in (None, self.account_id)
+            if auto.get("accountId") is None
+            or str(auto.get("accountId")) == str(self.account_id)
         }
 
         all_keywords = db.query(Keyword).all()

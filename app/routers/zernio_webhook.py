@@ -1,7 +1,9 @@
+import asyncio
 import logging
-from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.service.chat_service import process_incoming_message
 from app.service.instagram_service import instagram_client
@@ -12,6 +14,22 @@ router = APIRouter(
     prefix="/webhook/zernio",
     tags=["Zernio Webhook"]
 )
+
+
+def _verify_zernio_token(request: Request) -> bool:
+    """
+    اگر ZERNIO_WEBHOOK_SECRET تنظیم شده باشد، درخواست باید هدر
+    X-Zernio-Webhook-Token (یا ?token=) را با مقدار یکسان داشته باشد.
+    """
+    secret = settings.ZERNIO_WEBHOOK_SECRET
+    if not secret:
+        return True  # بدون تنظیم، بررسی نمی‌شود
+    provided = (
+        request.headers.get("X-Zernio-Webhook-Token")
+        or request.query_params.get("token")
+        or ""
+    )
+    return provided == secret
 
 
 @router.get("", summary="تست صحت اندپوینت وب‌هوک Zernio")
@@ -27,7 +45,15 @@ async def receive_zernio_webhook(request: Request, db: Session = Depends(get_db)
     رویدادهای زنده Zernio:
     - message.received: دایرکت جدید از کاربر
     - comment.received: کامنت جدید زیر پست‌ها
+
+    امنیت: اگر ZERNIO_WEBHOOK_SECRET در .env تنظیم شده باشد، درخواست‌های
+    بدون توکن صحیح رد می‌شوند. پردازش در نخ جداگانه اجرا می‌شود تا
+    event-loop سرور بلوک نشود.
     """
+    if not _verify_zernio_token(request):
+        logger.warning("Zernio webhook rejected: invalid/missing webhook token.")
+        raise HTTPException(status_code=403, detail="Invalid webhook token")
+
     try:
         payload = await request.json()
     except Exception as e:
@@ -59,21 +85,27 @@ async def receive_zernio_webhook(request: Request, db: Session = Depends(get_db)
             instagram_client.cache_conversation(user_id=sender_id, thread_id=conv_id, username=sender_name)
 
             logger.info(f"Zernio Webhook: Processing message from {sender_name or sender_id}: '{text[:40]}...'")
-            reply = process_incoming_message(
-                db=db,
-                instagram_user_id=str(sender_id),
-                text=text,
-                username=sender_name,
-                full_name=sender_name,
-                ig_message_id=str(msg_id) if msg_id else None,
-                is_new=True
+
+            loop = asyncio.get_running_loop()
+            reply = await loop.run_in_executor(
+                None,
+                process_incoming_message,
+                db,
+                str(sender_id),
+                text,
+                sender_name,
+                sender_name,
+                str(msg_id) if msg_id else None,
+                True,
             )
 
             if reply and conv_id:
-                sent = instagram_client.send_direct_message(
-                    text=reply,
-                    thread_id=str(conv_id),
-                    user_id=str(sender_id)
+                sent = await loop.run_in_executor(
+                    None,
+                    instagram_client.send_direct_message,
+                    reply,
+                    str(sender_id),
+                    str(conv_id),
                 )
                 if sent:
                     logger.info(f"Zernio Webhook: Replied to {sender_name or sender_id} successfully.")

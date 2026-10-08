@@ -39,20 +39,25 @@ class AutomationService:
         return result
 
     def pause_all_automations(self) -> int:
-        """غیرفعال کردن تمام اتوماسیون‌های ریموت در زمان خاموش شدن ربات برای جلوگیری از هرگونه تداخل"""
-        if not self.is_configured():
-            return 0
+        """
+        غیرفعال کردن تمام اتوماسیون‌های ریموت در زمان خاموش شدن ربات برای جلوگیری از هرگونه تداخل.
+        هر دو ارائه‌دهنده (زرنیو و پست‌زن) بررسی می‌شوند؛ اتوماسیون‌های ارائه‌دهنده
+        غیرفعال هم نباید روی اکانت کاربر رها شوند.
+        """
         paused = 0
-        try:
-            automations = self.list_comment_automations()
-            for auto in automations:
-                auto_id = auto.get("id") or auto.get("_id")
-                if auto_id and auto.get("isActive", True):
-                    if self.set_comment_automation_active(auto_id, False):
-                        paused += 1
-            logger.info(f"Paused {paused} automations on {self.provider}")
-        except Exception as e:
-            logger.error(f"Error pausing automations: {e}")
+        for svc in (zernio_service, postzen_service):
+            try:
+                if not svc.is_configured():
+                    continue
+                automations = svc.list_comment_automations()
+                for auto in automations:
+                    auto_id = auto.get("id") or auto.get("_id")
+                    if auto_id and auto.get("isActive", True):
+                        if svc.set_comment_automation_active(auto_id, False):
+                            paused += 1
+            except Exception as e:
+                logger.error(f"Error pausing automations on provider: {e}")
+        logger.info(f"Paused {paused} automations across all providers")
         return paused
 
 

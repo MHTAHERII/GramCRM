@@ -104,7 +104,8 @@ def keyword_delivery_statuses(db: Session) -> dict:
     acc_id = getattr(svc, "account_id", None)
     by_name = {
         auto.get("name"): auto for auto in automations
-        if auto.get("accountId") in (None, acc_id)
+        if auto.get("accountId") is None
+        or str(auto.get("accountId")) == str(acc_id)
     }
 
     rows = []

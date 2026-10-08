@@ -206,6 +206,15 @@ def get_system_status(db: Session) -> Dict[str, Any]:
     }
 
 
+def _mask_secret(value):
+    """نمایش ماسک‌شده کلیدها در خروجی پشتیبان (کلید واقعی لو نمی‌رود)"""
+    if not value:
+        return None
+    if len(value) <= 8:
+        return "••••••••"
+    return f"{value[:4]}•••{value[-4:]}"
+
+
 def create_backup(db: Session) -> Dict[str, Any]:
     """تولید خروجی کامل و ساختاریافته از تمام داده‌های دیتابیس"""
     settings = get_bot_settings(db)
@@ -232,7 +241,7 @@ def create_backup(db: Session) -> Dict[str, Any]:
             "comment_public_reply_enabled": settings.comment_public_reply_enabled,
             "comment_public_reply_text": settings.comment_public_reply_text,
             "admin_username": settings.admin_username,
-            "zernio_api_key": settings.zernio_api_key,
+            "zernio_api_key": _mask_secret(settings.zernio_api_key),
             "zernio_profile_id": settings.zernio_profile_id,
             "zernio_account_id": settings.zernio_account_id,
             "instagram_username": settings.instagram_username,
@@ -302,7 +311,8 @@ def restore_backup(db: Session, backup_data: Dict[str, Any]) -> Dict[str, Any]:
             if "comment_public_reply_enabled" in s_data: setting.comment_public_reply_enabled = s_data["comment_public_reply_enabled"]
             if "comment_public_reply_text" in s_data: setting.comment_public_reply_text = s_data["comment_public_reply_text"]
             if "admin_username" in s_data and s_data["admin_username"]: setting.admin_username = s_data["admin_username"]
-            if "zernio_api_key" in s_data: setting.zernio_api_key = s_data["zernio_api_key"]
+            if "zernio_api_key" in s_data and s_data["zernio_api_key"] and "•••" not in str(s_data["zernio_api_key"]):
+                setting.zernio_api_key = s_data["zernio_api_key"]
             if "zernio_profile_id" in s_data: setting.zernio_profile_id = s_data["zernio_profile_id"]
             if "zernio_account_id" in s_data: setting.zernio_account_id = s_data["zernio_account_id"]
             if "instagram_username" in s_data: setting.instagram_username = s_data["instagram_username"]

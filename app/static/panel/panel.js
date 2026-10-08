@@ -1340,18 +1340,24 @@ document.getElementById("btn-toggle-postzen-vis")?.addEventListener("click", () 
 document.getElementById("save-api-settings")?.addEventListener("click", async () => {
   const saveBtn = document.getElementById("save-api-settings");
   const provider = document.getElementById("setting-automation-provider")?.value || "postzen";
-  const pznApiKey = document.getElementById("setting-postzen-api-key")?.value.trim() || "";
+  const pznApiKeyRaw = document.getElementById("setting-postzen-api-key")?.value.trim() || "";
   const pznAccountId = document.getElementById("setting-postzen-account-id")?.value.trim() || "";
-  const apiKey = document.getElementById("setting-zernio-api-key")?.value.trim() || "";
+  const apiKeyRaw = document.getElementById("setting-zernio-api-key")?.value.trim() || "";
   const profileId = document.getElementById("setting-zernio-profile-id")?.value.trim() || "";
   const accountId = document.getElementById("setting-zernio-account-id")?.value.trim() || "";
   const alertEl = document.getElementById("connection-status-alert");
 
-  if (provider === "postzen" && !pznApiKey) {
+  // کلید ماسک‌شده (•••) یعنی کاربر مقدار را تغییر نداده؛ نمی‌فرستیم تا کلید ذخیره‌شده حفظ شود
+  const pznUnchanged = pznApiKeyRaw.includes("•••");
+  const zernioUnchanged = apiKeyRaw.includes("•••");
+  const pznApiKey = pznUnchanged ? "" : pznApiKeyRaw;
+  const apiKey = zernioUnchanged ? "" : apiKeyRaw;
+
+  if (provider === "postzen" && !pznApiKey && !pznUnchanged) {
     showToast("لطفاً کلید API پست‌زن (pzn_live_...) را وارد کنید", "error");
     return;
   }
-  if (provider === "zernio" && !apiKey) {
+  if (provider === "zernio" && !apiKey && !zernioUnchanged) {
     showToast("لطفاً کلید API زرنیو را وارد کنید", "error");
     return;
   }
@@ -1428,12 +1434,15 @@ document.getElementById("save-api-settings")?.addEventListener("click", async ()
 document.getElementById("btn-auto-discover")?.addEventListener("click", async () => {
   const btn = document.getElementById("btn-auto-discover");
   const provider = document.getElementById("setting-automation-provider")?.value || "postzen";
-  const apiKey = provider === "postzen"
+  const apiKeyRaw = provider === "postzen"
     ? (document.getElementById("setting-postzen-api-key")?.value.trim() || "")
     : (document.getElementById("setting-zernio-api-key")?.value.trim() || "");
   const alertEl = document.getElementById("connection-status-alert");
 
-  if (!apiKey) {
+  // اگر کلید ماسک‌شده است (بدون تغییر)، سرور از کلید ذخیره‌شده استفاده می‌کند
+  const apiKey = apiKeyRaw.includes("•••") ? "" : apiKeyRaw;
+
+  if (!apiKeyRaw) {
     showToast(`لطفاً ابتدا کلید API مربوط به ${provider === 'postzen' ? 'PostZen' : 'Zernio'} را وارد کنید`, "error");
     return;
   }

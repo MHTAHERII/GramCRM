@@ -27,6 +27,8 @@ class Settings:
     META_ACCESS_TOKEN: str = os.getenv("META_ACCESS_TOKEN", "")
     META_VERIFY_TOKEN: str = os.getenv("META_VERIFY_TOKEN", "perfume_bot_verify_token_2026")
     META_API_VERSION: str = os.getenv("META_API_VERSION", "v21.0")
+    # امضای وب‌هوک متا (HMAC-SHA256 با App Secret); اگر خالی باشد، وب‌هوک بدون امضا پذیرفته می‌شود (با هشدار)
+    META_APP_SECRET: str = os.getenv("META_APP_SECRET", "")
 
     # تنظیمات پلتفرم Zernio (برای کامنت به دایرکت خودکار و اتوماسیون اینستاگرام)
     ZERNIO_API_KEY: str = os.getenv("ZERNIO_API_KEY", "")
@@ -37,6 +39,9 @@ class Settings:
     AUTOMATION_PROVIDER: str = os.getenv("AUTOMATION_PROVIDER", "zernio").lower()
     POSTZEN_API_KEY: str = os.getenv("POSTZEN_API_KEY", "")
     POSTZEN_ACCOUNT_ID: str = os.getenv("POSTZEN_ACCOUNT_ID", "")
+
+    # توکن اختیاری وب‌هوک زرنیو (اگر تنظیم شود، درخواست‌ها باید هدر X-Zernio-Webhook-Token را داشته باشند)
+    ZERNIO_WEBHOOK_SECRET: str = os.getenv("ZERNIO_WEBHOOK_SECRET", "")
 
 settings = Settings()
 

@@ -1,9 +1,14 @@
 from sqlalchemy.orm import Session
 from datetime import timedelta
+import time
 from app.models.bot_setting import BotSetting
 
 # حداکثر فاصله تکرار پیام دروازه فالو برای یک مشتری
 FOLLOW_GATE_REPEAT_COOLDOWN = timedelta(minutes=15)
+
+# فاصله حداقلی بین دو تلاش کشف خودکار شناسه‌ها (جلوگیری از درخواست HTTP در هر پیام)
+DISCOVERY_COOLDOWN_SECONDS = 3600.0
+_last_discovery_attempt_at = 0.0
 
 # متن اولیه برای ساخت رکورد تنظیمات؛ از پنل قابل ویرایش است
 DEFAULT_FALLBACK_REPLY = (
@@ -131,23 +136,27 @@ def get_bot_settings(db: Session) -> BotSetting:
 
 
     # اگر توکن موجود است ولی شناسه‌ها یا نام کاربری اینستاگرام ثبت نشده، استعلام و کشف خودکار کن
+    # (حداکثر ساعتی یک بار تا هر پیام ورودی یک درخواست HTTP ایجاد نکند)
     if setting.zernio_api_key and (not setting.zernio_account_id or not setting.zernio_profile_id or not setting.instagram_username):
-        try:
-            from app.service.zernio_service import zernio_service
-            disc = zernio_service.discover_account_and_profile(setting.zernio_api_key)
-            if disc:
-                if not setting.zernio_account_id and disc.get("account_id"):
-                    setting.zernio_account_id = disc["account_id"]
-                    changed = True
-                if not setting.zernio_profile_id and disc.get("profile_id"):
-                    setting.zernio_profile_id = disc["profile_id"]
-                    changed = True
-                if not setting.instagram_username and disc.get("username"):
-                    setting.instagram_username = disc["username"]
-                    changed = True
-        except Exception as ex:
-            import logging
-            logging.getLogger("bot_settings").warning(f"Could not auto-discover Zernio details on get_bot_settings: {ex}")
+        now_ts = time.time()
+        if now_ts - _last_discovery_attempt_at >= DISCOVERY_COOLDOWN_SECONDS:
+            _last_discovery_attempt_at = now_ts
+            try:
+                from app.service.zernio_service import zernio_service
+                disc = zernio_service.discover_account_and_profile(setting.zernio_api_key)
+                if disc:
+                    if not setting.zernio_account_id and disc.get("account_id"):
+                        setting.zernio_account_id = disc["account_id"]
+                        changed = True
+                    if not setting.zernio_profile_id and disc.get("profile_id"):
+                        setting.zernio_profile_id = disc["profile_id"]
+                        changed = True
+                    if not setting.instagram_username and disc.get("username"):
+                        setting.instagram_username = disc["username"]
+                        changed = True
+            except Exception as ex:
+                import logging
+                logging.getLogger("bot_settings").warning(f"Could not auto-discover Zernio details on get_bot_settings: {ex}")
 
     if changed:
         db.commit()

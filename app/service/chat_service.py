@@ -1,5 +1,7 @@
 import logging
+import re
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.models.customer import Customer
 from app.models.message import Message
@@ -11,6 +13,9 @@ from app.service.bot_settings import (
 )
 
 logger = logging.getLogger(__name__)
+
+# «فالو کردم» / «فالو شدم» را تشخیص می‌دهد اما «فالو نکردم» / «نفالو کردم» را نفی می‌کند
+_FOLLOW_CLAIM_RE = re.compile(r"فالو\s*(?:کردم|شدم)")
 
 
 def _broadcast_msg(message: Message, customer: Customer):
@@ -39,7 +44,12 @@ def _broadcast_msg(message: Message, customer: Customer):
 def _claims_followed(text: str) -> bool:
     """تشخیص اینکه پیام کاربر اعلام فالو کردن است (مثل: فالو کردم / فالو شدم)"""
     norm = normalize_text(text)
-    return "فالو" in norm and ("کردم" in norm or "شدم" in norm)
+    match = _FOLLOW_CLAIM_RE.search(norm)
+    if not match:
+        return False
+    # اگر مستقیماً قبل از «فالو» نفی («ن») باشد، اعلام فالو نیست
+    prefix = norm[: match.start()].rstrip()
+    return not (prefix.endswith("ن") or prefix.endswith("نه"))
 
 
 def process_incoming_message(
@@ -113,10 +123,14 @@ def process_incoming_message(
         instagram_message_id=str(ig_message_id) if ig_message_id else None
     )
     db.add(inbound_message)
-    db.commit()
-    db.refresh(inbound_message)
-
-    # اطلاع‌رسانی بلادرنگ به پنل از طریق وب‌سوکت
+    try:
+        db.commit()
+        db.refresh(inbound_message)
+    except IntegrityError:
+        # پیام هم‌زمان از مسیر دیگری (وب‌هوک + ورکر) رسیده است؛ پردازش تکراری لازم نیست
+        db.rollback()
+        logger.info(f"پیام با شناسه {ig_message_id} همزمان از مسیر دیگری پردازش شد. نادیده گرفته شد.")
+        return None
     _broadcast_msg(inbound_message, customer)
 
     if customer.bot_paused:

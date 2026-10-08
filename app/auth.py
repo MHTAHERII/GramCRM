@@ -1,4 +1,5 @@
 import secrets
+import time
 
 from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel
@@ -12,6 +13,21 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # کلیدی که در سشن کوکی ذخیره می‌شود
 SESSION_KEY = "authenticated"
+
+# محدودیت نرخ ساده برای لاگین: حداکثر ۱۰ تلاش در ۵ دقیقه برای هر IP
+_LOGIN_ATTEMPTS: dict[str, list[float]] = {}
+_LOGIN_WINDOW_SECONDS = 300.0
+_LOGIN_MAX_ATTEMPTS = 10
+
+
+def _login_rate_ok(client_ip: str) -> bool:
+    now = time.time()
+    attempts = [t for t in _LOGIN_ATTEMPTS.get(client_ip, []) if now - t < _LOGIN_WINDOW_SECONDS]
+    if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
+        return False
+    attempts.append(now)
+    _LOGIN_ATTEMPTS[client_ip] = attempts
+    return True
 
 
 class LoginRequest(BaseModel):
@@ -27,6 +43,10 @@ def require_auth(request: Request) -> None:
 
 @router.post("/login")
 def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "unknown"
+    if not _login_rate_ok(client_ip):
+        raise HTTPException(status_code=429, detail="تلاش‌های زیاد برای ورود؛ لطفاً چند دقیقه صبر کنید")
+
     bot_settings = get_bot_settings(db)
     expected_username = bot_settings.admin_username or "admin"
     expected_password = bot_settings.admin_password or settings.ADMIN_PASSWORD

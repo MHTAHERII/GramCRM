@@ -158,6 +158,21 @@ async def lifespan(app: FastAPI):
     setup_logging()
     ws_manager.set_loop(asyncio.get_running_loop())
     logger.info("GramCRM server started. All logs are actively recorded.")
+
+    # هشدار امنیتی: مقادیر پیش‌فرض دقیقاً همان مقادیر عمومی ریپو هستند
+    if settings.ADMIN_SESSION_SECRET == "perfume-panel-secret-change-me":
+        logger.warning("=" * 70)
+        logger.warning(
+            "⚠️ امنیت: ADMIN_SESSION_SECRET پیش‌فرض فعال است! "
+            "هرکسی می‌تواند کوکی سشن جعل کند و وارد پنل شود. "
+            "فوراً ADMIN_SESSION_SECRET یک مقدار تصادفی طولانی در .env قرار دهید."
+        )
+        logger.warning("=" * 70)
+    if settings.ADMIN_PASSWORD == "admin123":
+        logger.warning(
+            "⚠️ امنیت: ADMIN_PASSWORD پیش‌فرض (admin123) فعال است؛ "
+            "لطفاً در .env تغییر دهید."
+        )
     # ساخت جداول دیتابیس
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created/verified.")

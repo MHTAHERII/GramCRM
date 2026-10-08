@@ -10,6 +10,18 @@ from app.service.zernio_service import zernio_service
 router = APIRouter(prefix="/settings", tags=["Settings"], dependencies=[Depends(require_auth)])
 
 
+def _mask_secret(value: str | None) -> str | None:
+    """
+    نمایش ماسک‌شده کلیدهای API؛ فقط ۴ کاراکتر اول و آخر قابل مشاهده است.
+    کلید واقعی هرگز از API برنمی‌گردد (جلوگیری از سرقت از طریق پنل).
+    """
+    if not value:
+        return None
+    if len(value) <= 8:
+        return "••••••••"
+    return f"{value[:4]}•••{value[-4:]}"
+
+
 def _sync_zernio_bg():
     """همگام‌سازی کلیدواژه‌ها و تنظیمات با Zernio در پس‌زمینه"""
     db = None
@@ -44,12 +56,12 @@ def get_settings(db: Session = Depends(get_db)):
         comment_public_reply_text=setting.comment_public_reply_text,
         admin_username=setting.admin_username or "admin",
         has_custom_password=bool(setting.admin_password),
-        zernio_api_key=setting.zernio_api_key,
+        zernio_api_key=_mask_secret(setting.zernio_api_key),
         zernio_profile_id=setting.zernio_profile_id,
         zernio_account_id=setting.zernio_account_id,
         instagram_username=setting.instagram_username,
         automation_provider=setting.automation_provider or "zernio",
-        postzen_api_key=setting.postzen_api_key,
+        postzen_api_key=_mask_secret(setting.postzen_api_key),
         postzen_account_id=setting.postzen_account_id,
         updated_at=setting.updated_at
     )
@@ -197,12 +209,12 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         comment_public_reply_text=setting.comment_public_reply_text,
         admin_username=setting.admin_username or "admin",
         has_custom_password=bool(setting.admin_password),
-        zernio_api_key=setting.zernio_api_key,
+        zernio_api_key=_mask_secret(setting.zernio_api_key),
         zernio_profile_id=setting.zernio_profile_id,
         zernio_account_id=setting.zernio_account_id,
         instagram_username=setting.instagram_username,
         automation_provider=setting.automation_provider or "zernio",
-        postzen_api_key=setting.postzen_api_key,
+        postzen_api_key=_mask_secret(setting.postzen_api_key),
         postzen_account_id=setting.postzen_account_id,
         updated_at=setting.updated_at
     )

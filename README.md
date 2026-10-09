@@ -3,280 +3,160 @@
 <img src="logo.png" alt="GramCRM Logo" width="130" height="130" />
 
 # ⚡ GramCRM
-### پلتفرم جامع اتوماسیون هوشمند دایرکت، کامنت و مدیریت فروش اینستاگرام
-**A Modern, Enterprise-Grade Instagram Direct & Comment Sales Automation Platform & CRM**
+## فروشگاهت رو در دایرکت اینستاگرام ۲۴ ساعته و خودکار کن
+### بدون نیاز به استخدام ادمین، بدون از دست دادن حتی یک مشتری
+**Turn Your Instagram DMs Into a 24/7 Automated Sales Machine**
 
 <br>
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![OS Support](https://img.shields.io/badge/OS-Ubuntu%20%7C%20Debian-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com)
-[![Security](https://img.shields.io/badge/Security-Official%20Meta%20API-blueviolet?style=for-the-badge)](https://zernio.com)
-[![User Guide PDF](https://img.shields.io/badge/📖%20User%20Guide-Download%20PDF-6366f1?style=for-the-badge)](GramCRM_User_Guide.pdf)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Security](https://img.shields.io/badge/Security-100%25%20Official%20Meta%20API-6366f1?style=for-the-badge&logo=instagram&logoColor=white)](https://zernio.com)
+[![Safety](https://img.shields.io/badge/Page%20Safety-Zero%20Ban%20Risk-success?style=for-the-badge)](https://zernio.com)
+[![Speed](https://img.shields.io/badge/Response%20Time-%3C1s%20Instant-blue?style=for-the-badge)](https://zernio.com)
+[![User Guide PDF](https://img.shields.io/badge/📖%20کاتالوگ%20و%20راهنما-دانلود%20PDF-f59e0b?style=for-the-badge)](GramCRM_User_Guide.pdf)
 
 <br>
 
-**[ 🇺🇸 English ](#-english) &nbsp;|&nbsp; [ 🇮🇷 فارسی ](#-فارسی)**
+**[ 🇮🇷 معرفی به زبان فارسی ](#-فارسی) &nbsp;|&nbsp; [ 🇺🇸 English Overview ](#-english)**
 
 </div>
 
 ---
 
-<a name="-english"></a>
-# 🇺🇸 English
-
-### 💡 Overview
-**GramCRM** is a next-generation social commerce and customer relationship management (CRM) platform designed specifically for Instagram businesses. Unlike traditional, fragile, and high-risk scraping bots, GramCRM operates on **Official Meta / Zernio Cloud APIs** with **sub-second real-time webhooks**, ensuring **zero account ban risk** and maximum enterprise reliability.
-
-It features an ultra-modern, Linear/Stripe-inspired web dashboard for managing conversations, products, automated keywords, interactive buttons, and business settings without requiring complex frontend frameworks or server terminal knowledge for end-users.
-
----
-
-### 🚀 One-Line Server Installation
-
-Deploy GramCRM on any clean **Ubuntu 20.04 / 22.04 / 24.04** VPS in under 2 minutes:
-
-```bash
-bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.sh)
-```
-
-> [!TIP]
-> The automated installer handles system updates, Python venv, PostgreSQL database creation, Nginx reverse proxy configuration, firewall security, and systemd service setup out-of-the-box. At completion, both **IPv4** and **IPv6** access URLs are displayed.
-
----
-
-### 💎 Commercial Comparison
-
-| Feature | GramCRM ⚡ | Traditional / Scraping Bots |
-| :--- | :---: | :---: |
-| **Account Ban Risk** | **Zero (Official Cloud API)** | High (Pattern detected by Meta) |
-| **Event Architecture** | **Real-Time Push Webhooks (<1s)** | Polling / Fragile sessions |
-| **Interactive Link Buttons** | ✅ Up to 3 Dynamic Glass Buttons | ❌ Plain text only |
-| **Interactive Follow Gate** | ✅ Native 2-Button Lock (`[Followed]`, `[View Page]`) | ❌ None |
-| **Live Resource Monitor** | ✅ CPU, RAM, Disk, Uptime (3X-UI Style) | ❌ None |
-| **1-Click Backup & Restore** | ✅ Instant JSON Database Export / Import | ❌ Complex SQL dumps |
-| **1-Click Auto Updater** | ✅ GitHub 1-Click Updater (3X-UI Style) | ❌ Manual SSH commands |
-| **In-Browser Live Log Terminal** | ✅ Real-time Logs Console in GUI | ❌ Requires SSH terminal |
-| **In-Panel API & Credential Config** | ✅ 100% GUI-based (No CLI needed) | ❌ Manual file editing |
-| **Live Connection Diagnostic** | ✅ 1-Click Instant API Test | ❌ None |
-| **Modern Web Dashboard** | ✅ Next-Gen Dark UI | ❌ Basic or Non-existent |
-| **Production Server Deploy** | ✅ 1-Line Automated Script | ❌ Complex Manual Setup |
-
----
-
-### ✨ Key Capabilities
-
-* **📊 3X-UI Style Resource & CRM Dashboard:** Live hardware monitoring (CPU, RAM, Disk, and system Uptime) plus real-time interaction metrics (Total DMs, Leads, Automations).
-* **🔄 1-Click System Updater (3X-UI Style):** Seamlessly check for new GitHub releases/commits and upgrade the entire panel with one click directly from the Settings tab without SSH terminal access.
-* **🤖 Comment-to-DM Automation:** Trigger personalized direct messages instantly when prospective customers comment specific keywords on any post or reel.
-* **🔘 Interactive Glass Link Buttons:** Attach up to 3 customizable interactive buttons (Payment gateways, Website, YouTube, Telegram channels, or WhatsApp support) directly under automated DMs.
-* **🔒 2-Button Follow-Gate Engine:** Maximize follower growth with interactive prompt buttons (`[Followed ✅]` and `[View Page 👀]`), unlocking content only after following.
-* **📥 1-Click Backup & Restore:** Complete one-click database export to JSON and instant restore with automatic Instagram cloud synchronization.
-* **📋 In-Browser Live Log Viewer:** Colored, real-time server log console with auto-refresh and clear tools, eliminating the need for terminal commands.
-* **🔑 Zero-Terminal Reseller Ready:** End-users and clients can set their own API token, Profile ID, Account ID, and change Admin Username and Password directly from the Web Settings tab with instant visual confirmation.
-* **⚡ 1-Click Live Connection Test:** Test API credentials and verify live Instagram connectivity directly from the dashboard.
-* **🔄 Live Cloud Auto-Sync:** Add, edit, or remove trigger keywords and buttons in the web panel, and have them automatically synced in the background.
-* **💬 Unified Chat Inbox (CRM):** Real-time customer overview, conversation history, and manual replies sent directly to Instagram from the web console.
-* **🛍️ Product & Catalog Management:** Track stock levels, prices, and product details with PostgreSQL persistence.
-* **🎨 Ultra-Modern UI:** Dark obsidian color scheme, subtle glassmorphism, responsive across desktop and mobile devices.
-
----
-
-### 🏗 Architecture
-
-```mermaid
-flowchart TD
-    User([👤 Instagram User]) <-->|DMs & Comments| Meta[🌐 Official Instagram / Meta API]
-    Meta <-->|Zernio Webhook & API| Engine[⚡ GramCRM Core Engine]
-    
-    subgraph GramCRM Production Server
-        Engine <--> Core[FastAPI Server :8000]
-        Core <--> DB[(PostgreSQL Database)]
-        Core <--> Nginx[Nginx Reverse Proxy :80]
-        Core <--> Panel[🎨 Web Dashboard /panel]
-    end
-    
-    Admin([👨‍💻 Store Operator / Buyer]) <-->|Manage & Reply| Panel
-```
-
----
-
-### 🛠 Server CLI Commands
-
-```bash
-# Check service status
-systemctl status gramcrm
-
-# Restart application
-systemctl restart gramcrm
-
-# View live real-time logs
-journalctl -u gramcrm -f -n 50
-
-# Stop service
-systemctl stop gramcrm
-```
-
----
-
-### 🔒 Custom Domain & Free SSL (Certbot)
-
-Point your domain's **A Record** to your server IP, then run:
-
-```bash
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d crm.yourdomain.com
-```
-
-Your secure webhook endpoint is immediately ready:
-```text
-https://crm.yourdomain.com/webhook/zernio
-```
-
----
-
-<br>
-<br>
-
----
-
 <a name="-فارسی"></a>
-# 🇮🇷 فارسی
+# 🇮🇷 معرفی GramCRM (ویژه صاحبان کسب‌وکار)
 
-### 💡 معرفی پروژه
-**GramCRM** یک پلتفرم نسل جدید برای اتوماسیون فروش، مدیریت مشتریان و پشتیبانی خودکار در اینستاگرام است. برخلاف ربات‌های سنتی و پرریسک، GramCRM با استفاده از **API رسمی متصل به زیرساخت ابری Zernio** و **وب‌هوک‌های بلادرنگ (Real-Time Webhooks)** کار می‌کند که **ریسک بن یا محدودیت اکانت را به صفر می‌رساند**.
+> **«در حالی که شما خوابید، GramCRM به کامنت‌ها جواب میده، مشتری رو به دایرکت می‌کشه، محصول رو معرفی می‌کنه، سفارش رو ثبت می‌کنه و فیش واریزی رو تحویل می‌گیره!»**
 
-این سیستم به همراه یک **داشبورد تحت وب الترا-مدرن (Linear/Stripe Style)** با فونت زیبای وزیرمتن ارائه می‌شود که امکان پاسخ‌گویی دستی، مدیریت محصولات، تعریف دکمه‌های شیشه‌ای لینک‌دار، و پیکربندی کامل سیستم را بدون نیاز به هیچ‌گونه دانش فنی به خریداران و مدیران ارائه می‌دهد.
+اغلب فروشگاه‌های اینستاگرامی با ۲ چالش بزرگ دست‌وپنجه نرم می‌کنند:
+1. **پاسخ با تأخیر = از دست رفتن مشتری:** اگر مشتری در ۵ دقیقه اول پاسخ نگیرد، از پیج رقیب خرید می‌کند.
+2. **هزینه و خستگی ادمین:** پاسخ دادن به صدها سوال تکراری («قیمت؟»، «موجوده؟»، «کد رهگیری چی شد؟») وقت تیم را هدر می‌دهد.
+
+**GramCRM دقیقاً برای حل این دو مشکل ساخته شده است.**
 
 ---
 
-### 🚀 نصب سریع روی سرور (تک‌دستوری)
+### 🌟 چه کمکی به کسب‌وکار شما می‌کند؟
 
-روی سرور خام **Ubuntu 20.04 / 22.04 / 24.04** تنها با یک دستور زیر کل سیستم را در کمتر از ۲ دقیقه مستقر کنید:
+#### ۱. تبدیل کامنت‌ها به مشتری خریدار در کسری از ثانیه ⚡
+به محض اینکه کاربری زیر پست یا ریلز شما کلمه‌ای مثل «قیمت»، «خرید» یا یک عدد کامنت کند:
+- پاسخ کامنت بلافاصله ارسال می‌شود.
+- لینک خرید، کاتالوگ یا جزئیات محصول فوراً به دایرکت مشتری ارسال می‌شود (قبل از اینکه منصرف شود!).
+
+#### ۲. افزایش انفجاری فالوورها با «قفل فالو» 🔒
+می‌خواهید تخفیف یا فایل هدیه بدهید؟
+سیستم محتوا را قفل می‌کند و به کاربر می‌گوید: **«اول پیج رو فالو کن تا لینک برات باز بشه!»**  
+به محض فالو کردن، سیستم هوشمند تأیید کرده و لینک را تحویل می‌دهد. نرخ تبدیل فالوور شما چند برابر خواهد شد.
+
+#### ۳. یک فروشگاه و انبارداری کامل داخل دایرکت 🛍️
+نیازی نیست مشتری را به سایت‌های پیچیده بفرستید:
+- کاتالوگ محصولات با عکس، قیمت و موجودی لحظه‌ای داخل چت معرفی می‌شود.
+- به محض خرید، موجودی انبار به صورت خودکار کسر می‌شود تا کالای ناموجود فروخته نشود.
+- نام خریدار، شماره تماس، آدرس پستی و تصویر رسید بانکی مستقیم دریافت و در پنل شما ذخیره می‌شود.
+
+#### ۴. دکمه‌های شیشه‌ای شیک و جذاب (مثل برندهای بزرگ) 🔘
+زیر پیام‌ها دکمه‌های جذاب قرار دهید: `[ ورود به سایت 🌐 ]`، `[ کانال تلگرام 📢 ]`، `[ پرداخت آنلاین 💳 ]` یا `[ پشتیبانی تلفنی 📞 ]`. مشتری با یک کلیک به مقصد هدایت می‌شود.
+
+#### ۵. حفظ ۱۰۰٪ امنیت پیج (خیال شما کاملاً راحت) 🛡️
+- **بدون پسورد اینستاگرام:** GramCRM از وب‌سرویس رسمی ابری اینستاگرام استفاده می‌کند؛ نه نیاز به لاگین دستی دارد و نه پسورد اینستاگرام شما را می‌خواهد.
+- **ریسک شادوبن یا بلاک = صفر:** کاملاً منطبق بر قوانین رسمی متا طراحی شده است.
+- **اطلاعات فقط دست خود شماست:** بر خلاف سرویس‌های اشتراکی دیگر، دیتابیس و اطلاعات مشتریان فقط روی سرور اختصاصی خودتان ذخیره می‌شود.
+
+#### ۶. پنل مدیریتی ساده و چشم‌نواز 🎨
+بدون نیاز به حتی یک کلمه دانش فنی یا برنامه‌نویسی. در هر ساعت از شبانه‌روز از طریق موبایل یا لپ‌تاپ وارد پنل زیبا و فارسی خود شوید، آمار فروش را ببینید و سفارش‌ها را مدیریت کنید.
+
+---
+
+### 💎 چرا GramCRM از بقیه متمایز است؟
+
+| نیاز فروشگاه شما | GramCRM ⚡ | ربات‌های سنتی و دستی |
+| :--- | :---: | :---: |
+| **سرعت پاسخ‌گویی** | **زیر ۱ ثانیه (بلادرنگ)** | با تأخیر چند دقیقه‌ای |
+| **خطر بسته شدن پیج** | **صفر (کاملاً رسمی و قانونی)** | بسیار بالا (شناسایی ربات توسط اینستاگرام) |
+| **امکانات فروشگاهی** | **کاتالوگ + انبار + سفارش + فیش واریز** | فقط ارسال یک متن ساده و بی‌روح |
+| **دکمه‌های شیشه‌ای لینک‌دار** | ✅ تا ۳ دکمه جذاب و رنگی | ❌ فقط متن خام |
+| **قفل اختصاصی افزایش فالوور** | ✅ بررسی هوشمند فالو بودن کاربر | ❌ ندارد |
+| **مالکیت داده‌ها** | ✅ ۱۰۰٪ روی هاست اختصاصی خودتان | ❌ دیتای مشتریان روی سرورهای غریبه |
+| **قابلیت توقف خودکار برای چت دستی** | ✅ با ۱ کلیک (`bot_paused`) | ❌ مدام وسط حرف ادمین می‌پرد |
+
+---
+
+### 🗺️ به‌زودی چه قابلیت‌های شگفت‌انگیزی اضافه می‌شود؟ (Roadmap)
+
+ما مدام در حال توسعه ویژگی‌های درآمدزا برای شما هستیم:
+
+* **🤖 ایجنت فروش هوش مصنوعی (AI Sales Agent):**  
+  مثل باهوش‌ترین فروشنده پیج شما رفتار می‌کند! به سوالات آزاد مشتریان («برای هدیه عطر چی پیشنهاد میدید؟») پاسخ می‌دهد، سلیقه مشتری را می‌فهمد و سبد خرید را در چت تکمیل می‌کند.
+* **📦 پیامک و دایرکت خودکار وضعیت مرسوله:**  
+  وقتی سفارش را ارسال می‌کنید، مشتری خودش دایرکت دریافت می‌کند: «بسته‌ات ارسال شد 🌸 کد رهگیری پستی: ...» (خداحافظی با پیام‌های تکراریِ «بسته‌ام کجاست؟»).
+* **💳 اتصال مستقیم به درگاه پرداخت آنلاین:**  
+  ارسال لینک اختصاصی پرداخت بانکی در دایرکت و تأیید کاملاً اتوماتیک سفارش پس از پرداخت، بدون نیاز به چک کردن دستی فیش‌های واریزی.
+* **🎯 پیگیری خودکار مشتریان مردد (Drip Marketing):**  
+  مشتری قیمت پرسیده اما خرید نکرده؟ ۲۴ ساعت بعد سیستم یک پیام یادآوری یا کد تخفیف اختصاصی براش ارسال می‌کنه تا خریدش رو کامل کنه.
+* **🏷️ تفکیک مشتریان داغ و خریداران ویژه (Lead Scoring):**  
+  تشخیص خودکار مشتریانی که قصد خرید فوری دارند برای پاسخ‌گویی با بالاترین اولویت.
+* **👥 اتصال چند ادمین با دسترسی‌های مختلف:**  
+  امکان تعریف اپراتور اختصاصی چت و مدیر سفارشات برای تیم‌های پشتیبانی چندنفره.
+
+---
+
+### 🚀 راه‌اندازی سریع در کمتر از ۲ دقیقه
+
+تنها با یک دستور روی هر سرور اوبونتو تمیز، کل سیستم آماده بهره‌برداری است:
 
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.sh)
 ```
 
-> [!TIP]
-> این اسکریپت تمام مراحل شامل نصب بسته‌ها، پایتون، ساخت پایگاه داده PostgreSQL، پیکربندی وب‌سرور Nginx، فایروال و ساخت سرویس ۲۴ ساعته Systemd را به‌صورت تمام‌خودکار انجام داده و در پایان آدرس پنل را با دو پروتکل **IPv4** و **IPv6** ارائه می‌دهد.
+کافیست وارد پنل وب شوید، توکن خود را ست کنید و از اتوماسیون پیجتان لذت ببرید!
 
 ---
 
-### 💎 مقایسه تجاری و مزیت‌های رقابتی
-
-| قابلیت | GramCRM ⚡ | ربات‌های سنتی و غیررسمی |
-| :--- | :---: | :---: |
-| **ریسک بن شدن پیج** | **صفر (کاملاً رسمی و امن)** | بسیار بالا (شناسایی توسط الگوریتم‌های متا) |
-| **معماری دریافت پیام‌ها** | **وب‌هوک زنده رویدادمحور (<1s)** | اسکرپینگ ناپایدار و لاگین‌های مکرر |
-| **دکمه‌های شیشه‌ای تعاملی** | ✅ تا ۳ دکمه لینک‌دار با عنوان دلخواه | ❌ فقط متن ساده و خام |
-| **دروازه فالو دو دکمه‌ای** | ✅ قفل محتوا با دکمه‌های `[فالو کردم]` و `[مشاهده پیج]` | ❌ ندارد |
-| **مانیتورینگ منابع سخت‌افزاری** | ✅ مانیتور CPU، RAM، دیسک و آپتایم (مشابه 3X-UI) | ❌ ندارد |
-| **پشتیبان‌گیری و بازیابی** | ✅ دانلود و ریستور دیتابیس با ۱ کلیک (JSON) | ❌ دستی و پیچیده |
-| **به‌روزرسانی با یک کلیک** | ✅ آپدیت خودکار از گیت‌هاب (مشابه 3X-UI) | ❌ دستورات دستی SSH و Git |
-| **کنسول لاگ‌های زنده** | ✅ مشاهده خط‌به‌خط لاگ‌ها در وب بدون SSH | ❌ نیازمند ترمینال لینوکس |
-| **تنظیمات API و رمز در پنل** | ✅ بدون نیاز به ترمینال (آماده فروش به مشتری) | ❌ ویرایش دستی فایل‌های سیستمی |
-| **تست آنلاین اتصال به اینستاگرام** | ✅ بررسی آنی وضعیت توکن با ۱ کلیک | ❌ ندارد |
-| **پنل مدیریت تحت وب** | ✅ الترا-مدرن با تم تیره لوکس | ❌ ابتدایی یا فاقد پنل |
-| **راه‌اندازی سرور (VPS)** | ✅ تک‌دستوری و خودکار | ❌ نیازمند کانفیگ دستی پیچیده |
+<br>
+<br>
 
 ---
 
-### ✨ قابلیت‌های اصلی
+<a name="-english"></a>
+# 🇺🇸 English Overview
 
-* **📊 داشبورد و مانیتورینگ پیشرفته سرور (3X-UI Style):** نمایش گرافیکی درصد مصرف CPU، حافظه RAM، فضای دیسک، آپتایم دقیق و آمار لحظه‌ای دایرکت‌ها و لیدها.
-* **🔄 به‌روزرسانی پنل با یک کلیک (1-Click Updater):** بررسی خودکار آخرین نسخه‌ها از مخزن رسمی گیت‌هاب و امکان ارتقاء کل پروژه و پکیج‌ها تنها با یک کلیک از داخل پنل بدون نیاز به دستورات SSH.
-* **🤖 اتوماسیون کامنت به دایرکت (Comment-to-DM):** ارسال خودکار دایرکت در کسری از ثانیه به محض درج کلیدواژه زیر پست‌ها یا ریلزها.
-* **🔘 دکمه‌های شیشه‌ای تعاملی (تا ۳ دکمه):** اتصال لینک‌های دلخواه (درگاه پرداخت آنلاین 💳، دوره آموزشی 🎓، سایت 🌐، کانال تلگرام 📢 یا پشتیبانی) با عنوان‌های سفارشی به زیر پیام‌های دایرکت.
-* **🔒 دروازه فالو هوشمند (Follow Gate):** مشتریان پیش از دریافت لینک، پیام قفل با دو دکمه تعاملی `[فالو کردم ✅]` و `[مشاهده پیج 👀]` را دریافت می‌کنند تا رشد فالوورهای پیج تضمین شود.
-* **📥 پشتیبان‌گیری و بازیابی با یک کلیک (Backup & Restore):** امکان دانلود کامل اطلاعات دیتابیس در قالب فایل JSON و بازیابی مجدد آن با تطبیق و همگام‌سازی ابری خودکار.
-* **📋 کنسول لاگ‌های زنده سیستم (Web Log Console):** مشاهده آنی تمامی گزارشات سرور و رویدادهای وب‌هوک مستقیماً در پنل وب با قابلیت پاکسازی و رفرش خودکار.
-* **🔑 پنل کاملاً مستقل برای فروش به مشتری:** خریداران می‌توانند توکن اختصاصی API اینستاگرام، شناسه‌های اکانت و نام کاربری/رمز عبور پنل را مستقیماً از تنظیمات پنل وب وارد و ویرایش کنند.
-* **⚡ تست زنده اتصال (Connection Test):** امکان بررسی اعتبار توکن و مشاهده وضعیت اتصال به سرورهای اینستاگرام تنها با یک کلیک در پنل.
-* **🔄 همگام‌سازی ابری خودکار (Auto-Sync):** با ایجاد، ویرایش یا حذف کلیدواژه در پنل مدیریت، تغییرات بلافاصله با اینستاگرام همگام می‌شود.
-* **💬 صندوق پیام‌های یکپارچه (Inbox CRM):** مشاهده زنده تاریخچه پیام‌های هر مشتری، ارسال پاسخ مستقیم از پنل به دایرکت کاربر و قابلیت توقف موقت پاسخ خودکار برای مشتری خاص (`bot_paused`).
-* **🛍️ انبارداری و ثبت محصولات پیشرفته:** کاتالوگ کالاها، قیمت‌گذاری، ثبت موجودی، تعیین واحد سنجش کالا (unit) و متغیرهای داینامیک پاسخ (`{product_name}`, `{price}`, `{stock}`).
-* **📦 مدیریت یکپارچه سفارشات (Orders):** چرخه کامل ۴ وضعیتی (`pending → confirmed → shipped → cancelled`) با کسر خودکار انبار، ثبت کد رهگیری پستی و آپلود/دانلود رسید بانکی.
-* **📖 دانلود راهنمای جامع PDF:** دریافت مستقیم کتابچه رسمی راهنمای کاربری و فروش از مسیر `/guide.pdf` یا فایل [GramCRM_User_Guide.pdf](GramCRM_User_Guide.pdf).
-* **🎨 طراحی مدرن و واکنش‌گرا:** طراحی شده بر اساس استانداردهای روز با فونت فارسی وزیرمتن (Vazirmatn).
+> **"While you sleep, GramCRM replies to comments, drives customers into DMs, showcases products, takes orders, and verifies payment receipts automatically."**
+
+### 🌟 Business Benefits
+
+* **⚡ Instant Comment-to-DM Sales Funnel:** Trigger automated, personalized direct messages with product links the moment potential buyers comment keywords under your posts or reels.
+* **🔒 Follow-to-Unlock Growth Engine:** Dramatically increase your follower conversion rate by requiring visitors to follow your page before unlocking discounts or links.
+* **🛍️ Built-In DM E-Commerce Store:** Full product catalog, real-time inventory deductions, dynamic price placeholders, customer address collection, and payment receipt attachments right inside DMs.
+* **🔘 Interactive Glass Link Buttons:** Attach up to 3 clickable buttons under automated messages (Direct checkout links, Telegram channels, Website, WhatsApp support).
+* **🛡️ 100% Account Safety:** Powered by official cloud Meta APIs. No password required, zero shadowban or account-blocking risks.
+* **🔒 Data Privacy & Independence:** Self-hosted on your own private VPS. Your customer data, order lists, and conversations belong 100% to you.
+* **🎨 Modern Web Dashboard:** A sleek, Linear/Stripe-inspired dark UI designed for merchants, accessible from desktop or smartphone without technical expertise.
 
 ---
 
-### ⚙️ نیازمندی‌های سخت‌افزاری سرور
+### 🗺️ Upcoming Features (Roadmap)
 
-| قطعه | حداقل مشخصات | مشخصات پیشنهادی (پروداکشن) |
-| :--- | :--- | :--- |
-| **سیستم‌عامل** | Ubuntu 20.04 LTS | **Ubuntu 22.04 / 24.04 LTS** |
-| **پردازنده (CPU)** | ۱ هسته (Shared) | ۱ الی ۲ هسته اختصاصی |
-| **حافظه رم (RAM)** | ۱ گیگابایت (+ Swap) | **۲ گیگابایت** |
-| **فضای دیسک** | ۱۰ گیگابایت SSD | **۲۰ الی ۳۰ گیگابایت NVMe** |
-| **موقعیت سرور** | ترجیحاً خارج (آلمان/هلند/فنلاند) | خارج از ایران (جهت اتصال بدون فیلترینگ) |
+- **🤖 AI Conversational Sales Agent:** Intelligent LLM-powered sales assistant answering open-ended inquiries and recommending catalog products naturally.
+- **📦 Automated Order Tracking DMs:** Automatic customer notifications with postal tracking numbers upon order shipment.
+- **💳 Direct Payment Gateway Integration:** One-click online checkout links with instant automated payment confirmation.
+- **🎯 Smart Follow-Up (Drip Marketing):** Automated 24-hour reminders sent to abandoned chat inquiries to maximize conversion.
+- **🏷️ Automated Lead Scoring:** Auto-tag high-intent buyers based on behavioral keywords to prioritize closing deals.
+- **👥 Multi-Operator Team Support:** Granular team roles (Chat support vs. Fulfillment manager).
 
 ---
 
-### 🛠 دستورات خط فرمان سرور
+### 🚀 2-Minute Quick Deploy
+
+Run the automated installer on any fresh **Ubuntu 20.04 / 22.04 / 24.04** VPS:
 
 ```bash
-# بررسی وضعیت اجرای زنده سرویس
-systemctl status gramcrm
-
-# راه‌اندازی مجدد (Restart)
-systemctl restart gramcrm
-
-# مشاهده لاگ‌های زنده سیستم
-journalctl -u gramcrm -f -n 50
-
-# توقف موقت سرویس
-systemctl stop gramcrm
+bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.sh)
 ```
 
 ---
-
-### 🔒 اتصال دامنه و فعال‌سازی SSL رایگان
-
-پس از ست کردن رکورد **A** دامنه به سمت آی‌پی سرور:
-
-```bash
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d crm.yourdomain.com
-```
-
-آدرس وب‌هوک شما آماده اتصال در اینستاگرام است:
-```text
-https://crm.yourdomain.com/webhook/zernio
-```
-
----
-
-### 💻 اجرای لوکال (محیط توسعه)
-
-```bash
-git clone https://github.com/MHTAHERII/GramCRM.git
-cd GramCRM
-
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-- **پنل مدیریت:** `http://127.0.0.1:8000/panel` (نام کاربری: `admin` | رمز عبور: `admin123`)
-- **مستندات سواگر:** `http://127.0.0.1:8000/docs`
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
 
 <div align="center">
 
-**Developed with ❤️ by [MH TAHERI](https://github.com/MHTAHERII)**
+**Designed to scale your Instagram business 📈**  
+Developed with ❤️ by [MH TAHERI](https://github.com/MHTAHERII)
 
 </div>

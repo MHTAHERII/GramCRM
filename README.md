@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="GramCRM Logo" width="130" height="130" />
+<img src="docs/assets/logo.png" alt="GramCRM Logo" width="130" height="130" />
 
 # ⚡ GramCRM
 ## فروشگاهت رو در دایرکت اینستاگرام ۲۴ ساعته و خودکار کن
@@ -12,10 +12,10 @@
 [![Security](https://img.shields.io/badge/Security-100%25%20Official%20Meta%20API-6366f1?style=for-the-badge&logo=instagram&logoColor=white)](https://zernio.com)
 [![Safety](https://img.shields.io/badge/Page%20Safety-Zero%20Ban%20Risk-success?style=for-the-badge)](https://zernio.com)
 [![Speed](https://img.shields.io/badge/Response%20Time-%3C1s%20Instant-blue?style=for-the-badge)](https://zernio.com)
-[![User Guide](https://img.shields.io/badge/User_Guide-Download_PDF-f59e0b?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](GramCRM_User_Guide.pdf)
+[![User Guide](https://img.shields.io/badge/User_Guide-Download_PDF-f59e0b?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](docs/GramCRM_User_Guide.pdf)
 <br>
 
-**[ 🇮🇷 معرفی به زبان فارسی ](#-فارسی) &nbsp;|&nbsp; [ 🇺🇸 English Overview ](#-english)**
+**[ 🇮🇷 معرفی به زبان فارسی ](#-فارسی) &nbsp;|&nbsp; [ 🇺🇸 English Overview ](#-english) &nbsp;|&nbsp; [ 📖 مستندات جامع (USER_GUIDE) ](docs/USER_GUIDE_FA.md)**
 
 </div>
 

@@ -271,7 +271,10 @@ def root():
 @app.get("/guide.pdf", include_in_schema=False)
 @app.get("/download-guide", include_in_schema=False)
 def download_guide():
-    pdf_path = Path(__file__).resolve().parent.parent / "GramCRM_User_Guide.pdf"
+    base_dir = Path(__file__).resolve().parent.parent
+    pdf_path = base_dir / "docs" / "GramCRM_User_Guide.pdf"
+    if not pdf_path.exists():
+        pdf_path = base_dir / "GramCRM_User_Guide.pdf"
     if not pdf_path.exists():
         pdf_path = PANEL_DIR / "GramCRM_User_Guide.pdf"
     if not pdf_path.exists():

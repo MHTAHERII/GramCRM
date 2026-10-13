@@ -235,13 +235,28 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("Instagram DM worker is disabled in settings.")
 
+    # راه‌اندازی ورکر داخلی وب‌هوک (صف درون‌فرآیندی)
+    webhook_stop_event = asyncio.Event()
+    webhook_task = None
+    if settings.ENABLE_WEBHOOK_QUEUE:
+        from app.routers.webhook import start_webhook_workers
+        logger.info("Starting webhook background workers...")
+        webhook_task = asyncio.create_task(start_webhook_workers(webhook_stop_event, settings.WEBHOOK_WORKER_COUNT))
+    else:
+        logger.info("Webhook queue worker is disabled in settings.")
+
     yield  # اینجا سرور در حال اجراست
 
-    # خاموش کردن ورکر هنگام shutdown
+    # خاموش کردن ورکرها هنگام shutdown
     if worker_task:
         stop_event.set()
         await asyncio.gather(worker_task, return_exceptions=True)
         logger.info("Instagram worker stopped.")
+
+    if webhook_task:
+        webhook_stop_event.set()
+        await asyncio.gather(webhook_task, return_exceptions=True)
+        logger.info("Webhook workers stopped.")
 
 
 app = FastAPI(

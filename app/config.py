@@ -49,5 +49,10 @@ class Settings:
     # فقط از طریق HTTPS ارسال کوکی سشن (روی سرور عملیاتی true و در توسعه لوکال false)
     SESSION_HTTPS_ONLY: bool = os.getenv("SESSION_HTTPS_ONLY", "false").lower() in ("true", "1", "yes")
 
+    # Webhook background queue: enable simple in-process queue + workers
+    ENABLE_WEBHOOK_QUEUE: bool = os.getenv("ENABLE_WEBHOOK_QUEUE", "true").lower() in ("true", "1", "yes")
+    WEBHOOK_WORKER_COUNT: int = max(1, int(os.getenv("WEBHOOK_WORKER_COUNT", "2")))
+    WEBHOOK_DEDUP_TTL_SECONDS: int = max(1, int(os.getenv("WEBHOOK_DEDUP_TTL_SECONDS", "300")))
+
 settings = Settings()
 

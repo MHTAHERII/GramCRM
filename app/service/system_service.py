@@ -24,6 +24,19 @@ from app.service.automation_service import automation_service
 # ثبت زمان استارت پروسس برای محاسبه دقیق آپتایم
 START_TIME = time.time()
 
+# ساعت رسمی ایران (UTC+3:30) — ایران از ۱۴۰۱ ساعت تابستانی ندارد، پس اختلاف ثابت است.
+# سرورهای کانتینر معمولاً روی UTC هستند؛ بدون این تبدیل، زمان لاگ‌ها ۳:۳۰ عقب‌تر دیده می‌شود.
+TEHRAN_TZ = datetime.timezone(datetime.timedelta(hours=3, minutes=30))
+
+
+class TehranTimeFormatter(logging.Formatter):
+    """فرمت‌کننده لاگ با زمان تهران به‌جای زمان سرور (UTC)"""
+
+    def formatTime(self, record, datefmt=None):
+        stamp = datetime.datetime.fromtimestamp(record.created, TEHRAN_TZ)
+        return stamp.strftime(datefmt or "%Y-%m-%d %H:%M:%S")
+
+
 # بافر حافظه‌ای حلقوی لاگ‌ها (حداکثر ۵۰۰ خط اخیر)
 LOG_BUFFER = collections.deque(maxlen=500)
 
@@ -43,7 +56,7 @@ class LogBufferHandler(logging.Handler):
             self._last_id = rec_id
 
             log_entry = {
-                "time": datetime.datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S"),
+                "time": datetime.datetime.fromtimestamp(record.created, TEHRAN_TZ).strftime("%Y-%m-%d %H:%M:%S"),
                 "level": record.levelname,
                 "logger": record.name,
                 "message": record.getMessage(),
@@ -60,7 +73,7 @@ class LogBufferHandler(logging.Handler):
 
 
 log_buffer_handler = LogBufferHandler()
-log_buffer_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
+log_buffer_handler.setFormatter(TehranTimeFormatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
 
 
 def setup_logging():
@@ -91,12 +104,13 @@ def setup_logging():
 setup_logging()
 
 # ثبت لاگ استارت اولیه سیستم در بافر
+_startup_stamp = datetime.datetime.now(TEHRAN_TZ).strftime("%Y-%m-%d %H:%M:%S")
 LOG_BUFFER.append({
-    "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "time": _startup_stamp,
     "level": "INFO",
     "logger": "system",
     "message": "کنسول ثبت لاگ‌های زنده سرور GramCRM با موفقیت فعال شد.",
-    "raw": f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} [INFO] system: کنسول ثبت لاگ‌های زنده سرور GramCRM با موفقیت فعال شد."
+    "raw": f"{_startup_stamp} [INFO] system: کنسول ثبت لاگ‌های زنده سرور GramCRM با موفقیت فعال شد."
 })
 
 

@@ -13,7 +13,8 @@ from app.service.system_service import (
     get_logs,
     clear_logs,
     get_version_info,
-    execute_system_update
+    execute_system_update,
+    TEHRAN_TZ
 )
 
 router = APIRouter(prefix="/system", tags=["System"], dependencies=[Depends(require_auth)])
@@ -37,7 +38,7 @@ def download_backup(db: Session = Depends(get_db)):
     try:
         backup_data = create_backup(db)
         json_content = json.dumps(backup_data, ensure_ascii=False, indent=2)
-        filename = f"gramcrm_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        filename = f"gramcrm_backup_{datetime.datetime.now(TEHRAN_TZ).strftime('%Y%m%d_%H%M%S')}.json"
         
         return Response(
             content=json_content,

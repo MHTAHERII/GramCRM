@@ -32,6 +32,44 @@ logger = logging.getLogger("main")
 PANEL_DIR = Path(__file__).resolve().parent / "static" / "panel"
 
 
+def security_warnings(cfg=None) -> list[str]:
+    """
+    بررسی وضعیت امنیتی env هنگام استارت و بازگرداندن فهرست هشدارها.
+    هیچ مقدار محرمانه‌ای در متن هشدارها قرار نمی‌گیرد (فقط وضعیت).
+    """
+    cfg = cfg or settings
+    warnings: list[str] = []
+    if cfg.ADMIN_SESSION_SECRET == "perfume-panel-secret-change-me":
+        warnings.append(
+            "ADMIN_SESSION_SECRET پیش‌فرض فعال است؛ هرکسی می‌تواند کوکی سشن جعل کند. "
+            "فوراً یک مقدار تصادفی طولانی در .env قرار دهید."
+        )
+    if cfg.ADMIN_PASSWORD == "admin123":
+        warnings.append(
+            "ADMIN_PASSWORD پیش‌فرض (admin123) فعال است؛ این مقدار در گیت عمومیه. "
+            "در .env سرور یک رمز قوی بگذارید."
+        )
+    if not cfg.ZERNIO_WEBHOOK_SECRET:
+        warnings.append(
+            "ZERNIO_WEBHOOK_SECRET خالی است؛ هرکسی می‌تواند رویداد جعلی برای وب‌هوک زرنیو بفرستد. "
+            "یک مقدار تصادفی بسازید و آدرس وب‌هوک را با ?token= مقدار را تنظیم کنید."
+        )
+    if not cfg.SESSION_HTTPS_ONLY:
+        warnings.append(
+            "SESSION_HTTPS_ONLY=true نشده؛ کوکی سشن بدون پرچم Secure ارسال می‌شود. "
+            "روی سرور عملیاتی حتماً true کنید."
+        )
+    if cfg.ENABLE_DOCS:
+        warnings.append(
+            "ENABLE_DOCS فعال است؛ مستندات OpenAPI در محیط عملیاتی باید غیرفعال باشد."
+        )
+    if not cfg.META_APP_SECRET:
+        warnings.append(
+            "META_APP_SECRET خالی است؛ امضای وب‌هوک متا (X-Hub-Signature-256) تأیید نمی‌شود."
+        )
+    return warnings
+
+
 def run_schema_migrations() -> None:
     """
     تغییرات اسکیمایی که create_all روی جدول‌های موجود اعمال نمی‌کند.
@@ -159,20 +197,13 @@ async def lifespan(app: FastAPI):
     ws_manager.set_loop(asyncio.get_running_loop())
     logger.info("GramCRM server started. All logs are actively recorded.")
 
-    # هشدار امنیتی: مقادیر پیش‌فرض دقیقاً همان مقادیر عمومی ریپو هستند
-    if settings.ADMIN_SESSION_SECRET == "perfume-panel-secret-change-me":
+    # گزارش وضعیت امنیتی env هنگام استارت (بدون نمایش مقادیر محرمانه)
+    posture = security_warnings()
+    if posture:
         logger.warning("=" * 70)
-        logger.warning(
-            "⚠️ امنیت: ADMIN_SESSION_SECRET پیش‌فرض فعال است! "
-            "هرکسی می‌تواند کوکی سشن جعل کند و وارد پنل شود. "
-            "فوراً ADMIN_SESSION_SECRET یک مقدار تصادفی طولانی در .env قرار دهید."
-        )
+        for item in posture:
+            logger.warning(f"⚠️ امنیت: {item}")
         logger.warning("=" * 70)
-    if settings.ADMIN_PASSWORD == "admin123":
-        logger.warning(
-            "⚠️ امنیت: ADMIN_PASSWORD پیش‌فرض (admin123) فعال است؛ "
-            "لطفاً در .env تغییر دهید."
-        )
     # ساخت جداول دیتابیس
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created/verified.")

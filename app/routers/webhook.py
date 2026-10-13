@@ -175,8 +175,8 @@ def _handle_event_sync(event: dict[str, Any]) -> None:
                 if not sent:
                     logger.error(f"Failed to send reply to {sender_id}; dropping unsent record.")
                     drop_unsent_reply(db, sender_id, reply_text)
-            # mark processed in instagram client cache/state to avoid reprocessing on other pollers
-            instagram_client.mark_processed(thread_id=None, message_id=mid or "")
+            # Keep the poller's in-memory state consistent without sharing DB state.
+            instagram_client.mark_processed(thread_id=str(sender_id), message_id=mid or "")
         except Exception as e:
             logger.error(f"Error processing webhook event for {sender_id}: {e}", exc_info=True)
     finally:

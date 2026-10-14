@@ -152,9 +152,20 @@ async def receive_webhook(request: Request):
                     text = message_data.get("quick_reply", {}).get("payload")
                 if sender_id and text:
                     evt = {"sender_id": str(sender_id), "text": text, "mid": str(mid) if mid else None, "raw": event}
-                    enqueued = await enqueue_event(evt)
-                    if enqueued:
-                        logger.info(f"Accepted webhook event from {sender_id} (len text={len(text)})")
+                    if settings.ENABLE_WEBHOOK_QUEUE:
+                        enqueued = await enqueue_event(evt)
+                        if enqueued:
+                            logger.info(f"Accepted webhook event from {sender_id} (len text={len(text)})")
+                    else:
+                        # حالت بدون صف (روش قبلی): پردازش مستقیم در ترد جدا —
+                        # با تشخیص تکرار همچنان از ارسال دوباره جلوگیری می‌شود
+                        fp = _event_fingerprint(evt["sender_id"], evt["text"], evt["mid"])
+                        if await _is_duplicate_and_mark(fp):
+                            logger.info(f"Dropping duplicate webhook event (fp={fp[:8]})")
+                            continue
+                        loop = asyncio.get_running_loop()
+                        await loop.run_in_executor(None, _handle_event_sync, evt)
+                        logger.info(f"Processed webhook event inline from {sender_id} (len text={len(text)})")
 
     # acknowledge quickly
     return {"status": "EVENT_RECEIVED"}
@@ -175,8 +186,9 @@ def _handle_event_sync(event: dict[str, Any]) -> None:
                 if not sent:
                     logger.error(f"Failed to send reply to {sender_id}; dropping unsent record.")
                     drop_unsent_reply(db, sender_id, reply_text)
-            # Keep the poller's in-memory state consistent without sharing DB state.
-            instagram_client.mark_processed(thread_id=str(sender_id), message_id=mid or "")
+            # توجه: mark_processed اینجا عمداً صدا زده نمی‌شود؛
+            # کلید/مقدار آن با پولر (conv_id / id پیام زرنیو) یکی نیست و بی‌اثر بود.
+            # جلوگیری از پاسخ دوباره بر عهدهٔ چکِ «آخرین پیام outgoing» در پولر و تشخیص تکرار است.
         except Exception as e:
             logger.error(f"Error processing webhook event for {sender_id}: {e}", exc_info=True)
     finally:

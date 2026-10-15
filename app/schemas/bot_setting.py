@@ -22,6 +22,7 @@ class BotSettingUpdate(BaseModel):
     automation_provider: str | None = None
     postzen_api_key: str | None = None
     postzen_account_id: str | None = None
+    license_key: str | None = None
 
 
 
@@ -46,6 +47,7 @@ class BotSettingResponse(BaseModel):
     automation_provider: str = "zernio"
     postzen_api_key: str | None = None
     postzen_account_id: str | None = None
+    license_key: str | None = None
     updated_at: datetime
 
 

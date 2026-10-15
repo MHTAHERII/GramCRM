@@ -72,6 +72,7 @@ def get_settings(db: Session = Depends(get_db)):
         automation_provider=setting.automation_provider or "zernio",
         postzen_api_key=_mask_secret(setting.postzen_api_key),
         postzen_account_id=setting.postzen_account_id,
+        license_key=_mask_secret(getattr(setting, "license_key", None)),
         updated_at=setting.updated_at
     )
 
@@ -152,6 +153,19 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
     if data.postzen_account_id is not None:
         setting.postzen_account_id = data.postzen_account_id.strip() or None
 
+    if data.license_key is not None and not _is_masked_secret(data.license_key):
+        new_lic = data.license_key.strip() if data.license_key.strip() else None
+        if new_lic:
+            from app.service.licensing_service import validate_license
+            val = validate_license(new_lic)
+            if not val.get("is_valid"):
+                from fastapi import HTTPException, status
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"کلید لایسنس نامعتبر است: {val.get('message')}"
+                )
+        setting.license_key = new_lic
+
     # کشف و پر کردن خودکار شناسه‌های PostZen از روی توکن جدید
     if setting.postzen_api_key and not setting.postzen_account_id:
         try:
@@ -225,6 +239,7 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         automation_provider=setting.automation_provider or "zernio",
         postzen_api_key=_mask_secret(setting.postzen_api_key),
         postzen_account_id=setting.postzen_account_id,
+        license_key=_mask_secret(getattr(setting, "license_key", None)),
         updated_at=setting.updated_at
     )
 

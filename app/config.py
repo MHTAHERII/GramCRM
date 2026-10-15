@@ -56,5 +56,8 @@ class Settings:
     WEBHOOK_WORKER_COUNT: int = max(1, int(os.getenv("WEBHOOK_WORKER_COUNT", "1")))
     WEBHOOK_DEDUP_TTL_SECONDS: int = max(1, int(os.getenv("WEBHOOK_DEDUP_TTL_SECONDS", "300")))
 
+    # کلید ریشه امضای دیجیتال لایسنس (برای صدور و اعتبارسنجی لایسنس پنل)
+    LICENSE_SECRET_KEY: str = os.getenv("LICENSE_SECRET_KEY", "gramcrm-master-root-license-signature-key-2026")
+
 settings = Settings()
 

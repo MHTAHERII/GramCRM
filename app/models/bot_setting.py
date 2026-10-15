@@ -46,6 +46,8 @@ class BotSetting(Base):
     postzen_api_key = Column(String(255), nullable=True)
     postzen_account_id = Column(String(100), nullable=True)
 
+    # کلید لایسنس دیجیتال نرم‌افزار
+    license_key = Column(Text, nullable=True)
 
     updated_at = Column(
         DateTime,

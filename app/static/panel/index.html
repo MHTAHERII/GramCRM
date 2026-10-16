@@ -77,6 +77,10 @@
             <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
             <span class="tab-label">محصولات</span>
           </button>
+          <button class="tab" data-tab="orders" aria-label="سفارش‌ها">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>
+            <span class="tab-label">سفارش‌ها</span>
+          </button>
           <button class="tab" data-tab="settings" aria-label="تنظیمات">
             <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
             <span class="tab-label">تنظیمات</span>
@@ -454,6 +458,36 @@
           <div id="products-empty" class="empty hidden">هنوز محصولی ثبت نشده است</div>
         </section>
 
+        <!-- تب سفارش‌ها -->
+        <section id="tab-orders" class="tab-panel">
+          <div class="card table-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; padding:8px 8px 4px;">
+              <div>
+                <h2>سفارش‌ها</h2>
+                <p class="hint">با تغییر وضعیت هر سفارش، اعلان آن به‌صورت خودکار در دایرکت مشتری ارسال می‌شود. متن اعلان‌ها در بخش تنظیمات قابل ویرایش است.</p>
+              </div>
+              <button class="btn ghost" id="btn-refresh-orders" type="button">بازخوانی</button>
+            </div>
+            <div id="orders-list" style="display:flex; flex-direction:column; gap:10px; padding:8px;"></div>
+            <div id="orders-empty" class="empty hidden">هنوز سفارشی ثبت نشده است</div>
+          </div>
+
+          <!-- مودال ورود کد رهگیری هنگام ارسال سفارش -->
+          <div id="order-ship-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(4px); padding:16px;">
+            <div class="card" style="width:min(430px, 94vw); margin:0;">
+              <h2 style="font-size:1rem; margin-bottom:4px;">ارسال سفارش 📦</h2>
+              <p class="hint">کد رهگیری مرسوله را وارد کنید؛ همراه با اعلان «ارسال شد» برای مشتری ارسال می‌شود.</p>
+              <div class="field">
+                <input id="order-ship-tracking" type="text" maxlength="100" placeholder="مثلاً: RA123456789IR" autocomplete="off">
+              </div>
+              <div class="form-actions">
+                <button class="btn primary" id="btn-confirm-ship" type="button">ثبت و ارسال اعلان</button>
+                <button class="btn ghost" id="btn-cancel-ship" type="button">انصراف</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- تب تنظیمات -->
         <section id="tab-settings" class="tab-panel">
           <div class="card">
@@ -477,6 +511,45 @@
             <textarea id="fallback-message" rows="4"></textarea>
             <div class="form-actions">
               <button id="save-settings" class="btn primary">ذخیره تنظیمات</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>اعلان خودکار وضعیت سفارش 📮</h2>
+            <p class="hint">با تغییر وضعیت سفارش در تب «سفارش‌ها» (تأیید / ارسال / لغو)، این پیام‌ها به‌صورت خودکار در دایرکت مشتری ارسال می‌شوند. اگر مشتری بیش از ۲۴ ساعت پیام نداده باشد، اعلان در صف می‌ماند و به محض پیام او ارسال خواهد شد.</p>
+            <div class="switch-row">
+              <div>
+                <strong>فعال بودن اعلان‌ها</strong>
+                <p class="hint">با خاموش کردن، هیچ پیام خودکار وضعیتی برای مشتریان ارسال نمی‌شود.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="order-notify-enabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="field" style="margin-top:0.8rem;">
+              <label for="order-notify-confirmed">متن اعلان «تأیید شد»</label>
+              <textarea id="order-notify-confirmed" rows="3" maxlength="640" placeholder="خالی بگذارید تا متن پیش‌فرض ارسال شود"></textarea>
+            </div>
+            <div class="field">
+              <label for="order-notify-shipped">متن اعلان «ارسال شد»</label>
+              <textarea id="order-notify-shipped" rows="3" maxlength="640" placeholder="خالی بگذارید تا متن پیش‌فرض ارسال شود"></textarea>
+            </div>
+            <div class="field">
+              <label for="order-notify-cancelled">متن اعلان «لغو شد»</label>
+              <textarea id="order-notify-cancelled" rows="3" maxlength="640" placeholder="خالی بگذارید تا متن پیش‌فرض ارسال شود"></textarea>
+            </div>
+            <p class="hint" style="font-size:0.78rem; line-height:1.7;">
+              متغیرهای قابل استفاده در متن: <code style="direction:ltr; unicode-bidi:embed;">{product}</code> نام محصول،
+              <code style="direction:ltr; unicode-bidi:embed;">{quantity}</code> تعداد،
+              <code style="direction:ltr; unicode-bidi:embed;">{unit}</code> واحد،
+              <code style="direction:ltr; unicode-bidi:embed;">{total}</code> مبلغ کل،
+              <code style="direction:ltr; unicode-bidi:embed;">{tracking}</code> کد رهگیری،
+              <code style="direction:ltr; unicode-bidi:embed;">{recipient}</code> نام گیرنده،
+              <code style="direction:ltr; unicode-bidi:embed;">{order_id}</code> شماره سفارش.
+            </p>
+            <div class="form-actions">
+              <button id="save-order-notify" class="btn primary">ذخیره اعلان‌ها</button>
             </div>
           </div>
 

@@ -75,6 +75,8 @@ def apply_credentials_to_services(setting: BotSetting):
 
 def get_bot_settings(db: Session) -> BotSetting:
     """بازگرداندن رکورد تنظیمات؛ در اولین اجرا رکورد پیش‌فرض ساخته می‌شود."""
+    # بدون global، خط انتساب داخل تابع متغیر را لوکال می‌کرد و خواندن قبل از آن UnboundLocalError می‌داد
+    global _last_discovery_attempt_at
     setting = db.query(BotSetting).filter(BotSetting.id == 1).first()
     if not setting:
         setting = BotSetting(

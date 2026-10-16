@@ -245,6 +245,7 @@ const loaders = {
   keywords: loadKeywords,
   conversations: loadConversations,
   products: loadProducts,
+  orders: loadOrders,
   settings: loadSettings,
 };
 let activeTab = "dashboard";
@@ -1073,6 +1074,155 @@ async function deleteProduct(id) {
 
 /* ---------------- تنظیمات ---------------- */
 
+/* ---------------- سفارش‌ها (فاز ۱: اعلان خودکار وضعیت) ---------------- */
+
+let ordersCache = [];
+let shipOrderTarget = null;
+
+const ORDER_STATUS_META = {
+  pending: { label: "در انتظار", color: "#fbbf24", bg: "rgba(245,158,11,0.15)", border: "rgba(245,158,11,0.35)" },
+  confirmed: { label: "تأیید شد", color: "#818cf8", bg: "rgba(99,102,241,0.15)", border: "rgba(99,102,241,0.35)" },
+  shipped: { label: "ارسال شد", color: "#10b981", bg: "rgba(16,185,129,0.15)", border: "rgba(16,185,129,0.35)" },
+  cancelled: { label: "لغو شد", color: "#f87171", bg: "rgba(239,68,68,0.15)", border: "rgba(239,68,68,0.35)" },
+};
+
+function orderStatusBadge(status) {
+  const m = ORDER_STATUS_META[status] || { label: status, color: "#94a3b8", bg: "rgba(100,116,139,0.15)", border: "rgba(100,116,139,0.3)" };
+  return `<span style="padding:3px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; color:${m.color}; background:${m.bg}; border:1px solid ${m.border}; white-space:nowrap;">${m.label}</span>`;
+}
+
+function orderNotifyBadge(o) {
+  if (o.notify_pending) {
+    const waiting = (o.notify_error || "").includes("پنجره");
+    return `<span title="${esc(o.notify_error || "در صف ارسال")}" style="color:#fbbf24;">⏳ ${waiting ? "در صف — تا پیام مشتری" : "در صف ارسال"}</span>`;
+  }
+  if (o.notified_status === o.status) {
+    return `<span style="color:#10b981;">✅ اعلان ارسال شد</span>`;
+  }
+  if (o.notified_status) {
+    return `<span style="color:#94a3b8;">اعلان «${esc((ORDER_STATUS_META[o.notified_status] || {}).label || o.notified_status)}» رفت</span>`;
+  }
+  if (o.notify_error) {
+    return `<span title="${esc(o.notify_error)}" style="color:#f87171;">❌ ${esc(o.notify_error)}</span>`;
+  }
+  return `<span style="color:#64748b;">—</span>`;
+}
+
+function renderOrders() {
+  const list = document.getElementById("orders-list");
+  const empty = document.getElementById("orders-empty");
+  if (!list) return;
+  if (!ordersCache.length) {
+    list.innerHTML = "";
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  if (empty) empty.classList.add("hidden");
+
+  list.innerHTML = ordersCache.map((o) => {
+    const actions = [];
+    if (o.status === "pending") {
+      actions.push(`<button class="btn small primary" data-act="confirmed" data-id="${o.id}">✓ تأیید سفارش</button>`);
+      actions.push(`<button class="btn small ghost" style="color:#f87171; border-color:rgba(239,68,68,0.35);" data-act="cancelled" data-id="${o.id}">✕ لغو</button>`);
+    } else if (o.status === "confirmed") {
+      actions.push(`<button class="btn small primary" data-act="shipped" data-id="${o.id}">📦 ارسال...</button>`);
+      actions.push(`<button class="btn small ghost" style="color:#f87171; border-color:rgba(239,68,68,0.35);" data-act="cancelled" data-id="${o.id}">✕ لغو</button>`);
+    }
+
+    return `
+      <div class="card" style="margin:0; padding:14px;">
+        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+          <div style="flex:1; min-width:220px;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <strong>#${o.id} — ${esc(o.product_name)}</strong>
+              <span class="hint" style="font-size:0.8rem;">× ${o.quantity} ${esc(o.unit)}</span>
+              ${orderStatusBadge(o.status)}
+            </div>
+            <div class="hint" style="margin-top:6px; font-size:0.8rem;">
+              گیرنده: ${esc(o.recipient_name)} | ${esc(o.phone)} | <span style="direction:ltr; unicode-bidi:embed;">${fmtNumber(o.total_price)}</span> تومان
+            </div>
+            ${o.tracking_code ? `<div class="hint" style="margin-top:4px; font-size:0.78rem; direction:ltr; text-align:right;">کد رهگیری: ${esc(o.tracking_code)}</div>` : ""}
+            <div class="hint" style="margin-top:6px; font-size:0.76rem;">
+              ${fmtTime(o.updated_at)} — اعلان: ${orderNotifyBadge(o)}
+            </div>
+            ${o.notify_pending && o.notify_error ? `<div style="margin-top:6px; font-size:0.76rem; color:#fbbf24;">⏳ ${esc(o.notify_error)}</div>` : ""}
+          </div>
+          ${actions.length ? `<div style="display:flex; gap:6px; flex-wrap:wrap;">${actions.join("")}</div>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+async function loadOrders() {
+  try {
+    ordersCache = await api("/orders/");
+    renderOrders();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function applyOrderStatus(order, status, trackingCode) {
+  try {
+    const body = JSON.stringify({ version: order.version, status, tracking_code: trackingCode || "" });
+    const updated = await api(`/orders/${order.id}`, { method: "PATCH", body });
+    const idx = ordersCache.findIndex((o) => o.id === order.id);
+    if (idx >= 0) ordersCache[idx] = updated;
+    renderOrders();
+    showToast(
+      `وضعیت سفارش #${order.id} به «${ORDER_STATUS_META[status].label}» تغییر کرد — اعلان آن در دایرکت مشتری در صف ارسال است`,
+      "success"
+    );
+    // دریافت وضعیت نهایی اعلان بعد از اتمام ارسال پس‌زمینه
+    setTimeout(() => { if (activeTab === "orders") loadOrders(); }, 4000);
+  } catch (err) {
+    showToast(err.message, "error");
+    loadOrders();
+  }
+}
+
+document.getElementById("btn-refresh-orders")?.addEventListener("click", () => loadOrders());
+
+document.getElementById("orders-list")?.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const order = ordersCache.find((o) => o.id === Number(btn.dataset.id));
+  if (!order) return;
+  const act = btn.dataset.act;
+
+  if (act === "shipped") {
+    shipOrderTarget = order;
+    const modal = document.getElementById("order-ship-modal");
+    const input = document.getElementById("order-ship-tracking");
+    input.value = order.tracking_code || "";
+    modal.style.display = "flex";
+    input.focus();
+    return;
+  }
+  if (act === "cancelled" && !confirm(`سفارش #${order.id} لغو شود؟ اعلان لغو به مشتری ارسال می‌شود.`)) return;
+  await applyOrderStatus(order, act, order.tracking_code || "");
+});
+
+document.getElementById("btn-cancel-ship")?.addEventListener("click", () => {
+  document.getElementById("order-ship-modal").style.display = "none";
+  shipOrderTarget = null;
+});
+
+document.getElementById("btn-confirm-ship")?.addEventListener("click", async () => {
+  const input = document.getElementById("order-ship-tracking");
+  const code = input.value.trim();
+  if (!code) {
+    showToast("برای ارسال سفارش، کد رهگیری را وارد کنید", "error");
+    input.focus();
+    return;
+  }
+  const order = shipOrderTarget;
+  document.getElementById("order-ship-modal").style.display = "none";
+  shipOrderTarget = null;
+  if (order) await applyOrderStatus(order, "shipped", code);
+});
+
+
 async function loadSettings() {
   const settings = await api("/settings/");
   document.getElementById("bot-enabled").checked = settings.bot_enabled;
@@ -1080,6 +1230,16 @@ async function loadSettings() {
   document.getElementById("follow-gate-enabled").checked = settings.follow_gate_enabled;
   document.getElementById("follow-gate-message").value = settings.follow_gate_message || "";
   document.getElementById("follow-gate-message").dispatchEvent(new Event("input"));
+
+  // فاز ۱: تنظیمات اعلان خودکار وضعیت سفارش
+  const notifyEnabled = document.getElementById("order-notify-enabled");
+  if (notifyEnabled) notifyEnabled.checked = settings.order_notify_enabled !== false;
+  const notifyConfirmed = document.getElementById("order-notify-confirmed");
+  if (notifyConfirmed) notifyConfirmed.value = settings.order_notify_confirmed || "";
+  const notifyShipped = document.getElementById("order-notify-shipped");
+  if (notifyShipped) notifyShipped.value = settings.order_notify_shipped || "";
+  const notifyCancelled = document.getElementById("order-notify-cancelled");
+  if (notifyCancelled) notifyCancelled.value = settings.order_notify_cancelled || "";
 
   // پر کردن دکمه‌های شیشه‌ای دروازه فالو
   const fgContainer = document.getElementById("follow-gate-buttons-container");
@@ -1281,6 +1441,23 @@ document.getElementById("save-settings").addEventListener("click", async () => {
     updateBotBadge(updated.bot_enabled);
     flashButtonSuccess(btn, "ذخیره تنظیمات", "✓ ذخیره شد");
     showToast("تنظیمات عمومی با موفقیت ذخیره شد", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+});
+
+document.getElementById("save-order-notify")?.addEventListener("click", async () => {
+  const btn = document.getElementById("save-order-notify");
+  const body = JSON.stringify({
+    order_notify_enabled: document.getElementById("order-notify-enabled").checked,
+    order_notify_confirmed: document.getElementById("order-notify-confirmed").value,
+    order_notify_shipped: document.getElementById("order-notify-shipped").value,
+    order_notify_cancelled: document.getElementById("order-notify-cancelled").value,
+  });
+  try {
+    await api("/settings/", { method: "PUT", body });
+    flashButtonSuccess(btn, "ذخیره اعلان‌ها", "✓ ذخیره شد");
+    showToast("تنظیمات اعلان سفارش ذخیره شد", "success");
   } catch (err) {
     showToast(err.message, "error");
   }

@@ -46,6 +46,10 @@ class OrderResponse(BaseModel):
     status: str
     tracking_code: str
     receipt_type: str | None
+    notify_pending: bool = False
+    notified_status: str | None = None
+    notify_error: str | None = None
+    notify_updated_at: datetime | None = None
     version: int
     created_at: datetime
     updated_at: datetime

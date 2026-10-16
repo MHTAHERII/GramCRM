@@ -11,6 +11,7 @@ from app.models.product import Product
 from app.models.order import Order
 from app.schemas.order import OrderCreate, OrderUpdate, OrderResponse
 from app.routers.keyword import _sync_zernio_bg
+from app.service.order_notify_service import NOTIFY_STATUSES, send_order_notification_task
 
 
 router = APIRouter(prefix="/orders", tags=["Orders"], dependencies=[Depends(require_auth)])
@@ -65,10 +66,20 @@ def update_order(order_id: int, data: OrderUpdate, background_tasks: BackgroundT
         raise HTTPException(422, "کد پیگیری ارسال را وارد کنید")
     previous_status = order.status
     product_id, quantity = order.product_id, order.quantity
-    changed = db.query(Order).filter(Order.id == order_id, Order.version == data.version).update({
+    status_changed = data.status != previous_status
+    # فاز ۱: صف‌بندی اعلان خودکار وضعیت جدید در دایرکت مشتری
+    update_payload = {
         Order.status: data.status, Order.tracking_code: data.tracking_code.strip(),
         Order.version: Order.version + 1, Order.updated_at: datetime.utcnow(),
-    }, synchronize_session=False)
+    }
+    if status_changed and data.status in NOTIFY_STATUSES:
+        update_payload.update({
+            Order.notify_pending: True,
+            Order.notify_error: None,
+            Order.notify_updated_at: datetime.utcnow(),
+        })
+    changed = db.query(Order).filter(Order.id == order_id, Order.version == data.version).update(
+        update_payload, synchronize_session=False)
     if changed != 1:
         db.rollback()
         raise HTTPException(409, "سفارش هم‌زمان تغییر کرده است؛ دوباره بازخوانی کنید")
@@ -89,6 +100,9 @@ def update_order(order_id: int, data: OrderUpdate, background_tasks: BackgroundT
     db.refresh(order)
     if stock_changed:
         background_tasks.add_task(_sync_zernio_bg)
+    # فاز ۱: ارسال فوری اعلان در ترد جدا (اگر در صف رفته باشد)
+    if status_changed and order.notify_pending:
+        background_tasks.add_task(send_order_notification_task, order.id)
     return order
 
 

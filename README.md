@@ -63,6 +63,9 @@
 #### ۶. پنل مدیریتی ساده و چشم‌نواز 🎨
 بدون نیاز به حتی یک کلمه دانش فنی یا برنامه‌نویسی. در هر ساعت از شبانه‌روز از طریق موبایل یا لپ‌تاپ وارد پنل زیبا و فارسی خود شوید، آمار فروش را ببینید و سفارش‌ها را مدیریت کنید.
 
+#### ۷. اعلان خودکار وضعیت سفارش در دایرکت 📮
+به محض تغییر وضعیت هر سفارش (تأیید / ارسال / لغو)، پیام آن به‌صورت خودکار در دایرکت مشتری می‌رود: «بسته‌ات ارسال شد 🌸 کد رهگیری پستی: ...». متن هر اعلان از پنل قابل ویرایش است و قانون ۲۴ ساعته اینستاگرام هم رعایت می‌شود. خداحافظی با پیام‌های تکراریِ «بسته‌ام کجاست؟».
+
 ---
 
 ### 💎 چرا GramCRM از بقیه متمایز است؟
@@ -85,8 +88,6 @@
 
 * **🤖 ایجنت فروش هوش مصنوعی (AI Sales Agent):**  
   مثل باهوش‌ترین فروشنده پیج شما رفتار می‌کند! به سوالات آزاد مشتریان («برای هدیه عطر چی پیشنهاد میدید؟») پاسخ می‌دهد، سلیقه مشتری را می‌فهمد و سبد خرید را در چت تکمیل می‌کند.
-* **📦 پیامک و دایرکت خودکار وضعیت مرسوله:**  
-  وقتی سفارش را ارسال می‌کنید، مشتری خودش دایرکت دریافت می‌کند: «بسته‌ات ارسال شد 🌸 کد رهگیری پستی: ...» (خداحافظی با پیام‌های تکراریِ «بسته‌ام کجاست؟»).
 * **💳 اتصال مستقیم به درگاه پرداخت آنلاین:**  
   ارسال لینک اختصاصی پرداخت بانکی در دایرکت و تأیید کاملاً اتوماتیک سفارش پس از پرداخت، بدون نیاز به چک کردن دستی فیش‌های واریزی.
 * **🎯 پیگیری خودکار مشتریان مردد (Drip Marketing):**  
@@ -129,13 +130,13 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 * **🛡️ 100% Account Safety:** Powered by official cloud Meta APIs. No password required, zero shadowban or account-blocking risks.
 * **🔒 Data Privacy & Independence:** Self-hosted on your own private VPS. Your customer data, order lists, and conversations belong 100% to you.
 * **🎨 Modern Web Dashboard:** A sleek, Linear/Stripe-inspired dark UI designed for merchants, accessible from desktop or smartphone without technical expertise.
+* **📮 Automated Order Status DMs:** The moment you confirm, ship, or cancel an order, a customizable notification (with tracking code) lands in the customer's DMs — Instagram's 24-hour messaging window respected automatically.
 
 ---
 
 ### 🗺️ Upcoming Features (Roadmap)
 
 - **🤖 AI Conversational Sales Agent:** Intelligent LLM-powered sales assistant answering open-ended inquiries and recommending catalog products naturally.
-- **📦 Automated Order Tracking DMs:** Automatic customer notifications with postal tracking numbers upon order shipment.
 - **💳 Direct Payment Gateway Integration:** One-click online checkout links with instant automated payment confirmation.
 - **🎯 Smart Follow-Up (Drip Marketing):** Automated 24-hour reminders sent to abandoned chat inquiries to maximize conversion.
 - **🏷️ Automated Lead Scoring:** Auto-tag high-intent buyers based on behavioral keywords to prioritize closing deals.

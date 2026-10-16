@@ -49,6 +49,12 @@ class BotSetting(Base):
     # کلید لایسنس دیجیتال نرم‌افزار
     license_key = Column(Text, nullable=True)
 
+    # اعلان خودکار وضعیت سفارش در دایرکت (متن‌ها خالی = استفاده از پیش‌فرض سیستم)
+    order_notify_enabled = Column(Boolean, default=True, nullable=False, server_default="true")
+    order_notify_confirmed = Column(Text, nullable=True)
+    order_notify_shipped = Column(Text, nullable=True)
+    order_notify_cancelled = Column(Text, nullable=True)
+
     updated_at = Column(
         DateTime,
         default=datetime.utcnow,

@@ -73,6 +73,10 @@ def get_settings(db: Session = Depends(get_db)):
         postzen_api_key=_mask_secret(setting.postzen_api_key),
         postzen_account_id=setting.postzen_account_id,
         license_key=_mask_secret(getattr(setting, "license_key", None)),
+        order_notify_enabled=bool(getattr(setting, "order_notify_enabled", True)),
+        order_notify_confirmed=getattr(setting, "order_notify_confirmed", None),
+        order_notify_shipped=getattr(setting, "order_notify_shipped", None),
+        order_notify_cancelled=getattr(setting, "order_notify_cancelled", None),
         updated_at=setting.updated_at
     )
 
@@ -166,6 +170,16 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
                 )
         setting.license_key = new_lic
 
+    # فاز ۱: اعلان خودکار وضعیت سفارش (کلید + متن‌های قابل ویرایش)
+    if data.order_notify_enabled is not None:
+        setting.order_notify_enabled = data.order_notify_enabled
+    for field in ("order_notify_confirmed", "order_notify_shipped", "order_notify_cancelled"):
+        value = getattr(data, field)
+        if value is not None:
+            stripped = value.strip()
+            # متن خالی = بازگشت به متن پیش‌فرض سیستم
+            setattr(setting, field, stripped if stripped else None)
+
     # کشف و پر کردن خودکار شناسه‌های PostZen از روی توکن جدید
     if setting.postzen_api_key and not setting.postzen_account_id:
         try:
@@ -240,6 +254,10 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         postzen_api_key=_mask_secret(setting.postzen_api_key),
         postzen_account_id=setting.postzen_account_id,
         license_key=_mask_secret(getattr(setting, "license_key", None)),
+        order_notify_enabled=bool(getattr(setting, "order_notify_enabled", True)),
+        order_notify_confirmed=getattr(setting, "order_notify_confirmed", None),
+        order_notify_shipped=getattr(setting, "order_notify_shipped", None),
+        order_notify_cancelled=getattr(setting, "order_notify_cancelled", None),
         updated_at=setting.updated_at
     )
 

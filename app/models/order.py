@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, BigInteger, String, Text, DateTime, ForeignKey, LargeBinary
+from sqlalchemy import Column, Integer, BigInteger, String, Text, DateTime, ForeignKey, LargeBinary, Boolean
 from sqlalchemy.orm import deferred
 
 from app.database import Base
@@ -24,6 +24,12 @@ class Order(Base):
     notes = Column(Text, nullable=False, default="")
     status = Column(String(30), nullable=False, default="pending")
     tracking_code = Column(String(100), nullable=False, default="")
+
+    # اعلان خودکار وضعیت سفارش در دایرکت مشتری (فاز ۱)
+    notify_pending = Column(Boolean, nullable=False, default=False, server_default="false")
+    notified_status = Column(String(30), nullable=True)
+    notify_error = Column(Text, nullable=True)
+    notify_updated_at = Column(DateTime, nullable=True)
     receipt_data = deferred(Column(LargeBinary, nullable=True))
     receipt_type = Column(String(50), nullable=True)
     version = Column(Integer, nullable=False, default=1)

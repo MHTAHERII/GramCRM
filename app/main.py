@@ -187,6 +187,31 @@ def run_schema_migrations() -> None:
             conn.execute(text(
                 "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS postzen_account_id VARCHAR(100);"
             ))
+            # فاز ۱: اعلان خودکار وضعیت سفارش در دایرکت
+            conn.execute(text(
+                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notify_pending BOOLEAN DEFAULT false;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notified_status VARCHAR(30);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notify_error TEXT;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE orders ADD COLUMN IF NOT EXISTS notify_updated_at TIMESTAMP;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS order_notify_enabled BOOLEAN DEFAULT true;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS order_notify_confirmed TEXT;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS order_notify_shipped TEXT;"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS order_notify_cancelled TEXT;"
+            ))
             conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
             ))
@@ -247,6 +272,11 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("Webhook queue worker is disabled in settings.")
 
+    # راه‌اندازی ورکر اعلان خودکار وضعیت سفارش (ارسال اعلان‌های در صف)
+    from app.service.order_notify_service import run_order_notify_worker
+    order_notify_stop_event = asyncio.Event()
+    order_notify_task = asyncio.create_task(run_order_notify_worker(order_notify_stop_event))
+
     yield  # اینجا سرور در حال اجراست
 
     # خاموش کردن ورکرها هنگام shutdown
@@ -259,6 +289,9 @@ async def lifespan(app: FastAPI):
         webhook_stop_event.set()
         await asyncio.gather(webhook_task, return_exceptions=True)
         logger.info("Webhook workers stopped.")
+
+    order_notify_stop_event.set()
+    await asyncio.gather(order_notify_task, return_exceptions=True)
 
 
 app = FastAPI(

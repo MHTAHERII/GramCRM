@@ -212,6 +212,13 @@ def run_schema_migrations() -> None:
             conn.execute(text(
                 "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS order_notify_cancelled TEXT;"
             ))
+            # فاز ۲: پیشنهاد جواب هوشمند با Google Gemini
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS gemini_api_key VARCHAR(255);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS gemini_model VARCHAR(100);"
+            ))
             conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
             ))

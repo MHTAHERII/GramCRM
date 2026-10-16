@@ -988,6 +988,31 @@ document.getElementById("chat-send-form").addEventListener("submit", async (e) =
   }
 });
 
+/* ---------------- پیشنهاد جواب هوشمند (فاز ۲) ---------------- */
+
+document.getElementById("btn-ai-draft")?.addEventListener("click", async () => {
+  if (!currentCustomerId) {
+    showToast("اول یک گفتگو را باز کنید", "error");
+    return;
+  }
+  const btn = document.getElementById("btn-ai-draft");
+  const input = document.getElementById("chat-input");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "در حال نوشتن…";
+  try {
+    const res = await api(`/customers/${currentCustomerId}/ai-draft`, { method: "POST" });
+    input.value = res.draft || "";
+    input.dispatchEvent(new Event("input")); // به‌روزرسانی شمارنده کاراکتر
+    input.focus();
+  } catch (err) {
+    if (err.message !== "unauthorized") showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+});
+
 /* ---------------- محصولات ---------------- */
 
 let editingProductId = null;
@@ -1241,6 +1266,12 @@ async function loadSettings() {
   const notifyCancelled = document.getElementById("order-notify-cancelled");
   if (notifyCancelled) notifyCancelled.value = settings.order_notify_cancelled || "";
 
+  // فاز ۲: تنظیمات هوش مصنوعی Gemini
+  const geminiKey = document.getElementById("gemini-api-key");
+  if (geminiKey) geminiKey.value = settings.gemini_api_key || "";
+  const geminiModel = document.getElementById("gemini-model");
+  if (geminiModel) geminiModel.value = settings.gemini_model || "";
+
   // پر کردن دکمه‌های شیشه‌ای دروازه فالو
   const fgContainer = document.getElementById("follow-gate-buttons-container");
   if (fgContainer) {
@@ -1458,6 +1489,22 @@ document.getElementById("save-order-notify")?.addEventListener("click", async ()
     await api("/settings/", { method: "PUT", body });
     flashButtonSuccess(btn, "ذخیره اعلان‌ها", "✓ ذخیره شد");
     showToast("تنظیمات اعلان سفارش ذخیره شد", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+});
+
+document.getElementById("save-ai-settings")?.addEventListener("click", async () => {
+  const btn = document.getElementById("save-ai-settings");
+  const body = JSON.stringify({
+    gemini_api_key: document.getElementById("gemini-api-key").value,
+    gemini_model: document.getElementById("gemini-model").value,
+  });
+  try {
+    await api("/settings/", { method: "PUT", body });
+    flashButtonSuccess(btn, "ذخیره تنظیمات AI", "✓ ذخیره شد");
+    showToast("تنظیمات هوش مصنوعی ذخیره شد", "success");
+    loadSettings();
   } catch (err) {
     showToast(err.message, "error");
   }

@@ -55,6 +55,10 @@ class BotSetting(Base):
     order_notify_shipped = Column(Text, nullable=True)
     order_notify_cancelled = Column(Text, nullable=True)
 
+    # فاز ۲: پیشنهاد جواب هوشمند با Google Gemini
+    gemini_api_key = Column(String(255), nullable=True)
+    gemini_model = Column(String(100), nullable=True)
+
     updated_at = Column(
         DateTime,
         default=datetime.utcnow,

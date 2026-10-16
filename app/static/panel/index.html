@@ -419,7 +419,10 @@
                   <textarea id="chat-input" rows="2" maxlength="640" placeholder="پاسخ دستی (به عنوان ادمین ارسال می‌شود)…"></textarea>
                   <span id="chat-input-counter" class="hint" style="font-size:0.72rem;direction:ltr;align-self:flex-end;">0 / 640</span>
                 </div>
-                <button type="submit" class="btn primary" style="align-self:flex-start;">ارسال</button>
+                <div style="display:flex;gap:8px;align-self:flex-start;">
+                  <button type="button" class="btn ghost" id="btn-ai-draft" title="پیشنهاد جواب با هوش مصنوعی">✨ پیشنهاد</button>
+                  <button type="submit" class="btn primary">ارسال</button>
+                </div>
               </form>
             </section>
           </div>
@@ -550,6 +553,22 @@
             </p>
             <div class="form-actions">
               <button id="save-order-notify" class="btn primary">ذخیره اعلان‌ها</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>هوش مصنوعی — پیشنهاد جواب ✨</h2>
+            <p class="hint">در تب «گفتگوها» دکمهٔ <b>✨ پیشنهاد</b> کنار کادر پاسخ، متن جواب پیشنهادی را بر اساس کاتالوگ محصولات و تاریخچهٔ مکالمه آماده می‌کند. متن در کادر پر می‌شود؛ شما بازبینی، ویرایش و ارسال می‌کنید (چیزی بدون تأیید شما ارسال نمی‌شود).</p>
+            <div class="field">
+              <label for="gemini-api-key">کلید Gemini</label>
+              <input id="gemini-api-key" type="password" placeholder="از Google AI Studio بگیرید (aistudio.google.com)" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="gemini-model">مدل (اختیاری)</label>
+              <input id="gemini-model" type="text" placeholder="gemini-2.5-flash" autocomplete="off">
+            </div>
+            <div class="form-actions">
+              <button id="save-ai-settings" class="btn primary">ذخیره تنظیمات AI</button>
             </div>
           </div>
 

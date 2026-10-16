@@ -77,6 +77,8 @@ def get_settings(db: Session = Depends(get_db)):
         order_notify_confirmed=getattr(setting, "order_notify_confirmed", None),
         order_notify_shipped=getattr(setting, "order_notify_shipped", None),
         order_notify_cancelled=getattr(setting, "order_notify_cancelled", None),
+        gemini_api_key=_mask_secret(getattr(setting, "gemini_api_key", None)),
+        gemini_model=getattr(setting, "gemini_model", None),
         updated_at=setting.updated_at
     )
 
@@ -156,6 +158,12 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         setting.postzen_api_key = data.postzen_api_key.strip() or None
     if data.postzen_account_id is not None:
         setting.postzen_account_id = data.postzen_account_id.strip() or None
+
+    # فاز ۲: کلید و مدل Gemini برای پیشنهاد جواب هوشمند
+    if data.gemini_api_key is not None and not _is_masked_secret(data.gemini_api_key):
+        setting.gemini_api_key = data.gemini_api_key.strip() or None
+    if data.gemini_model is not None:
+        setting.gemini_model = data.gemini_model.strip() or None
 
     if data.license_key is not None and not _is_masked_secret(data.license_key):
         new_lic = data.license_key.strip() if data.license_key.strip() else None
@@ -258,6 +266,8 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         order_notify_confirmed=getattr(setting, "order_notify_confirmed", None),
         order_notify_shipped=getattr(setting, "order_notify_shipped", None),
         order_notify_cancelled=getattr(setting, "order_notify_cancelled", None),
+        gemini_api_key=_mask_secret(getattr(setting, "gemini_api_key", None)),
+        gemini_model=getattr(setting, "gemini_model", None),
         updated_at=setting.updated_at
     )
 

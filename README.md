@@ -66,6 +66,9 @@
 #### ۷. اعلان خودکار وضعیت سفارش در دایرکت 📮
 به محض تغییر وضعیت هر سفارش (تأیید / ارسال / لغو)، پیام آن به‌صورت خودکار در دایرکت مشتری می‌رود: «بسته‌ات ارسال شد 🌸 کد رهگیری پستی: ...». متن هر اعلان از پنل قابل ویرایش است و قانون ۲۴ ساعته اینستاگرام هم رعایت می‌شود. خداحافظی با پیام‌های تکراریِ «بسته‌ام کجاست؟».
 
+#### ۸. پیشنهاد جواب با هوش مصنوعی ✨
+کنار کادر پاسخ در هر گفتگو دکمهٔ «✨ پیشنهاد» بزنید؛ Gemini با دانش کاتالوگ محصولات و تاریخچهٔ همان مکالمه، متن جواب را آماده می‌کند. فقط کافی است بازبینی و ویرایش کنید و بفرستید — هیچ چیز بدون تأیید شما ارسال نمی‌شود.
+
 ---
 
 ### 💎 چرا GramCRM از بقیه متمایز است؟
@@ -131,6 +134,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/MHTAHERII/GramCRM/main/deploy.
 * **🔒 Data Privacy & Independence:** Self-hosted on your own private VPS. Your customer data, order lists, and conversations belong 100% to you.
 * **🎨 Modern Web Dashboard:** A sleek, Linear/Stripe-inspired dark UI designed for merchants, accessible from desktop or smartphone without technical expertise.
 * **📮 Automated Order Status DMs:** The moment you confirm, ship, or cancel an order, a customizable notification (with tracking code) lands in the customer's DMs — Instagram's 24-hour messaging window respected automatically.
+* **✨ AI Reply Drafts (Gemini):** One click next to the chat box drafts a context-aware reply using your product catalog and conversation history; you review, edit, and send — nothing goes out without your approval.
 
 ---
 

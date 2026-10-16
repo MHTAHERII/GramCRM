@@ -132,6 +132,26 @@ def get_customer_messages(
     )
 
 
+@router.post("/{customer_id}/ai-draft")
+def create_ai_draft(
+        customer_id: int,
+        db: Session = Depends(get_db)
+):
+    """فاز ۲: پیشنهاد جواب هوشمند بر اساس کاتالوگ و تاریخچه مکالمه (بدون ارسال خودکار)"""
+    customer = _get_customer_or_404(db, customer_id)
+
+    from app.service.bot_settings import get_bot_settings
+    from app.service.gemini_service import GeminiError, generate_draft
+
+    bot = get_bot_settings(db)
+    try:
+        draft = generate_draft(db, customer, bot)
+    except GeminiError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return {"draft": draft}
+
+
 @router.post("/{customer_id}/send")
 def send_manual_message(
         customer_id: int,

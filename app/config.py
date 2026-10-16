@@ -40,6 +40,10 @@ class Settings:
     POSTZEN_API_KEY: str = os.getenv("POSTZEN_API_KEY", "")
     POSTZEN_ACCOUNT_ID: str = os.getenv("POSTZEN_ACCOUNT_ID", "")
 
+    # فاز ۲: پیشنهاد جواب هوشمند با Google Gemini (کلید از دیتابیس هم خوانده می‌شود)
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
     # توکن اختیاری وب‌هوک زرنیو (اگر تنظیم شود، درخواست‌ها باید هدر X-Zernio-Webhook-Token را داشته باشند)
     ZERNIO_WEBHOOK_SECRET: str = os.getenv("ZERNIO_WEBHOOK_SECRET", "")
 

@@ -23,6 +23,8 @@ class BotSettingUpdate(BaseModel):
     postzen_api_key: str | None = None
     postzen_account_id: str | None = None
     license_key: str | None = None
+    gemini_api_key: str | None = Field(default=None, max_length=255)
+    gemini_model: str | None = Field(default=None, max_length=100)
     order_notify_enabled: bool | None = None
     order_notify_confirmed: str | None = Field(default=None, max_length=640)
     order_notify_shipped: str | None = Field(default=None, max_length=640)
@@ -52,6 +54,8 @@ class BotSettingResponse(BaseModel):
     postzen_api_key: str | None = None
     postzen_account_id: str | None = None
     license_key: str | None = None
+    gemini_api_key: str | None = None
+    gemini_model: str | None = None
     order_notify_enabled: bool = True
     order_notify_confirmed: str | None = None
     order_notify_shipped: str | None = None

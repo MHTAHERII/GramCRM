@@ -559,13 +559,25 @@
           <div class="card">
             <h2>هوش مصنوعی — پیشنهاد جواب ✨</h2>
             <p class="hint">در تب «گفتگوها» دکمهٔ <b>✨ پیشنهاد</b> کنار کادر پاسخ، متن جواب پیشنهادی را بر اساس کاتالوگ محصولات و تاریخچهٔ مکالمه آماده می‌کند. متن در کادر پر می‌شود؛ شما بازبینی، ویرایش و ارسال می‌کنید (چیزی بدون تأیید شما ارسال نمی‌شود).</p>
-            <div class="field">
-              <label for="gemini-api-key">کلید Gemini</label>
-              <input id="gemini-api-key" type="password" placeholder="از Google AI Studio بگیرید (aistudio.google.com)" autocomplete="off">
+            <div class="field" style="margin-top: 1.25rem;">
+              <label for="ai-provider" style="font-weight: 600; color: #a5b4fc;">سرویس هوش مصنوعی</label>
+              <select id="ai-provider" style="height: 44px; width: 100%; max-width: 440px; cursor: pointer; background: var(--bg-secondary); color: var(--text); border: 1px solid var(--border-strong); border-radius: 10px; padding: 0 14px; font-weight: 500; font-size: 0.92rem;">
+                <option value="gemini" style="background-color: #151922; color: #f8fafc;">✨ Google Gemini (مستقیم)</option>
+                <option value="openai" style="background-color: #151922; color: #f8fafc;">🌐 گیت‌وی سازگار با OpenAI (مثل 9Router روی VPS)</option>
+              </select>
+            </div>
+            <div class="field" id="ai-base-url-field" hidden>
+              <label for="ai-base-url">آدرس پایه گیت‌وی (تا /v1)</label>
+              <input id="ai-base-url" type="text" placeholder="http://YOUR-VPS:3000/v1" autocomplete="off" style="direction: ltr; text-align: left;">
+              <span class="hint" style="font-size: 0.75rem; line-height: 1.5;">آدرس سرویس <b>9Router</b> یا هر گیت‌وی سازگار با OpenAI که روی VPS خودتان نصب کرده‌اید. پیشنهاد: داخل گیت‌وی یک API key فعال کنید و از HTTPS استفاده کنید؛ هر مدلی (Gemini، Claude، GPT، Antigravity و…) که در گیت‌وی ثبت شده باشد قابل استفاده است.</span>
             </div>
             <div class="field">
-              <label for="gemini-model">مدل (اختیاری)</label>
-              <input id="gemini-model" type="text" placeholder="gemini-2.5-flash" autocomplete="off">
+              <label for="gemini-api-key">کلید API</label>
+              <input id="gemini-api-key" type="password" placeholder="در حالت Gemini: کلید Google | در حالت گیت‌وی: کلید 9Router" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="gemini-model">مدل</label>
+              <input id="gemini-model" type="text" placeholder="مثلاً: gemini-2.5-flash یا نام مدل ثبت‌شده در گیت‌وی" autocomplete="off">
             </div>
             <div class="form-actions">
               <button id="save-ai-settings" class="btn primary">ذخیره تنظیمات AI</button>

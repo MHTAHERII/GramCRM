@@ -58,6 +58,10 @@ class BotSetting(Base):
     # فاز ۲: پیشنهاد جواب هوشمند با Google Gemini
     gemini_api_key = Column(String(255), nullable=True)
     gemini_model = Column(String(100), nullable=True)
+    # سرویس AI فعال: gemini (مستقیم) یا openai (گیت‌وی سازگار با OpenAI مثل 9Router)
+    ai_provider = Column(String(20), nullable=True)
+    # آدرس پایه گیت‌وی تا /v1 (مثلاً http://IP-VPS:3000/v1)
+    ai_base_url = Column(String(255), nullable=True)
 
     updated_at = Column(
         DateTime,

@@ -138,6 +138,12 @@ def get_bot_settings(db: Session) -> BotSetting:
     if not getattr(setting, "gemini_api_key", None) and env_settings.GEMINI_API_KEY:
         setting.gemini_api_key = env_settings.GEMINI_API_KEY
         changed = True
+    if not getattr(setting, "ai_provider", None) and env_settings.AI_PROVIDER:
+        setting.ai_provider = env_settings.AI_PROVIDER
+        changed = True
+    if not getattr(setting, "ai_base_url", None) and env_settings.AI_BASE_URL:
+        setting.ai_base_url = env_settings.AI_BASE_URL
+        changed = True
 
 
     # اگر توکن موجود است ولی شناسه‌ها یا نام کاربری اینستاگرام ثبت نشده، استعلام و کشف خودکار کن

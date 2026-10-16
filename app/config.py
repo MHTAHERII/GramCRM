@@ -43,6 +43,9 @@ class Settings:
     # فاز ۲: پیشنهاد جواب هوشمند با Google Gemini (کلید از دیتابیس هم خوانده می‌شود)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    # سرویس AI: gemini = اتصال مستقیم گوگل | openai = گیت‌وی سازگار با OpenAI مثل 9Router روی VPS
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "gemini").lower()
+    AI_BASE_URL: str = os.getenv("AI_BASE_URL", "")
 
     # توکن اختیاری وب‌هوک زرنیو (اگر تنظیم شود، درخواست‌ها باید هدر X-Zernio-Webhook-Token را داشته باشند)
     ZERNIO_WEBHOOK_SECRET: str = os.getenv("ZERNIO_WEBHOOK_SECRET", "")

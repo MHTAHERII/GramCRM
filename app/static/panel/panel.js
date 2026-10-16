@@ -1266,11 +1266,16 @@ async function loadSettings() {
   const notifyCancelled = document.getElementById("order-notify-cancelled");
   if (notifyCancelled) notifyCancelled.value = settings.order_notify_cancelled || "";
 
-  // فاز ۲: تنظیمات هوش مصنوعی Gemini
+  // فاز ۲: تنظیمات هوش مصنوعی (Gemini یا گیت‌وی مثل 9Router)
   const geminiKey = document.getElementById("gemini-api-key");
   if (geminiKey) geminiKey.value = settings.gemini_api_key || "";
   const geminiModel = document.getElementById("gemini-model");
   if (geminiModel) geminiModel.value = settings.gemini_model || "";
+  const aiProvider = document.getElementById("ai-provider");
+  if (aiProvider) aiProvider.value = (settings.ai_provider || "gemini").toLowerCase();
+  const aiBaseUrl = document.getElementById("ai-base-url");
+  if (aiBaseUrl) aiBaseUrl.value = settings.ai_base_url || "";
+  toggleAiGatewayField();
 
   // پر کردن دکمه‌های شیشه‌ای دروازه فالو
   const fgContainer = document.getElementById("follow-gate-buttons-container");
@@ -1494,11 +1499,21 @@ document.getElementById("save-order-notify")?.addEventListener("click", async ()
   }
 });
 
+// نمایش/پنهان‌سازی فیلد آدرس گیت‌وی بسته به سرویس AI انتخاب‌شده
+function toggleAiGatewayField() {
+  const provider = document.getElementById("ai-provider")?.value || "gemini";
+  const field = document.getElementById("ai-base-url-field");
+  if (field) field.hidden = provider !== "openai";
+}
+document.getElementById("ai-provider")?.addEventListener("change", toggleAiGatewayField);
+
 document.getElementById("save-ai-settings")?.addEventListener("click", async () => {
   const btn = document.getElementById("save-ai-settings");
   const body = JSON.stringify({
     gemini_api_key: document.getElementById("gemini-api-key").value,
     gemini_model: document.getElementById("gemini-model").value,
+    ai_provider: document.getElementById("ai-provider").value,
+    ai_base_url: document.getElementById("ai-base-url").value,
   });
   try {
     await api("/settings/", { method: "PUT", body });

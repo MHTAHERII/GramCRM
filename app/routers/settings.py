@@ -79,6 +79,8 @@ def get_settings(db: Session = Depends(get_db)):
         order_notify_cancelled=getattr(setting, "order_notify_cancelled", None),
         gemini_api_key=_mask_secret(getattr(setting, "gemini_api_key", None)),
         gemini_model=getattr(setting, "gemini_model", None),
+        ai_provider=(getattr(setting, "ai_provider", None) or "gemini"),
+        ai_base_url=getattr(setting, "ai_base_url", None),
         updated_at=setting.updated_at
     )
 
@@ -164,6 +166,14 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         setting.gemini_api_key = data.gemini_api_key.strip() or None
     if data.gemini_model is not None:
         setting.gemini_model = data.gemini_model.strip() or None
+
+    # سرویس AI: gemini (اتصال مستقیم گوگل) یا openai (گیت‌وی سازگار با OpenAI مثل 9Router)
+    if data.ai_provider is not None:
+        provider = data.ai_provider.strip().lower()
+        if provider in ("gemini", "openai"):
+            setting.ai_provider = provider
+    if data.ai_base_url is not None:
+        setting.ai_base_url = data.ai_base_url.strip() or None
 
     if data.license_key is not None and not _is_masked_secret(data.license_key):
         new_lic = data.license_key.strip() if data.license_key.strip() else None
@@ -268,6 +278,8 @@ def update_settings(data: BotSettingUpdate, background_tasks: BackgroundTasks, d
         order_notify_cancelled=getattr(setting, "order_notify_cancelled", None),
         gemini_api_key=_mask_secret(getattr(setting, "gemini_api_key", None)),
         gemini_model=getattr(setting, "gemini_model", None),
+        ai_provider=(getattr(setting, "ai_provider", None) or "gemini"),
+        ai_base_url=getattr(setting, "ai_base_url", None),
         updated_at=setting.updated_at
     )
 

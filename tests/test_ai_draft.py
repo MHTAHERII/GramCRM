@@ -89,6 +89,14 @@ def _ok_response(text="سلام! اسانس یاس ۱۵۰ هزار تومانه 
     return resp
 
 
+def _ok_openai_response(text="سلام! اسانس یاس ۱۵۰ هزار تومانه 🌸"):
+    """پاسخ 200 از گیت‌وی سازگار با OpenAI (فرمت chat/completions)"""
+    resp = MagicMock()
+    resp.status_code = 200
+    resp.json.return_value = {"choices": [{"message": {"content": text}}]}
+    return resp
+
+
 class PromptBuildTests(unittest.TestCase):
     def setUp(self):
         self.db = _make_session()
@@ -136,9 +144,16 @@ class GenerateDraftTests(unittest.TestCase):
         self.bot = get_bot_settings(self.db)
         self.bot.gemini_api_key = "AIzaFAKEKEY1234567890"
         self.bot.gemini_model = None
+        self.bot.ai_provider = None
+        self.bot.ai_base_url = None
         self.db.commit()
-        # کلید env نباید در تست دخالت کند
-        self.env_patch = patch.object(gemini_service.env_settings, "GEMINI_API_KEY", "")
+        # کلید/سرویس AI از env نباید در تست دخالت کند
+        self.env_patch = patch.multiple(
+            gemini_service.env_settings,
+            GEMINI_API_KEY="",
+            AI_PROVIDER="gemini",
+            AI_BASE_URL="",
+        )
         self.env_patch.start()
 
     def tearDown(self):
@@ -237,7 +252,15 @@ class DraftEndpointTests(unittest.TestCase):
         self.customer = _seed(self.db)
         self.bot = get_bot_settings(self.db)
         self.bot.gemini_api_key = "AIzaFAKEKEY1234567890"
+        self.bot.ai_provider = None
+        self.bot.ai_base_url = None
         self.db.commit()
+        self.env_patch = patch.multiple(
+            gemini_service.env_settings,
+            AI_PROVIDER="gemini",
+            AI_BASE_URL="",
+        )
+        self.env_patch.start()
 
         app = FastAPI()
         app.include_router(customer_router)
@@ -246,6 +269,7 @@ class DraftEndpointTests(unittest.TestCase):
         self.client = TestClient(app)
 
     def tearDown(self):
+        self.env_patch.stop()
         self.client.close()
         gemini_service._last_draft_at.clear()
         self.db.rollback()
@@ -279,6 +303,8 @@ class SettingsGeminiTests(unittest.TestCase):
         self.bot = get_bot_settings(self.db)
         self.bot.gemini_api_key = None
         self.bot.gemini_model = None
+        self.bot.ai_provider = "gemini"
+        self.bot.ai_base_url = None
         self.db.commit()
 
     def tearDown(self):
@@ -325,6 +351,183 @@ class SettingsGeminiTests(unittest.TestCase):
         # مدل خالی → مدل پیش‌فرض سیستم
         self.assertEqual(gemini_service._resolve_model(get_bot_settings(self.db)),
                          gemini_service.env_settings.GEMINI_MODEL or gemini_service.DEFAULT_MODEL)
+
+
+class GatewayModeTests(unittest.TestCase):
+    """حالت گیت‌وی سازگار با OpenAI (مثل 9Router خودمیزبان روی VPS)"""
+    BASE = "http://gw.local:3000/v1"
+
+    def setUp(self):
+        self.db = _make_session()
+        gemini_service._last_draft_at.clear()
+        self.customer = _seed(self.db)
+        self.bot = get_bot_settings(self.db)
+        self.bot.ai_provider = "openai"
+        self.bot.ai_base_url = self.BASE
+        self.bot.gemini_api_key = "gw-key-123"
+        self.bot.gemini_model = "my-model"
+        self.bot.order_notify_enabled = True
+        self.db.commit()
+        # env نباید در تست دخالت کند
+        self.env_patch = patch.multiple(
+            gemini_service.env_settings,
+            GEMINI_API_KEY="",
+            AI_BASE_URL="",
+        )
+        self.env_patch.start()
+
+    def tearDown(self):
+        self.env_patch.stop()
+        # ریست برای بی‌طرفی نسبت به ترتیب اجرای کلاس‌ها (دیتابیس این فایل مشترک است)
+        self.bot.ai_provider = "gemini"
+        self.bot.ai_base_url = None
+        self.bot.gemini_api_key = None
+        self.bot.gemini_model = None
+        self.db.commit()
+        gemini_service._last_draft_at.clear()
+        self.db.rollback()
+        self.db.close()
+
+    def _generate(self, bot=None):
+        return gemini_service.generate_draft(self.db, self.customer, bot or self.bot)
+
+    def test_gateway_success_calls_chat_completions(self):
+        with patch.object(gemini_service.requests, "post",
+                          return_value=_ok_openai_response("پاسخ گیت‌وی")) as mock_post:
+            draft = self._generate()
+        self.assertEqual(draft, "پاسخ گیت‌وی")
+        args, kwargs = mock_post.call_args
+        self.assertEqual(args[0], f"{self.BASE}/chat/completions")
+        self.assertEqual(kwargs["headers"]["Authorization"], "Bearer gw-key-123")
+        payload = kwargs["json"]
+        self.assertEqual(payload["model"], "my-model")
+        self.assertEqual(payload["messages"][0]["role"], "system")
+        self.assertEqual(payload["messages"][1]["role"], "user")
+        self.assertIn("اسانس یاس", payload["messages"][1]["content"])
+
+    def test_gateway_missing_base_url_raises_400(self):
+        self.bot.ai_base_url = None
+        self.db.commit()
+        with self.assertRaises(GeminiError) as ctx:
+            self._generate()
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("آدرس گیت‌وی", ctx.exception.message)
+
+    def test_gateway_without_key_sends_no_auth_header(self):
+        self.bot.gemini_api_key = None
+        self.db.commit()
+        with patch.object(gemini_service.requests, "post",
+                          return_value=_ok_openai_response("ok")) as mock_post:
+            self._generate()
+        self.assertNotIn("Authorization", mock_post.call_args.kwargs["headers"])
+
+    def test_gateway_unauthorized_maps_to_400(self):
+        resp = MagicMock(status_code=401, text="unauthorized")
+        with patch.object(gemini_service.requests, "post", return_value=resp):
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("کلید", ctx.exception.message)
+
+    def test_gateway_unknown_model_maps_to_400(self):
+        resp = MagicMock(status_code=400, text="model not found")
+        with patch.object(gemini_service.requests, "post", return_value=resp):
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("مدل", ctx.exception.message)
+
+    def test_gateway_quota_maps_to_429(self):
+        resp = MagicMock(status_code=429, text="rate limit")
+        with patch.object(gemini_service.requests, "post", return_value=resp):
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 429)
+
+    def test_gateway_server_error_maps_to_502(self):
+        resp = MagicMock(status_code=503, text="unavailable")
+        with patch.object(gemini_service.requests, "post", return_value=resp):
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 502)
+
+    def test_gateway_network_error_maps_to_502(self):
+        with patch.object(gemini_service.requests, "post",
+                          side_effect=requests_lib.ConnectionError("down")):
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 502)
+        self.assertIn("اتصال", ctx.exception.message)
+
+    def test_gateway_bad_payload_maps_to_502(self):
+        resp = MagicMock(status_code=200, text="{}")
+        resp.json.return_value = {}
+        with patch.object(gemini_service.requests, "post", return_value=resp):
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 502)
+
+    def test_gateway_truncated_to_dm_limit(self):
+        long_text = "متن خیلی طولانی " * 100
+        with patch.object(gemini_service.requests, "post",
+                          return_value=_ok_openai_response(long_text)):
+            draft = self._generate()
+        self.assertEqual(len(draft), gemini_service.MAX_DRAFT_CHARS)
+
+    def test_cooldown_shared_between_modes(self):
+        with patch.object(gemini_service.requests, "post", return_value=_ok_openai_response()):
+            self._generate()
+            with self.assertRaises(GeminiError) as ctx:
+                self._generate()
+        self.assertEqual(ctx.exception.status_code, 429)
+
+    def test_provider_defaults_to_gemini_when_empty(self):
+        self.bot.ai_provider = None
+        self.db.commit()
+        with patch.object(gemini_service.env_settings, "AI_PROVIDER", "gemini"):
+            self.assertEqual(gemini_service._resolve_provider(self.bot), "gemini")
+
+    def test_unknown_provider_falls_back_to_gemini(self):
+        self.bot.ai_provider = "something"
+        self.db.commit()
+        with patch.object(gemini_service.env_settings, "AI_PROVIDER", "gemini"):
+            self.assertEqual(gemini_service._resolve_provider(self.bot), "gemini")
+
+    def test_provider_and_base_url_round_trip_via_settings(self):
+        result = update_settings(
+            BotSettingUpdate(ai_provider="OPENAI ", ai_base_url=f" {self.BASE} "),
+            BackgroundTasks(),
+            self.db,
+        )
+        # در پاسخ API مقادیر عادی برمی‌گردند (آدرس مخفی نمی‌شود؛ کلید مخفی می‌شود)
+        self.assertEqual(result.ai_provider, "openai")
+        self.assertEqual(result.ai_base_url, self.BASE)
+        stored = get_bot_settings(self.db)
+        self.assertEqual(stored.ai_provider, "openai")
+        # پس از ذخیره، درخواست واقعاً به گیت‌وی می‌رود
+        fresh_bot = get_bot_settings(self.db)
+        gemini_service._last_draft_at.clear()
+        with patch.object(gemini_service.requests, "post",
+                          return_value=_ok_openai_response("از گیت‌وی")) as mock_post:
+            draft = gemini_service.generate_draft(self.db, self.customer, fresh_bot)
+        self.assertEqual(draft, "از گیت‌وی")
+        self.assertTrue(mock_post.call_args.args[0].endswith("/v1/chat/completions"))
+
+    def test_invalid_provider_ignored_on_update(self):
+        update_settings(BotSettingUpdate(ai_provider="gemini"), BackgroundTasks(), self.db)
+        update_settings(BotSettingUpdate(ai_provider="foo"), BackgroundTasks(), self.db)
+        # مقدار نامعتبر پذیرفته نمی‌شود و حالت قبلی حفظ می‌شود
+        self.assertEqual(get_bot_settings(self.db).ai_provider, "gemini")
+
+    def test_empty_base_url_clears_stored_value(self):
+        update_settings(
+            BotSettingUpdate(ai_base_url="http://tmp.local:1/v1"),
+            BackgroundTasks(),
+            self.db,
+        )
+        self.assertIsNotNone(get_bot_settings(self.db).ai_base_url)
+        update_settings(BotSettingUpdate(ai_base_url=""), BackgroundTasks(), self.db)
+        self.assertIsNone(get_bot_settings(self.db).ai_base_url)
 
 
 if __name__ == "__main__":

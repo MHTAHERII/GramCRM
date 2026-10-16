@@ -220,6 +220,12 @@ def run_schema_migrations() -> None:
                 "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS gemini_model VARCHAR(100);"
             ))
             conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS ai_provider VARCHAR(20);"
+            ))
+            conn.execute(text(
+                "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS ai_base_url VARCHAR(255);"
+            ))
+            conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS ix_messages_customer_id ON messages (customer_id);"
             ))
 
